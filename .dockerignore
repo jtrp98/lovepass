@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.git/
+frontend/node_modules/
+frontend/.next/
+**/.env
+**/.env.local
+docs/
+scripts/

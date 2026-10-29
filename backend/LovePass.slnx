@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LovePass.Application/LovePass.Application.csproj" />
+    <Project Path="src/LovePass.Domain/LovePass.Domain.csproj" />
+    <Project Path="src/LovePass.Infrastructure/LovePass.Infrastructure.csproj" />
+    <Project Path="src/LovePass.WebApi/LovePass.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LovePass.Application.UnitTests/LovePass.Application.UnitTests.csproj" />
+  </Folder>
+</Solution>

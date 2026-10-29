@@ -1,0 +1,44 @@
+# Render Blueprint — LOVE PASS Web API
+# วิธีใช้: New + → Blueprint → เลือก repo นี้ → Render จะสร้าง service ตามไฟล์นี้
+# ค่าที่ sync: false ต้องกรอกเองในหน้า Render ตอนสร้าง (ห้ามใส่ secret ในไฟล์นี้)
+
+services:
+  - type: web
+    name: lovepass-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      # Supabase: ใช้ connection string แบบ Session pooler + SSL Mode=Require
+      # ตัวอย่าง: Host=aws-XX-<region>.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.<ref>;Password=<password>;SSL Mode=Require
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      # ควรเป็น random string ยาว 64+ ตัวอักษร — generateValue ให้ Render สุ่มให้ก็ได้
+      - key: Jwt__SigningKey
+        generateValue: true
+      - key: Jwt__Issuer
+        value: lovepass-api
+      - key: Jwt__Audience
+        value: lovepass-web
+      # URL ของ frontend บน Vercel เช่น https://lovepass.vercel.app
+      - key: App__FrontendUrl
+        sync: false
+      - key: Cors__AllowedOrigins
+        sync: false
+      - key: Resend__ApiKey
+        sync: false
+      - key: Resend__FromEmail
+        value: LOVE PASS <onboarding@resend.dev>
+      # Google Sign-In — OAuth Client ID (เว้นว่าง = ปิดใช้งาน ปุ่ม Google จะไม่แสดง)
+      - key: Authentication__Google__ClientId
+        sync: false
+      - key: Seed__AdminEmail
+        sync: false
+      - key: Seed__AdminPassword
+        sync: false
+      - key: Seed__DemoTemplates
+        value: "true"
