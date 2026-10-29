@@ -68,6 +68,11 @@ public sealed class DataSeeder(
         var bigGift = new CouponTemplate { Name = "ตั๋วอะไรก็ได้ไม่เกิน 10,000 บาท", Description = "ของขวัญมูลค่าไม่เกิน 10,000 บาท", Terms = "ต้องมีของจริงเป็นหลักฐาน", Rarity = Rarity.Legendary, Emoji = "🎁" };
         var trip = new CouponTemplate { Name = "ตั๋วทริปพิเศษ", Description = "เที่ยวด้วยกันแบบพิเศษ 1 ทริป", Terms = "วางแผนร่วมกันก่อนใช้สิทธิ์", Rarity = Rarity.Legendary, Emoji = "✈️" };
 
+        hug.Category = CouponCategory.Affection;
+        meal.Category = CouponCategory.Food;
+        wish.Category = freedom.Category = bigGift.Category = CouponCategory.Wish;
+        invite.Category = CouponCategory.Together;
+        trip.Category = CouponCategory.Adventure;
         var templates = new[] { hug, meal, wish, freedom, invite, bigGift, trip };
         db.CouponTemplates.AddRange(templates);
         await db.SaveChangesAsync(cancellationToken); // ต้อง save ก่อนเพื่อให้ได้ Id จริง

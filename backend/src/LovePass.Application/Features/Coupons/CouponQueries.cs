@@ -20,7 +20,8 @@ public sealed record MyCouponDto(
     int Available,
     DateTime ExpiresAt,
     bool ExpiringSoon,
-    int SenderId);
+    int SenderId,
+    string Category = "OTHER");
 
 public sealed record GetMyCouponsQuery(string? Rarity = null) : IQuery<List<MyCouponDto>>;
 
@@ -68,7 +69,8 @@ public sealed class GetMyCouponsQueryHandler(IApplicationDbContext db, ICurrentU
             c.AvailableQuantity,
             c.ExpiresAt,
             c.ExpiresAt - now <= ExpiringSoonWindow,
-            c.SenderId);
+            c.SenderId,
+            s.Category);
     }
 }
 

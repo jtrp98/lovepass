@@ -9,6 +9,7 @@ public class CouponTemplate : BaseEntity, ISoftDeletable
     public string Description { get; set; } = string.Empty;
     public string Terms { get; set; } = string.Empty;
     public Rarity Rarity { get; set; } = Rarity.Common;
+    public CouponCategory Category { get; set; } = CouponCategory.Other;
     public string? ImageUrl { get; set; }
     public string? Emoji { get; set; }
     public bool IsActive { get; set; } = true;

@@ -51,6 +51,7 @@ public class CouponTemplateConfiguration : IEntityTypeConfiguration<CouponTempla
         builder.Property(t => t.Description).HasMaxLength(500);
         builder.Property(t => t.Terms).HasMaxLength(1000);
         builder.Property(t => t.Rarity).HasConversion<string>().HasMaxLength(20);
+        builder.Property(t => t.Category).HasConversion<string>().HasMaxLength(20).HasDefaultValue(LovePass.Domain.Enums.CouponCategory.Other);
         builder.Property(t => t.Emoji).HasMaxLength(16);
         builder.HasQueryFilter(t => !t.IsDeleted);
     }

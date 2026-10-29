@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LovePass.Application.Features.Catalog;
 
-public sealed record CouponTemplateDto(int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl);
+public sealed record CouponTemplateDto(int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, string Category = "OTHER");
 
 public sealed record CouponSetItemDto(int CouponTemplateId, string Name, string? Emoji, string Rarity, int Quantity);
 
@@ -31,7 +31,7 @@ public sealed class GetCouponTemplatesQueryHandler(IApplicationDbContext db)
 
         return await query
             .OrderBy(t => t.Name)
-            .Select(t => new CouponTemplateDto(t.Id, t.Name, t.Description, t.Terms, t.Rarity.ToString().ToUpperInvariant(), t.Emoji, t.ImageUrl))
+            .Select(t => new CouponTemplateDto(t.Id, t.Name, t.Description, t.Terms, t.Rarity.ToString().ToUpperInvariant(), t.Emoji, t.ImageUrl, t.Category.ToString().ToUpperInvariant()))
             .ToListAsync(cancellationToken);
     }
 }
@@ -48,7 +48,7 @@ public sealed class GetCouponTemplateQueryHandler(IApplicationDbContext db)
             ?? throw new NotFoundException(nameof(CouponTemplate), request.Id);
 
         return new CouponTemplateDto(template.Id, template.Name, template.Description, template.Terms,
-            template.Rarity.ToString().ToUpperInvariant(), template.Emoji, template.ImageUrl);
+            template.Rarity.ToString().ToUpperInvariant(), template.Emoji, template.ImageUrl, template.Category.ToString().ToUpperInvariant());
     }
 }
 

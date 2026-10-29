@@ -10,13 +10,17 @@ using Microsoft.EntityFrameworkCore;
 namespace LovePass.Application.Features.Admin;
 
 public sealed record AdminCouponTemplateDto(
-    int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, bool IsActive, DateTime CreatedAt, DateTime? UpdatedAt);
+    int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, bool IsActive, DateTime CreatedAt, DateTime? UpdatedAt, string Category = "OTHER");
 
 public sealed record CreateCouponTemplateCommand(
-    string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl) : ICommand<AdminCouponTemplateDto>;
+    string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, string Category = "OTHER") : ICommand<AdminCouponTemplateDto>;
 
 public static class CouponTemplateValidationRules
 {
+    public static IRuleBuilderOptions<T, string> ValidCategory<T>(this IRuleBuilder<T, string> rule) =>
+        rule.Must(value => Enum.GetNames<CouponCategory>().Contains(value, StringComparer.OrdinalIgnoreCase))
+            .WithMessage("กรุณาเลือกหมวดหมู่คูปองที่มีในรายการ");
+
     public static IRuleBuilderOptions<T, string> ValidRarity<T>(this IRuleBuilder<T, string> rule) =>
         rule.NotEmpty().Must(r => Enum.TryParse<Rarity>(r, ignoreCase: true, out _))
             .WithMessage("Rarity ต้องเป็น COMMON, RARE, EPIC หรือ LEGENDARY");
@@ -30,6 +34,7 @@ public sealed class CreateCouponTemplateCommandValidator : AbstractValidator<Cre
         RuleFor(x => x.Description).MaximumLength(500);
         RuleFor(x => x.Terms).MaximumLength(1000);
         RuleFor(x => x.Rarity).ValidRarity();
+        RuleFor(x => x.Category).ValidCategory();
         RuleFor(x => x.Emoji).MaximumLength(16);
     }
 }
@@ -45,6 +50,7 @@ public sealed class CreateCouponTemplateCommandHandler(IApplicationDbContext db)
             Description = request.Description?.Trim() ?? string.Empty,
             Terms = request.Terms?.Trim() ?? string.Empty,
             Rarity = ParseRarity(request.Rarity),
+            Category = ParseCategory(request.Category),
             Emoji = request.Emoji,
             ImageUrl = request.ImageUrl,
             IsActive = true
@@ -59,13 +65,18 @@ public sealed class CreateCouponTemplateCommandHandler(IApplicationDbContext db)
         Enum.TryParse<Rarity>(rarity, ignoreCase: true, out var parsed) ? parsed
             : throw new ConflictException("Rarity ไม่ถูกต้อง");
 
+    internal static CouponCategory ParseCategory(string category) =>
+        Enum.GetNames<CouponCategory>().Contains(category, StringComparer.OrdinalIgnoreCase)
+            ? Enum.Parse<CouponCategory>(category, ignoreCase: true)
+            : throw new ConflictException("หมวดหมู่คูปองไม่ถูกต้อง");
+
     internal static AdminCouponTemplateDto Map(CouponTemplate t) => new(
         t.Id, t.Name, t.Description, t.Terms,
-        t.Rarity.ToString().ToUpperInvariant(), t.Emoji, t.ImageUrl, t.IsActive, t.CreatedAt, t.UpdatedAt);
+        t.Rarity.ToString().ToUpperInvariant(), t.Emoji, t.ImageUrl, t.IsActive, t.CreatedAt, t.UpdatedAt, t.Category.ToString().ToUpperInvariant());
 }
 
 public sealed record UpdateCouponTemplateCommand(
-    int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, bool IsActive)
+    int Id, string Name, string Description, string Terms, string Rarity, string? Emoji, string? ImageUrl, bool IsActive, string? Category = null)
     : ICommand<AdminCouponTemplateDto>;
 
 public sealed class UpdateCouponTemplateCommandValidator : AbstractValidator<UpdateCouponTemplateCommand>
@@ -77,6 +88,7 @@ public sealed class UpdateCouponTemplateCommandValidator : AbstractValidator<Upd
         RuleFor(x => x.Description).MaximumLength(500);
         RuleFor(x => x.Terms).MaximumLength(1000);
         RuleFor(x => x.Rarity).ValidRarity();
+        RuleFor(x => x.Category!).ValidCategory().When(x => x.Category is not null);
         RuleFor(x => x.Emoji).MaximumLength(16);
     }
 }
@@ -94,6 +106,8 @@ public sealed class UpdateCouponTemplateCommandHandler(IApplicationDbContext db)
         template.Description = request.Description?.Trim() ?? string.Empty;
         template.Terms = request.Terms?.Trim() ?? string.Empty;
         template.Rarity = CreateCouponTemplateCommandHandler.ParseRarity(request.Rarity);
+        if (request.Category is not null)
+            template.Category = CreateCouponTemplateCommandHandler.ParseCategory(request.Category);
         template.Emoji = request.Emoji;
         template.ImageUrl = request.ImageUrl;
         template.IsActive = request.IsActive;
