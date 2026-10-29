@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --test tests/flow.test.ts",
+    "test:ui": "node tests/ui.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

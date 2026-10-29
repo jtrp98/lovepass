@@ -6,6 +6,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    files: ["src/**/*.{ts,tsx}"],
     rules: {
       // pattern fetch-on-mount + setState ยังใช้อยู่ทั่วแอป — ปรับเป็น warning ก่อนยกระดับเป็น use()/RSC
       "react-hooks/set-state-in-effect": "warn",
