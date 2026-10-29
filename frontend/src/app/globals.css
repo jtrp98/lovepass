@@ -7,6 +7,7 @@
   --color-love: #b83258;
   --color-love-hover: #9c2648;
   --color-love-soft: #ffe3eb;
+  --color-line: #eadbd9;
   --color-mint-soft: #dff5e8;
   --color-mint-ink: #205d46;
   --color-sky-soft: #e3f0ff;
@@ -90,21 +91,175 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 .user-content {
+  padding-top: 2rem;
   padding-bottom: calc(var(--nav-height) + 1.5rem);
 }
 .cart-bar {
   bottom: var(--nav-height);
 }
+.app-header { background: var(--color-canvas); }
+.brand-heart {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: .5rem;
+  border: 1px solid var(--color-love);
+  border-radius: 40% 45% 40% 45%;
+  background: var(--color-love-soft);
+  font-size: 2rem;
+  transform: rotate(-10deg);
+  transition: transform 240ms ease;
+}
+.love-note {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: 1rem 1rem 2.5rem 1rem;
+  background: var(--color-surface);
+  background-image: radial-gradient(var(--color-line) .75px, transparent .75px);
+  background-size: 12px 12px;
+}
+.love-note::before {
+  content: "";
+  position: absolute;
+  top: -.5rem;
+  left: 2rem;
+  width: 4rem;
+  height: 1rem;
+  background: var(--color-love-soft);
+  opacity: .85;
+  transform: rotate(-5deg);
+}
+.love-note .page-heading { margin-bottom: 0; }
+.love-note h1 { line-height: 1.6; }
+.note-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  color: var(--color-love);
+  font-size: .625rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+}
+.note-eyebrow span { font-size: 1.25rem; }
+.note-link { margin: .5rem 0 0 -.75rem; color: var(--color-love); font-size: .875rem; }
+.note-caption {
+  position: absolute;
+  right: 1.5rem;
+  bottom: .75rem;
+  color: var(--color-muted);
+  font-family: var(--font-mali), sans-serif;
+  font-size: .625rem;
+  transform: rotate(-4deg);
+}
+.love-doodle { width: 100%; max-width: 15rem; overflow: visible; }
+.doodle-friend { transform-box: fill-box; transform-origin: center bottom; }
+.doodle-friend-left { animation: friend-sway 2s ease-in-out 2; }
+.doodle-friend-right { animation: friend-sway 2s ease-in-out 2 reverse; }
+.doodle-heart { transform-origin: 116px 32px; animation: heart-float 2s ease-in-out 2; }
+.doodle-sparkles { animation: sparkle 2s ease-in-out 2; }
+.status-tabs { border-bottom: 1px solid var(--color-line); }
+.status-tab {
+  position: relative;
+  min-height: 3rem;
+  padding: .5rem 1rem;
+  color: var(--color-muted);
+  transition: color 180ms ease, background-color 180ms ease;
+}
+.status-tab[aria-pressed="true"] { color: var(--color-love); font-weight: 600; }
+.status-tab[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem -1px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--color-love);
+  animation: indicator-arrive 220ms ease both;
+}
+.rarity-filter {
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 2rem;
+  padding: .25rem .5rem;
+  font-size: .875rem;
+  color: var(--color-muted);
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+.rarity-filter[aria-pressed="true"] { border-color: var(--color-love); background: var(--color-surface); color: var(--color-love); }
 .coupon-ticket {
   position: relative;
-  border-top: 6px solid var(--ticket-color, var(--color-love-soft));
+  border-color: color-mix(in srgb, var(--ticket-color) 75%, var(--color-control));
+  background: color-mix(in srgb, var(--ticket-color) 38%, var(--color-surface));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--ticket-color) 75%, var(--color-line));
+  animation: content-arrive 600ms cubic-bezier(.2,.8,.2,1) backwards;
+  transition: transform 240ms ease, box-shadow 240ms ease;
 }
-.coupon-ticket::after {
-  content: "";
-  display: block;
-  border-bottom: 2px dashed var(--color-control);
-  margin-top: 1rem;
-  opacity: 0.6;
+.coupon-ticket:nth-child(2n) { animation-delay: 80ms; }
+.coupon-ticket:nth-child(3n) { animation-delay: 160ms; }
+.coupon-ticket:nth-child(4n) { animation-delay: 240ms; }
+.coupon-ticket h2 { line-height: 1.7; }
+.coupon-sticker {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 2px solid var(--color-surface);
+  border-radius: 42% 50% 44% 48%;
+  background: var(--ticket-color, var(--color-love-soft));
+  box-shadow: 0 2px 0 #3b243012;
+  font-size: 2rem;
+  transform: rotate(-8deg);
+  transition: transform 300ms cubic-bezier(.2,.8,.2,1.4);
+}
+.ui-button { transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+.ui-button:not(:disabled):active { transform: translateY(2px) scale(.97); box-shadow: none; }
+.page-enter { animation: page-arrive 360ms ease backwards; }
+.love-notice { animation: content-arrive 400ms cubic-bezier(.2,.8,.2,1) both; }
+.app-dialog[open] { animation: content-arrive 280ms cubic-bezier(.2,.8,.2,1) both; }
+.app-dialog::backdrop { animation: page-arrive 200ms ease both; }
+.nav-link { position: relative; transition: color 200ms ease, background-color 200ms ease; }
+.nav-link svg { transition: transform 240ms ease; }
+.nav-link[aria-current="page"] svg {
+  padding: .25rem;
+  box-sizing: content-box;
+  border-radius: 40% 45% 40% 45%;
+  background: var(--color-love-soft);
+  animation: sticker-arrive 400ms ease both;
+}
+@media (hover: hover) and (pointer: fine) {
+  .coupon-ticket:hover { transform: translateY(-5px) rotate(-.5deg); box-shadow: 0 8px 0 -3px var(--ticket-color); }
+  .nav-link:hover svg { transform: translateY(-3px) rotate(-5deg); }
+  .app-header a:hover .brand-heart { transform: rotate(8deg) scale(1.08); }
+  .rarity-filter:hover { transform: translateY(-2px); }
+  .status-tab:hover { color: var(--color-love); background: var(--color-love-soft); }
+}
+@keyframes content-arrive {
+  from { opacity: 0; transform: translateY(18px) rotate(-1deg) scale(.97); }
+  to { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+@keyframes page-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes indicator-arrive { from { transform: scaleX(.4); } to { transform: scaleX(1); } }
+@keyframes sticker-arrive { from { transform: rotate(-15deg) scale(.7); } to { transform: rotate(0) scale(1); } }
+@keyframes friend-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg) translateY(-3px); } }
+@keyframes heart-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.08); } }
+@keyframes sparkle { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+@media (min-width: 640px) {
+  .love-note { grid-template-columns: minmax(0, 1fr) 13rem; padding: 2rem; }
+  .note-eyebrow { font-size: .75rem; }
+  .note-caption { right: 2rem; bottom: 1rem; font-size: .75rem; }
+}
+@media (max-width: 479px) {
+  .love-note { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 1.25rem; }
+  .love-note .love-doodle { width: 7rem; justify-self: end; margin-top: -.75rem; }
+  .note-caption { left: 1.25rem; right: auto; bottom: 2rem; }
+  .status-tab { padding-inline: .75rem; }
 }
 .success-pop {
   animation: gift-arrive 0.65s ease-out both;

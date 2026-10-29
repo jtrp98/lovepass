@@ -2,16 +2,16 @@
 
 import {
   Button,
-  CouponCard,
+  Dialog,
   LinkButton,
   Notice,
   ErrorState,
   Skeleton,
   EmptyState,
-  PageTitle,
   RarityBadge,
 } from "@/components/ui";
 import { GiftViews } from "@/components/nav";
+import { LoveTicket, TicketDetail, type LoveTicketData } from "@/components/love-ticket";
 import { useResource } from "@/lib/use-resource";
 import { api, giftCart, type CartItem } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -19,9 +19,14 @@ import type { CouponTemplate, Rarity } from "@/types";
 
 const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"];
 
+function toTicket(template: CouponTemplate): LoveTicketData {
+  return { id: `LP-${String(template.id).padStart(4, "0")}`, name: template.name, note: template.description, terms: template.terms, rarity: template.rarity, category: template.category, state: "available" };
+}
+
 export default function CatalogPage() {
   const [filter, setFilter] = useState<Rarity | "ALL">("ALL");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [selected, setSelected] = useState<CouponTemplate | null>(null);
 
   useEffect(() => {
     setCart(giftCart.read());
@@ -64,23 +69,26 @@ export default function CatalogPage() {
   const totalInCart = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="space-y-6 pb-32">
-      <PageTitle title="วันนี้อยากให้แฟนได้อะไรดี?" subtitle="เลือกคูปองที่จะมอบให้แฟน แล้วกดเพิ่มลงตะกร้า" />
+    <div className="pocket-book space-y-6 pb-32">
+      <header className="pocket-intro">
+        <div>
+          <p className="pocket-mono"><span className="pocket-foil" aria-hidden="true" />LITTLE GIFTS, LOTS OF LOVE</p>
+          <h1 tabIndex={-1}>วันนี้อยากให้แฟนได้อะไรดี?</h1>
+          <p>กอดสักที มื้ออร่อยสักมื้อ หรือวันพิเศษของสองเรา</p>
+        </div>
+        <div className="pocket-seal" aria-hidden="true"><small>A LITTLE</small><span>for you</span><small>WITH LOVE</small></div>
+      </header>
 
       <GiftViews />
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="ประเภทคูปอง">
         {rarities.map((rarity) => (
           <button
             key={rarity}
             aria-pressed={filter === rarity}
             onClick={() => setFilter(rarity)}
-            className={`min-h-12 rounded-full border px-3 py-2 text-sm transition-colors ${
-              filter === rarity
-                ? "border-control bg-love-soft font-semibold text-love"
-                : "border-control text-muted hover:bg-canvas"
-            }`}
+            className="rarity-filter"
           >
-            {rarity === "ALL" ? "ทั้งหมด" : <RarityBadge rarity={rarity} />}
+            {rarity === "ALL" ? "ทุกประเภท" : <RarityBadge rarity={rarity} />}
           </button>
         ))}
       </div>
@@ -100,25 +108,26 @@ export default function CatalogPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="pocket-collection">
           {templates.map((template) => (
-            <CouponCard rarity={template.rarity} key={template.id} className="flex flex-col gap-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-3xl">{template.emoji ?? "🎟️"}</p>
-                <RarityBadge rarity={template.rarity} />
-              </div>
-              <p className="font-semibold">{template.name}</p>
-              <p className="text-sm text-muted">{template.description}</p>
-              {template.terms ? <p className="text-sm text-muted">เงื่อนไข: {template.terms}</p> : null}
-              <div className="mt-auto space-y-2 pt-3">
-                <Button className="w-full" variant="secondary" onClick={() => addToCart(template, 1)}>
-                  เพิ่มลงของขวัญ
-                </Button>
-                {feedback?.id === template.id && <Notice>{feedback.text}</Notice>}
-              </div>
-            </CouponCard>
+            <LoveTicket key={template.id} ticket={toTicket(template)} catalog onOpen={() => {
+              setFeedback(null);
+              setSelected(template);
+            }} />
           ))}
         </div>
+      )}
+
+      {selected && (
+        <Dialog title={selected.name} className="ticket-dialog" onClose={() => setSelected(null)}>
+          <TicketDetail ticket={toTicket(selected)}>
+            {feedback?.id === selected.id && <Notice>{feedback.text}</Notice>}
+            <div className="pocket-dialog-actions">
+              <Button variant="secondary" className="flex-1" onClick={() => setSelected(null)}>ปิด</Button>
+              <Button className="flex-1" onClick={() => addToCart(selected, 1)}>เพิ่มลงของขวัญ</Button>
+            </div>
+          </TicketDetail>
+        </Dialog>
       )}
 
       {totalInCart > 0 ? (

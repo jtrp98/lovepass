@@ -71,6 +71,7 @@ export function couponGroupKey(coupon: MyCoupon): string {
     coupon.rarity,
     coupon.emoji,
     coupon.imageUrl,
+    coupon.category ?? "OTHER",
     coupon.expiresAt,
     coupon.senderId,
   ]);

@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui";
 const links = [
   { href: "/dashboard", label: "หน้าแรก", icon: "M3 10 12 3l9 7v11h-6v-7H9v7H3Z" },
   {
@@ -15,8 +16,9 @@ const links = [
   { href: "/more", label: "เพิ่มเติม", icon: "M4 6h16 M4 12h16 M4 18h16" },
 ];
 export function Navbar() {
-  const { user } = useAuth(),
-    pathname = usePathname();
+  const { user, logout } = useAuth(),
+    pathname = usePathname(),
+    router = useRouter();
   const navRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const nav = navRef.current!;
@@ -35,15 +37,28 @@ export function Navbar() {
   }, []);
   return (
     <>
-      <header className="border-b border-love-soft bg-surface">
+      <header className="app-header border-b border-love-soft bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
           <Link
             href="/dashboard"
-            className="inline-flex min-h-12 items-center font-display text-xl font-semibold text-love"
+            className="inline-flex min-h-12 items-center font-display text-lg font-semibold text-love sm:text-xl"
           >
-            ♡ LOVE PASS
+            <span aria-hidden="true" className="brand-heart">♡</span> LOVE PASS
           </Link>
-          <span className="text-sm text-muted">{user?.displayName}</span>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="hidden max-w-32 truncate text-sm text-muted sm:inline">{user?.displayName}</span>
+            <Button
+              type="button"
+              variant="secondary"
+              className="text-sm"
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
+            >
+              ออกจากระบบ
+            </Button>
+          </div>
         </div>
       </header>
       <nav
@@ -63,7 +78,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-center text-xs md:min-h-16 md:flex-row md:gap-2 md:text-base ${active ? "bg-love-soft font-semibold text-love" : "text-muted hover:bg-canvas"}`}
+              className={`nav-link flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-center text-xs md:min-h-16 md:flex-row md:gap-2 md:text-base ${active ? "font-semibold text-love" : "text-muted hover:bg-canvas"}`}
             >
               <svg
                 width="24"

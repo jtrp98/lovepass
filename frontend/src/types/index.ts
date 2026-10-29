@@ -1,3 +1,5 @@
+import type { CouponCategory } from "../lib/coupon-categories";
+
 // ---------------- Auth ----------------
 
 export interface TokenPair {
@@ -35,6 +37,7 @@ export interface InvitationResult {
 export type Rarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
 export interface CouponTemplate {
+  category?: CouponCategory;
   id: number;
   name: string;
   description: string;
@@ -83,6 +86,7 @@ export interface GiftResult {
 }
 
 export interface MyCoupon {
+  category?: CouponCategory;
   id: number;
   name: string;
   description: string;
@@ -156,6 +160,7 @@ export interface HistoryEntry {
 // ---------------- Admin ----------------
 
 export interface AdminCouponTemplate {
+  category?: CouponCategory;
   id: number;
   name: string;
   description: string;

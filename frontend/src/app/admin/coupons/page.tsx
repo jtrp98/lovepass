@@ -19,12 +19,15 @@ import {
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import type { AdminCouponTemplate, Rarity } from "@/types";
+import { couponCategories, resolveCategory, type CouponCategory } from "@/lib/coupon-categories";
+import { TicketIllustration } from "@/components/ticket-illustration";
 
 interface TemplateForm {
   name: string;
   description: string;
   terms: string;
   rarity: Rarity;
+  category: CouponCategory;
   emoji: string;
   imageUrl: string;
   isActive: boolean;
@@ -35,6 +38,7 @@ const emptyForm: TemplateForm = {
   description: "",
   terms: "",
   rarity: "COMMON",
+  category: "OTHER",
   emoji: "🎟️",
   imageUrl: "",
   isActive: true,
@@ -88,6 +92,7 @@ export default function AdminCouponsPage() {
       description: template.description,
       terms: template.terms,
       rarity: template.rarity,
+      category: resolveCategory(template.category),
       emoji: template.emoji ?? "",
       imageUrl: template.imageUrl ?? "",
       isActive: template.isActive,
@@ -109,6 +114,7 @@ export default function AdminCouponsPage() {
       description: form.description,
       terms: form.terms,
       rarity: form.rarity,
+      category: form.category,
       emoji: form.emoji || null,
       imageUrl: form.imageUrl || null,
       isActive: form.isActive,
@@ -190,6 +196,15 @@ export default function AdminCouponsPage() {
                 <option value="LEGENDARY">ล้ำค่า · LEGENDARY</option>
               </Select>
             </Field>
+            <Field label="หมวดหมู่คูปอง" hint="ไอคอนใช้ตามหมวด ส่วนสีใช้ตามระดับความพิเศษ" error={fieldErrors.category?.[0]}>
+              <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as CouponCategory })}>
+                {Object.entries(couponCategories).map(([value, category]) => <option key={value} value={value}>{category.label}</option>)}
+              </Select>
+            </Field>
+            <div className="category-icon-preview pocket-detail" data-rarity={form.rarity}>
+              <TicketIllustration category={form.category} />
+              <p>{couponCategories[form.category].label}<span>ใช้รูปเดิมได้ทุกคูปองในหมวดนี้</span></p>
+            </div>
             <Field label="Emoji">
               <Input
                 value={form.emoji}
@@ -261,7 +276,7 @@ export default function AdminCouponsPage() {
             <thead>
               <tr className="border-b border-control bg-canvas text-left text-xs uppercase text-muted">
                 <th className="px-4 py-3">คูปอง</th>
-                <th className="px-4 py-3">ประเภท</th>
+                <th className="px-4 py-3">หมวด / ระดับ</th>
                 <th className="px-4 py-3">สถานะ</th>
                 <th className="px-4 py-3">สร้างเมื่อ</th>
                 <th className="px-4 py-3"></th>
@@ -275,6 +290,7 @@ export default function AdminCouponsPage() {
                     <span className="font-semibold">{template.name}</span>
                   </td>
                   <td data-label="ประเภท" className="px-4 py-3">
+                    <p className="mb-1">{couponCategories[resolveCategory(template.category)].label}</p>
                     <RarityBadge rarity={template.rarity} />
                   </td>
                   <td data-label="สถานะ" className="px-4 py-3">

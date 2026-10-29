@@ -2,22 +2,17 @@
 
 import {
   Button,
-  CouponCard,
   Dialog,
   LinkButton,
   Skeleton,
   ErrorState,
   Notice,
   EmptyState,
-  ErrorText,
-  Field,
-  PageTitle,
   RarityBadge,
-  Textarea,
-  daysLeft,
-  formatDate,
 } from "@/components/ui";
 import { couponGroupKey } from "@/lib/flow";
+import { LoveTicket, TicketDetail, type LoveTicketData } from "@/components/love-ticket";
+import { TicketRequest } from "@/components/ticket-request";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import type { MyCoupon, Rarity } from "@/types";
@@ -31,6 +26,7 @@ interface GroupedCoupon {
   description: string;
   terms: string;
   rarity: Rarity;
+  category: MyCoupon["category"];
   emoji: string | null;
   totalAvailable: number;
   totalReserved: number;
@@ -53,6 +49,7 @@ function groupCoupons(coupons: MyCoupon[]): GroupedCoupon[] {
       description: items[0].description,
       terms: items[0].terms,
       rarity: items[0].rarity,
+      category: items[0].category,
       emoji: items[0].emoji,
       totalReserved: items.reduce((sum, c) => sum + Math.max(0, c.remaining - c.available), 0),
       totalAvailable: items.reduce((sum, c) => sum + c.available, 0),
@@ -63,12 +60,27 @@ function groupCoupons(coupons: MyCoupon[]): GroupedCoupon[] {
     .sort((a, b) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
 }
 
+function toTicket(group: GroupedCoupon): LoveTicketData {
+  return {
+    id: `LP-${String(group.coupons[0].id).padStart(4, "0")}`,
+    name: group.name,
+    note: group.description,
+    terms: group.terms,
+    rarity: group.rarity,
+    category: group.category,
+    state: new Date(group.expiresAt).getTime() <= Date.now() ? "expired" : group.totalAvailable > 0 ? "available" : "pending",
+    quantity: group.totalAvailable,
+    reserved: group.totalReserved,
+    expiresAt: group.expiresAt,
+  };
+}
+
 export default function MyCouponsPage() {
   const [coupons, setCoupons] = useState<MyCoupon[] | null>(null);
   const [task, setTask] = useState("all");
   const [filter, setFilter] = useState<Rarity | "ALL">("ALL");
   const [error, setError] = useState<string | null>(null);
-  const [requesting, setRequesting] = useState<{ coupon: MyCoupon; message: string } | null>(null);
+  const [selected, setSelected] = useState<{ group: GroupedCoupon } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -98,16 +110,17 @@ export default function MyCouponsPage() {
     await load(rarity === "ALL" ? undefined : rarity);
   }
 
-  async function submitRequest() {
-    if (!requesting || submitLock.current) return;
+  async function submitRequest(message: string) {
+    const coupon = selected?.group.coupons.find((item) => item.available > 0);
+    if (!selected || !coupon || submitLock.current) return;
     submitLock.current = true;
     setRequestError(null);
     setNotice(null);
     setBusy(true);
     try {
-      await api.redemptions.request(requesting.coupon.id, requesting.message || undefined);
-      setNotice(`ส่งคำขอใช้ "${requesting.coupon.name}" เรียบร้อย — รอแฟนยืนยัน 💌`);
-      setRequesting(null);
+      await api.redemptions.request(coupon.id, message || undefined);
+      setNotice(`ส่งคำขอใช้ "${coupon.name}" เรียบร้อย — รอแฟนยืนยัน 💌`);
+      setSelected(null);
       await load(filter === "ALL" ? undefined : filter);
     } catch (err) {
       setRequestError(err instanceof ApiError ? err.displayMessage : "ส่งคำขอไม่สำเร็จ");
@@ -124,38 +137,41 @@ export default function MyCouponsPage() {
     : null;
 
   return (
-    <div className="space-y-6">
-      <PageTitle title="คูปองของฉัน 🎟️" subtitle="คูปองที่ได้รับจากแฟน เรียงจากหมดอายุเร็วที่สุดก่อน" />
+    <div className="pocket-book space-y-6">
+      <header className="pocket-intro">
+        <div>
+          <p className="pocket-mono"><span className="pocket-foil" aria-hidden="true" />OUR LITTLE COUPON BOOK</p>
+          <h1 tabIndex={-1}>คูปองของฉัน</h1>
+          <p>คำสัญญาใบเล็ก ๆ เก็บไว้ใช้ด้วยกันนะ</p>
+        </div>
+        <div className="pocket-seal" aria-hidden="true"><small>JUST FOR</small><span>you & me</span><small>WITH LOVE</small></div>
+      </header>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="สถานะคูปอง">
+      <div className="status-tabs flex flex-wrap gap-2" role="group" aria-label="สถานะคูปอง">
         {[
           { id: "all", label: "ทั้งหมด" },
           { id: "available", label: "ใช้ได้" },
           { id: "pending", label: "รอแฟนยืนยัน" },
         ].map((item) => (
-          <Button
+          <button
             key={item.id}
             aria-pressed={task === item.id}
-            variant={task === item.id ? "primary" : "secondary"}
+            className="status-tab"
             onClick={() => setTask(item.id)}
           >
             {item.label}
-          </Button>
+          </button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="ประเภทคูปอง">
         {rarities.map((rarity) => (
           <button
             key={rarity}
             aria-pressed={filter === rarity}
             onClick={() => applyFilter(rarity)}
-            className={`min-h-12 rounded-full border px-3 py-2 text-sm transition-colors ${
-              filter === rarity
-                ? "border-control bg-love-soft font-semibold text-love"
-                : "border-control text-muted hover:bg-canvas"
-            }`}
+            className="rarity-filter"
           >
-            {rarity === "ALL" ? "ทั้งหมด" : <RarityBadge rarity={rarity} />}
+            {rarity === "ALL" ? "ทุกประเภท" : <RarityBadge rarity={rarity} />}
           </button>
         ))}
       </div>
@@ -173,83 +189,26 @@ export default function MyCouponsPage() {
           hint="ลองเปลี่ยนสถานะหรือประเภทคูปอง หรือเลือกของขวัญให้แฟนก่อนได้"
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {groups.map((group) => {
-            const usable = group.coupons.find((c) => c.available > 0) ?? group.coupons[0];
-            return (
-              <CouponCard rarity={group.rarity} key={group.key} className="flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-3xl">{group.emoji ?? "🎟️"}</p>
-                  <div className="flex flex-col items-end gap-1">
-                    <RarityBadge rarity={group.rarity} />
-                    {group.coupons.length > 1 ? (
-                      <span className="text-sm text-muted">รวม {group.coupons.length} ชุด</span>
-                    ) : null}
-                  </div>
-                </div>
-
-                <p className="font-semibold">
-                  {group.name}{" "}
-                  {group.totalAvailable > 1 ? (
-                    <span className="text-love">×{group.totalAvailable}</span>
-                  ) : null}
-                </p>
-                <p className="text-sm text-muted">{group.description}</p>
-                {group.terms ? <p className="text-sm text-muted">เงื่อนไข: {group.terms}</p> : null}
-
-                <div className="mt-1 flex flex-wrap gap-2 items-center justify-between rounded-lg bg-canvas px-3 py-1.5 text-sm">
-                  <span className={group.expiringSoon ? "font-semibold text-butter-ink" : "text-muted"}>
-                    หมดอายุ {formatDate(group.expiresAt)} (เหลือ {daysLeft(group.expiresAt)} วัน)
-                    {group.expiringSoon ? " ⚠️" : ""}
-                  </span>
-                  <span className="text-muted">
-                    ใช้ได้ {group.totalAvailable} ใบ
-                    {group.totalReserved > 0 ? ` · รอแฟนยืนยัน ${group.totalReserved} ใบ` : ""}
-                  </span>
-                </div>
-
-                <Button
-                  className="mt-auto"
-                  disabled={group.totalAvailable === 0}
-                  onClick={() => {
-                    setRequestError(null);
-                    setRequesting({ coupon: usable, message: "" });
-                  }}
-                >
-                  {group.totalAvailable === 0 ? "รอแฟนยืนยัน" : "ขอใช้คูปองนี้ 💞"}
-                </Button>
-              </CouponCard>
-            );
-          })}
+        <div key={`${task}-${filter}`} className="pocket-collection">
+          {groups.map((group) => (
+            <LoveTicket key={group.key} ticket={toTicket(group)} onOpen={() => {
+              setRequestError(null);
+              setSelected({ group });
+            }} />
+          ))}
         </div>
       )}
 
-      {requesting ? (
-        <Dialog title={`ขอใช้ “${requesting.coupon.name}”`} busy={busy} onClose={() => setRequesting(null)}>
-          <p className="text-sm text-muted">ระบบจะกันสิทธิ์ 1 ใบไว้ระหว่างรอแฟนยืนยัน</p>
-          <Field label="ข้อความถึงแฟน (ไม่บังคับ)">
-            <Textarea
-              disabled={busy}
-              value={requesting.message}
-              onChange={(e) => setRequesting({ ...requesting, message: e.target.value })}
-              maxLength={500}
-              placeholder="ขอใช้ตอนเย็นนี้นะ 🥺"
-            />
-          </Field>
-          <ErrorText message={requestError} />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              disabled={busy}
-              variant="secondary"
-              className="flex-1"
-              onClick={() => setRequesting(null)}
-            >
-              ยกเลิก
-            </Button>
-            <Button className="flex-1" onClick={submitRequest} disabled={busy}>
-              {busy ? "กำลังส่ง..." : "ส่งคำขอ"}
-            </Button>
-          </div>
+      <footer className="pocket-book-footer"><span>แต่ละใบ คือเวลาที่อยากให้กัน</span><LinkButton href="/catalog" variant="ghost">เลือกตั๋วให้แฟนบ้าง <span aria-hidden="true">↗</span></LinkButton></footer>
+
+      {selected ? (
+        <Dialog title={selected.group.name} busy={busy} className="ticket-dialog" onClose={() => setSelected(null)}>
+          <TicketDetail ticket={toTicket(selected.group)}>
+            {toTicket(selected.group).state === "available" ? <TicketRequest name={selected.group.name} busy={busy} error={requestError} onConfirm={submitRequest} onClose={() => setSelected(null)} /> : <>
+              <p className="pocket-terms">{toTicket(selected.group).state === "expired" ? "ใบนี้หมดอายุแล้ว เก็บคำสัญญาดี ๆ ไว้ได้นะ" : "คูปองนี้อยู่ระหว่างรอแฟนยืนยัน ยังขอใช้เพิ่มไม่ได้"}</p>
+              <div className="pocket-dialog-actions"><Button variant="secondary" onClick={() => setSelected(null)}>ปิด</Button><Button disabled>{toTicket(selected.group).state === "expired" ? "หมดอายุแล้ว" : "รอแฟนยืนยัน"}</Button></div>
+            </>}
+          </TicketDetail>
         </Dialog>
       ) : null}
     </div>

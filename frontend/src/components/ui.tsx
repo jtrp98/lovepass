@@ -27,7 +27,7 @@ const variants = {
   ghost: "text-muted hover:bg-canvas",
 };
 function buttonStyle(variant: Variant, className: string) {
-  return `inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-4 py-2 text-base font-semibold transition-[color,background-color,transform] motion-safe:active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`;
+  return `ui-button inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-4 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`;
 }
 export function Button({
   variant = "primary",
@@ -151,8 +151,9 @@ export function CouponCard({
 }) {
   return (
     <article
+      data-rarity={rarity}
       style={{ "--ticket-color": rarityStyles[rarity].color } as CSSProperties}
-      className={`coupon-ticket min-w-0 rounded-2xl border border-love-soft bg-surface p-5 text-ink shadow-sm ${className}`}
+      className={`coupon-ticket min-w-0 rounded-2xl border p-5 text-ink sm:p-6 ${className}`}
     >
       {children}
     </article>
@@ -217,7 +218,7 @@ export function ErrorState({ message, retry }: { message: string; retry: () => v
 }
 export function Notice({ children }: { children: ReactNode }) {
   return (
-    <p role="status" className="rounded-xl bg-mint-soft px-3 py-2 text-mint-ink">
+    <p role="status" className="love-notice rounded-xl bg-mint-soft px-3 py-2 text-mint-ink">
       ✓ {children}
     </p>
   );
@@ -237,11 +238,13 @@ export function Dialog({
   children,
   onClose,
   busy = false,
+  className = "",
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   busy?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null),
     titleId = useId();
@@ -280,7 +283,7 @@ export function Dialog({
         } else if (
           event.shiftKey &&
           (document.activeElement === first ||
-            document.activeElement === event.currentTarget.querySelector("h2"))
+            !controls.includes(document.activeElement as HTMLElement))
         ) {
           event.preventDefault();
           last.focus();
@@ -295,7 +298,7 @@ export function Dialog({
         e.preventDefault();
         if (!busy) onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md overflow-y-auto rounded-2xl bg-surface p-5 text-ink shadow-xl backdrop:bg-black/40"
+      className={`app-dialog fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md overflow-y-auto rounded-2xl bg-surface p-5 text-ink shadow-xl backdrop:bg-black/40 ${className}`}
     >
       <h2 id={titleId} tabIndex={-1} className="mb-4 text-xl">
         {title}
@@ -319,7 +322,7 @@ export function PageTitle({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="page-heading mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="min-w-0">
         <h1 tabIndex={-1} className="text-2xl text-ink">
           {title}

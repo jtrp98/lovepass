@@ -2,6 +2,8 @@ import type { Viewport } from "next";
 import localFont from "next/font/local";
 import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
+import "./vouchers.css";
+import "./pocket.css";
 
 const sarabun = localFont({
   variable: "--font-sarabun",
