@@ -9,7 +9,7 @@ const { chromium } = await import(
 );
 const BASE = process.env.UI_TEST_URL || "http://127.0.0.1:3000";
 assert.ok(["127.0.0.1", "localhost"].includes(new URL(BASE).hostname), "UI tests run only on localhost");
-const OUT = fileURLToPath(new URL("../../docs/ui-implementation/", import.meta.url));
+const OUT = process.env.UI_TEST_OUT || fileURLToPath(new URL("../../docs/ui-implementation/", import.meta.url));
 fs.mkdirSync(path.join(OUT, "screenshots"), { recursive: true });
 const user = {
   id: 1,
@@ -312,20 +312,42 @@ async function run() {
   await page.getByText("ใช้แล้ว", { exact: true }).waitFor();
   pass("review/Escape/cancel do not approve; confirm double click creates one request; focus returns");
   await go("/my-coupons");
-  await page.getByRole("button", { name: "ขอใช้คูปองนี้", exact: false }).first().waitFor();
+  await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().waitFor();
   assert.equal(await page.locator("article:visible").count(), 2);
-  await page.getByRole("button", { name: "ขอใช้คูปองนี้", exact: false }).first().click();
-  await page.getByLabel("ข้อความถึงแฟน (ไม่บังคับ)").fill("เก็บข้อความไว้เมื่อ retry");
+  assert.equal(await page.locator(".pocket-ticket").count(), 2);
+  assert.equal(await page.locator(".pocket-ticket .coupon-sticker").count(), 0);
+  await wait(700);
+  const ticketLayout = await page.locator(".pocket-ticket").first().evaluate((e) => ({
+    body: e.querySelector(".pocket-face").getBoundingClientRect().toJSON(),
+    stub: e.querySelector(".pocket-stub").getBoundingClientRect().toJSON(),
+  }));
+  assert.ok(ticketLayout.stub.top >= ticketLayout.body.bottom - 1, "stub stays below the ticket body: " + JSON.stringify(ticketLayout));
+  assert.equal(await page.locator("article").getByText(template.description, { exact: true }).count(), 2);
+  assert.equal(await page.locator("article").getByText("เงื่อนไข: " + template.terms, { exact: true }).count(), 0);
+  const requestCalls = () => state.calls.filter((c) => c.path === "/api/v1/redemptions" && c.method === "POST").length;
+  const beforeViewing = requestCalls();
+  await page.locator(".pocket-ticket").first().click({
+    position: { x: 24, y: 30 },
+  });
+  await page.getByRole("dialog").getByText(template.description, { exact: true }).waitFor();
+  await page.getByRole("dialog").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
+  assert.equal(requestCalls(), beforeViewing, "viewing details must not request a coupon");
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(requestCalls(), beforeViewing);
+  await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().click();
+  await page.getByLabel("ฝากข้อความถึงแฟน").fill("เก็บข้อความไว้เมื่อ retry");
   state.failRequest = true;
-  await page.getByRole("button", { name: "ส่งคำขอ", exact: true }).click();
+  await page.getByRole("button", { name: "ขอใช้ใบนี้", exact: false }).click();
+  await page.getByRole("button", { name: "ยืนยันส่งคำขอ", exact: true }).click();
   await page.getByRole("dialog").getByRole("alert").waitFor();
-  assert.equal(await page.getByLabel("ข้อความถึงแฟน (ไม่บังคับ)").inputValue(), "เก็บข้อความไว้เมื่อ retry");
+  assert.ok(await page.getByRole("dialog").getByText("เก็บข้อความไว้เมื่อ retry", { exact: true }).isVisible());
   await screenshot(page, "request-error-mobile");
   await page.setViewportSize({ width: 1280, height: 900 });
   await screenshot(page, "request-error-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
   state.failRequest = false;
-  await page.getByRole("button", { name: "ส่งคำขอ", exact: true }).dblclick();
+  await page.getByRole("button", { name: "ยืนยันส่งคำขอ", exact: true }).dblclick();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   assert.equal(state.payloads.at(-1).message, "เก็บข้อความไว้เมื่อ retry");
   pass("snapshot grouping separates terms/rarity; dialog error visible; retry preserves message");
@@ -355,7 +377,15 @@ async function run() {
   pass("quantity 100 bound; set send once with reviewed date; custom draft preserved");
   await screenshot(page, "gift-success-mobile");
   await go("/catalog");
-  await page.getByRole("button", { name: "เพิ่มลงของขวัญ" }).first().waitFor();
+  await page.getByRole("button", { name: "เปิดดูใบนี้", exact: false }).first().waitFor();
+  assert.equal(await page.locator("article").getByText(template.description, { exact: true }).count(), 2);
+  const cartBeforeViewing = await page.evaluate(() => localStorage.getItem("lovepass.giftCart"));
+  await page.getByRole("button", { name: "เปิดดูใบนี้", exact: false }).first().click();
+  await page.getByRole("dialog").getByText(template.description, { exact: true }).waitFor();
+  await page.getByRole("dialog").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
+  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
+  assert.equal(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")), cartBeforeViewing);
+  pass("ticket faces show notes; full details open without requesting or adding to cart");
   await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
   await wait(50);
   await page.getByRole("button", { name: "พิเศษ · RARE", exact: true }).click();
@@ -369,7 +399,10 @@ async function run() {
   await page.getByRole("button", { name: "พิเศษ · RARE", exact: true }).click();
   await wait(900);
   assert.equal(await page.locator("article:visible").count(), 1);
+  await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).click();
   await page.getByText("เงื่อนไข: เงื่อนไขอีกแบบ", { exact: true }).waitFor();
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
   pass("my-coupons slow filter preserves newer result");
   await go("/requests");
   await page.getByRole("button", { name: "คำขอที่ฉันส่ง", exact: true }).click();
@@ -458,7 +491,13 @@ async function run() {
   pass("45 route × viewport geometry checks including 320/375/390/430/1280; admin select >150px");
   await page.setViewportSize({ width: 390, height: 844 });
   await go("/catalog");
-  await page.getByRole("button", { name: "เพิ่มลงของขวัญ" }).first().click();
+  await page.getByRole("button", { name: "เปิดดูใบนี้", exact: false }).first().click();
+  const selectedQuantity = JSON.parse(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")))[0].quantity;
+  await page.getByRole("dialog").getByRole("button", { name: "เพิ่มลงของขวัญ" }).click();
+  await page.getByRole("dialog").getByRole("status").waitFor();
+  assert.equal(JSON.parse(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")))[0].quantity, Math.min(100, selectedQuantity + 1));
+  await screenshot(page, "catalog-details-mobile");
+  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
   const bars = await page.evaluate(() => ({
     nav: document.querySelector(".bottom-nav").getBoundingClientRect().toJSON(),
     cart: document.querySelector(".cart-bar").getBoundingClientRect().toJSON(),
@@ -491,6 +530,52 @@ async function run() {
   }));
   assert.equal(theme.bg, "rgb(255, 248, 243)");
   pass("OS dark preference keeps complete light theme; reduced motion CSS active");
+  assert.equal(await page.locator(".pocket-ticket").first().evaluate((e) => getComputedStyle(e).animationName), "none");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const originalCoupons = state.coupons;
+  state.coupons = [
+    { ...coupon, name: "ตั๋วกอดไม่อั้น", description: "กอดได้ตามใจ ไม่จำกัดเวลา", terms: "แสดงตั๋วแล้วขอกอดได้ทันที", available: 1, remaining: 2, expiresAt: new Date(Date.now() + 3 * 86400000).toISOString() },
+    { ...coupon, id: 12, name: "มื้อพิเศษสำหรับสองเรา", description: "เลือกร้านโปรด แล้วไปอร่อยด้วยกัน", terms: "เลือกวันที่เราทั้งคู่สะดวก", rarity: "RARE", emoji: "🍽️", expiringSoon: false },
+    { ...coupon, id: 13, name: "ตั๋วขอพร 1 ข้อ", description: "ขออะไรก็ได้ 1 อย่าง (ตามสมควร)", terms: "ห้ามขอสิ่งที่เป็นไปไม่ได้", rarity: "EPIC", emoji: "🌟", expiringSoon: false },
+    { ...coupon, id: 14, name: "หนึ่งวันตามใจเธอ", description: "วันธรรมดาที่เธอเป็นคนเลือกทุกอย่าง", terms: "ใช้ได้ 1 วัน ภายในวันที่กำหนด", rarity: "LEGENDARY", emoji: "👑", available: 0, expiringSoon: false },
+  ];
+  for (const width of [320, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await go("/my-coupons");
+    await page.locator("article").first().waitFor();
+    await page.evaluate(() => document.fonts.ready);
+    await wait(600);
+    assert.equal(await page.locator("article").count(), 4);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    assert.equal(await page.locator(".pocket-ticket").first().evaluate((e) => getComputedStyle(e).animationName), "none");
+    if (width >= 1024) {
+      const card = page.locator("article").first();
+      await card.hover();
+      await wait(250);
+      assert.notEqual(await card.evaluate((e) => getComputedStyle(e).transform), "none");
+      await page.mouse.move(0, 0);
+      await wait(250);
+    }
+    await screenshot(page, "coupons-refresh-" + width);
+  }
+  await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("dialog").waitFor();
+  assert.equal(await page.getByRole("dialog").evaluate((e) => getComputedStyle(e).animationName), "content-arrive");
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  const beforePendingView = requestCalls();
+  await page.getByRole("button", { name: "เปิดดูความทรงจำ", exact: false }).click();
+  await page.getByRole("dialog").getByText("เงื่อนไข: ใช้ได้ 1 วัน ภายในวันที่กำหนด", { exact: true }).waitFor();
+  assert.equal(await page.getByRole("dialog").getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).isDisabled(), true);
+  assert.equal(await page.getByRole("dialog").getByRole("textbox").count(), 0);
+  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
+  assert.equal(requestCalls(), beforePendingView);
+  pass("pending-only coupon details remain readable without allowing another request");
+  await page.getByRole("group", { name: "สถานะคูปอง" }).getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).click();
+  assert.equal(await page.locator("article").count(), 2);
+  state.coupons = originalCoupons;
+  pass("coupon refresh at 320/768/1024/1440: reflow, hover, entry/dialog motion, reduced motion, keyboard and pending filter");
   // Font network sizes are Resource Timing values, not gzip estimates.
   evidence.fonts = await page.evaluate(() =>
     performance

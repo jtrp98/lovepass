@@ -1,6 +1,8 @@
 import { ApiError } from "../src/lib/api.ts";
+import { couponCategories, resolveCategory } from "../src/lib/coupon-categories.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   safeReturnTo,
   authLink,
@@ -91,11 +93,24 @@ test("snapshot grouping never merges different terms, rarity or sender", () => {
   for (const patch of [
     { terms: "เงื่อนไขใหม่" },
     { rarity: "RARE" as const },
+    { category: "WISH" as const },
     { senderId: 3 },
     { description: "ใหม่" },
     { expiresAt: "2027-01-02T00:00:00Z" },
   ])
     assert.notEqual(couponGroupKey(coupon), couponGroupKey({ ...coupon, ...patch }));
+});
+
+test("categories use local reusable SVGs and safely handle legacy or unknown values", () => {
+  for (const [key, category] of Object.entries(couponCategories)) {
+    assert.equal(resolveCategory(key), key);
+    const svg = readFileSync(new URL("../public" + category.icon, import.meta.url), "utf8");
+    assert.match(svg, /id="drawing"/);
+    assert.match(svg, /viewBox="0 0 120 110"/);
+    assert.doesNotMatch(svg.replace("http://www.w3.org/2000/svg", ""), /<script|\bon\w+=|https?:\/\//i);
+  }
+  for (const value of [undefined, null, "", "__proto__", "UNKNOWN", "https://outside.invalid/icon.svg"])
+    assert.equal(resolveCategory(value), "OTHER");
 });
 
 test("invitation parsing accepts only existing contract and trusted app links", () => {
