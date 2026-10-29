@@ -1,0 +1,7 @@
+{
+  "checks": [
+    "7 external SVG assets render; category selects artwork, tier changes ink without changing the SVG; gallery reflows at 320/390/768/1440",
+    "admin create/edit submits and restores category independently of tier and coupon name"
+  ],
+  "consoleErrors": []
+}

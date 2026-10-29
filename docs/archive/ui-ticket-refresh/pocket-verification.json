@@ -1,0 +1,71 @@
+{
+  "checks": [
+    "two Thai coupons in available/used/expired states reflow at 320, 390, 768, 1024 and 1440; actions ≥44px",
+    "confirm/back preserves note; request waits for approval; only one of two wish sheets is consumed",
+    "whole-card tapping, Enter, Escape, focus trap and focus restoration work",
+    "320px text-spacing overrides reflow; reduced motion disables lift and transitions",
+    "8 paper/accent/state text color pairs exceed 4.5:1",
+    "real request integration: no POST before confirmation, errors retain message/quantity, retry locks duplicate clicks, refresh shows reserved sheet without used stamp",
+    "pending and expired real coupon details cannot submit a new request",
+    "catalog ticket detail preserves the gift cart action"
+  ],
+  "screenshots": [
+    "pocket-available-320.png",
+    "pocket-available-390.png",
+    "pocket-used-390.png",
+    "pocket-expired-390.png",
+    "pocket-available-768.png",
+    "pocket-available-1024.png",
+    "pocket-available-1440.png",
+    "pocket-cards-1440.png",
+    "pocket-used-1440.png",
+    "pocket-expired-1440.png",
+    "pocket-detail-390.png",
+    "pocket-confirm-390.png",
+    "pocket-stamped-390.png",
+    "pocket-product-320.png"
+  ],
+  "consoleErrors": [],
+  "contrast": [
+    {
+      "fg": "#30473f",
+      "bg": "#fff9f0",
+      "ratio": 9.558333894752572
+    },
+    {
+      "fg": "#62675e",
+      "bg": "#fff9f0",
+      "ratio": 5.5399542389621494
+    },
+    {
+      "fg": "#5a4077",
+      "bg": "#fff9f0",
+      "ratio": 8.240195908596307
+    },
+    {
+      "fg": "#30473f",
+      "bg": "#dcefe5",
+      "ratio": 8.34838890267936
+    },
+    {
+      "fg": "#5a4077",
+      "bg": "#e9e1f7",
+      "ratio": 6.809646063391231
+    },
+    {
+      "fg": "#a84458",
+      "bg": "#fff9f0",
+      "ratio": 5.5221611063302305
+    },
+    {
+      "fg": "#686057",
+      "bg": "#fff9f0",
+      "ratio": 5.901224734465139
+    },
+    {
+      "fg": "#62675e",
+      "bg": "#f5f2ea",
+      "ratio": 5.1839603715927565
+    }
+  ]
+}

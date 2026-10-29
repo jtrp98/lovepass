@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "/my-coupons at 320: no action text; full-size button; keyboard, press and stub click work",
+    "/catalog at 320: no action text; full-size button; keyboard, press and stub click work",
+    "/my-coupons at 390: no action text; full-size button; keyboard, press and stub click work",
+    "/catalog at 390: no action text; full-size button; keyboard, press and stub click work",
+    "/my-coupons at 1440: no action text; full-size button; keyboard, press and stub click work",
+    "/catalog at 1440: no action text; full-size button; keyboard, press and stub click work"
+  ],
+  "screenshots": [],
+  "layouts": [],
+  "contrast": [],
+  "fonts": [],
+  "consoleErrors": []
+}

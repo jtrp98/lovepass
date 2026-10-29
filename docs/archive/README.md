@@ -12,3 +12,9 @@
 | `ui-implementation-prompt.md` | prompt งานแก้ตามรายงาน (ช่วง 1–4) |
 | `ui-implementation-result.md` | สรุปผลงานแก้ พร้อม mapping กลับไปที่ findings |
 | `ui-implementation/` | evidence ของงานแก้ (screenshots, lint, bundle, test evidence) |
+
+## Coupon Categories + Pocket Ticket refresh (30 ตุลาคม 2026)
+
+| ไฟล์ | คืออะไร |
+| --- | --- |
+| `ui-ticket-refresh/` | evidence ของรอบ design refresh (design notes, pocket love ticket spec, verification JSON, screenshots) — spec หมวดหมู่คูปองที่ยังใช้อยู่คือ `docs/coupon-categories.md` |

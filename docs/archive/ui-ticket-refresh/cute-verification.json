@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "cute coupon layout and motion at 320",
+    "cute coupon layout and motion at 390",
+    "cute coupon layout and motion at 768",
+    "cute coupon layout and motion at 1024",
+    "cute coupon layout and motion at 1440",
+    "all decorative motion respects reduced motion; request dialog works with keyboard",
+    "catalog layout at 320",
+    "catalog layout at 768",
+    "catalog layout at 1440"
+  ],
+  "screenshots": [
+    "coupons-cute-320.png",
+    "coupons-cute-390.png",
+    "coupons-cute-768.png",
+    "coupons-cute-1024.png",
+    "coupons-cute-1440.png",
+    "catalog-cute-320.png",
+    "catalog-cute-768.png",
+    "catalog-cute-1440.png"
+  ],
+  "layouts": [],
+  "contrast": [],
+  "fonts": [],
+  "consoleErrors": []
+}

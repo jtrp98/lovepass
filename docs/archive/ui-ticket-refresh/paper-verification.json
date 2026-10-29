@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "paper ticket styling and stub tap without redemption at 320",
+    "paper ticket styling and stub tap without redemption at 390",
+    "paper ticket styling and stub tap without redemption at 768",
+    "paper ticket styling and stub tap without redemption at 1024",
+    "paper ticket styling and stub tap without redemption at 1440",
+    "paper catalog layout at 320",
+    "paper catalog layout at 768",
+    "paper catalog layout at 1440"
+  ],
+  "screenshots": [
+    "paper-coupons-320.png",
+    "paper-coupons-390.png",
+    "paper-coupons-768.png",
+    "paper-coupons-1024.png",
+    "paper-coupons-1440.png",
+    "paper-catalog-320.png",
+    "paper-catalog-768.png",
+    "paper-catalog-1440.png"
+  ],
+  "layouts": [],
+  "contrast": [],
+  "fonts": [],
+  "consoleErrors": []
+}

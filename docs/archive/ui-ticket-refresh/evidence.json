@@ -1,0 +1,594 @@
+{
+  "checks": [
+    "anonymous invite → login → original invitation",
+    "anonymous invite → register → original invitation",
+    "review/Escape/cancel do not approve; confirm double click creates one request; focus returns",
+    "snapshot grouping separates terms/rarity; dialog error visible; retry preserves message",
+    "quantity 100 bound; set send once with reviewed date; custom draft preserved",
+    "compact coupon cards hide descriptions; full details open without requesting or adding to cart",
+    "slow old filter response cannot overwrite newer selection",
+    "my-coupons slow filter preserves newer result",
+    "requests slow tab response cannot overwrite current direction",
+    "500 → retry recovery /dashboard",
+    "500 → retry recovery /catalog",
+    "500 → retry recovery /sets",
+    "500 → retry recovery /my-coupons",
+    "500 → retry recovery /gifts/new",
+    "500 → retry recovery /requests",
+    "500 → retry recovery /history",
+    "500 → retry recovery /sent-gifts",
+    "500 → retry recovery /couple",
+    "500 → retry recovery /admin/dashboard",
+    "500 → retry recovery /admin/coupons",
+    "500 → retry recovery /admin/sets",
+    "500 → retry recovery /admin/users",
+    "500 → retry recovery /admin/overview",
+    "failed set preview blocks send and supports retry",
+    "45 route × viewport geometry checks including 320/375/390/430/1280; admin select >150px",
+    "cart task bar sits above mobile navigation",
+    "text spacing overrides at 320/390/430 keep reflow and measured nav/cart separation",
+    "OS dark preference keeps complete light theme; reduced motion CSS active",
+    "pending-only coupon details remain readable without allowing another request",
+    "coupon refresh at 320/768/1024/1440: reflow, hover, entry/dialog motion, reduced motion, keyboard and pending filter",
+    "28 rendered text/control/focus contrast pairs meet assigned thresholds",
+    "10 empty list states render independently from errors",
+    "no-couple state offers invitation and checkout recovery",
+    "session 500 preserves token and recovers via retry",
+    "refresh 500 does not clear session",
+    "expired session clears token and preserves destination",
+    "invalid reset link has recovery; login inputs ≥16px and ≥48px in dark preference"
+  ],
+  "screenshots": [
+    "review-mobile.png",
+    "review-desktop.png",
+    "request-error-mobile.png",
+    "request-error-desktop.png",
+    "checkout-mobile.png",
+    "gift-success-mobile.png",
+    "dashboard-375.png",
+    "catalog-375.png",
+    "gifts-new-375.png",
+    "admin-sets-375.png",
+    "dashboard-390.png",
+    "catalog-390.png",
+    "gifts-new-390.png",
+    "admin-sets-390.png",
+    "dashboard-1280.png",
+    "catalog-1280.png",
+    "gifts-new-1280.png",
+    "admin-sets-1280.png",
+    "catalog-details-mobile.png",
+    "coupons-refresh-320.png",
+    "coupons-refresh-768.png",
+    "coupons-refresh-1024.png",
+    "coupons-refresh-1440.png",
+    "login-375.png",
+    "login-390.png",
+    "login-1280.png"
+  ],
+  "layouts": [
+    {
+      "route": "/dashboard",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/catalog",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/gifts/new",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/admin/sets",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/admin/coupons",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/admin/users",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/history",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/sent-gifts",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/sets",
+      "width": 320,
+      "scroll": 320,
+      "client": 320
+    },
+    {
+      "route": "/dashboard",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/catalog",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/gifts/new",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/admin/sets",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/admin/coupons",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/admin/users",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/history",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/sent-gifts",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/sets",
+      "width": 375,
+      "scroll": 375,
+      "client": 375
+    },
+    {
+      "route": "/dashboard",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/catalog",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/gifts/new",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/admin/sets",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/admin/coupons",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/admin/users",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/history",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/sent-gifts",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/sets",
+      "width": 390,
+      "scroll": 390,
+      "client": 390
+    },
+    {
+      "route": "/dashboard",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/catalog",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/gifts/new",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/admin/sets",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/admin/coupons",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/admin/users",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/history",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/sent-gifts",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/sets",
+      "width": 430,
+      "scroll": 430,
+      "client": 430
+    },
+    {
+      "route": "/dashboard",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/catalog",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/gifts/new",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/admin/sets",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/admin/coupons",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/admin/users",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/history",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/sent-gifts",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    },
+    {
+      "route": "/sets",
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280
+    }
+  ],
+  "contrast": [
+    {
+      "fg": "ink",
+      "bg": "mint-soft",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(223, 245, 232)",
+      "ratio": 12.399660563530984,
+      "minimum": 4.5
+    },
+    {
+      "fg": "ink",
+      "bg": "sky-soft",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(227, 240, 255)",
+      "ratio": 12.271649547109853,
+      "minimum": 4.5
+    },
+    {
+      "fg": "ink",
+      "bg": "lavender-soft",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(238, 229, 255)",
+      "ratio": 11.672685573563417,
+      "minimum": 4.5
+    },
+    {
+      "fg": "ink",
+      "bg": "butter-soft",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(255, 240, 184)",
+      "ratio": 12.429624524224653,
+      "minimum": 4.5
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "foreground": "rgb(113, 84, 95)",
+      "background": "rgb(255, 255, 255)",
+      "ratio": 6.69746164408295,
+      "minimum": 4.5
+    },
+    {
+      "fg": "love",
+      "bg": "canvas",
+      "foreground": "rgb(184, 50, 88)",
+      "background": "rgb(255, 248, 243)",
+      "ratio": 5.49434103450756,
+      "minimum": 4.5
+    },
+    {
+      "fg": "focus",
+      "bg": "love-soft",
+      "foreground": "rgb(108, 61, 145)",
+      "background": "rgb(255, 227, 235)",
+      "ratio": 6.425685111057535,
+      "minimum": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "lavender-soft",
+      "foreground": "rgb(108, 61, 145)",
+      "background": "rgb(238, 229, 255)",
+      "ratio": 6.369637596855773,
+      "minimum": 3
+    },
+    {
+      "fg": "control",
+      "bg": "love-soft",
+      "foreground": "rgb(137, 108, 120)",
+      "background": "rgb(255, 227, 235)",
+      "ratio": 3.8927705253349587,
+      "minimum": 3
+    },
+    {
+      "fg": "ink",
+      "bg": "canvas",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(255, 248, 243)",
+      "ratio": 13.486348707973196,
+      "minimum": 4.5
+    },
+    {
+      "fg": "ink",
+      "bg": "surface",
+      "foreground": "rgb(59, 36, 48)",
+      "background": "rgb(255, 255, 255)",
+      "ratio": 14.17968563495878,
+      "minimum": 4.5
+    },
+    {
+      "fg": "muted",
+      "bg": "canvas",
+      "foreground": "rgb(113, 84, 95)",
+      "background": "rgb(255, 248, 243)",
+      "ratio": 6.369979244652041,
+      "minimum": 4.5
+    },
+    {
+      "fg": "muted",
+      "bg": "love-soft",
+      "foreground": "rgb(113, 84, 95)",
+      "background": "rgb(255, 227, 235)",
+      "ratio": 5.5618482480495,
+      "minimum": 4.5
+    },
+    {
+      "fg": "love",
+      "bg": "surface",
+      "foreground": "rgb(184, 50, 88)",
+      "background": "rgb(255, 255, 255)",
+      "ratio": 5.7768066307311035,
+      "minimum": 4.5
+    },
+    {
+      "fg": "love",
+      "bg": "love-soft",
+      "foreground": "rgb(184, 50, 88)",
+      "background": "rgb(255, 227, 235)",
+      "ratio": 4.797298371516376,
+      "minimum": 4.5
+    },
+    {
+      "fg": "surface",
+      "bg": "love",
+      "foreground": "rgb(255, 255, 255)",
+      "background": "rgb(184, 50, 88)",
+      "ratio": 5.7768066307311035,
+      "minimum": 4.5
+    },
+    {
+      "fg": "surface",
+      "bg": "love-hover",
+      "foreground": "rgb(255, 255, 255)",
+      "background": "rgb(156, 38, 72)",
+      "ratio": 7.542005900098105,
+      "minimum": 4.5
+    },
+    {
+      "fg": "surface",
+      "bg": "danger",
+      "foreground": "rgb(255, 255, 255)",
+      "background": "rgb(180, 35, 53)",
+      "ratio": 6.49655856625107,
+      "minimum": 4.5
+    },
+    {
+      "fg": "surface",
+      "bg": "danger-hover",
+      "foreground": "rgb(255, 255, 255)",
+      "background": "rgb(144, 28, 42)",
+      "ratio": 8.803579228355375,
+      "minimum": 4.5
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "foreground": "rgb(180, 35, 53)",
+      "background": "rgb(253, 231, 235)",
+      "ratio": 5.508625855310761,
+      "minimum": 4.5
+    },
+    {
+      "fg": "mint-ink",
+      "bg": "mint-soft",
+      "foreground": "rgb(32, 93, 70)",
+      "background": "rgb(223, 245, 232)",
+      "ratio": 6.762347971894802,
+      "minimum": 4.5
+    },
+    {
+      "fg": "sky-ink",
+      "bg": "sky-soft",
+      "foreground": "rgb(33, 78, 120)",
+      "background": "rgb(227, 240, 255)",
+      "ratio": 7.492557718091944,
+      "minimum": 4.5
+    },
+    {
+      "fg": "lavender-ink",
+      "bg": "lavender-soft",
+      "foreground": "rgb(86, 53, 128)",
+      "background": "rgb(238, 229, 255)",
+      "ratio": 7.798843016216336,
+      "minimum": 4.5
+    },
+    {
+      "fg": "butter-ink",
+      "bg": "butter-soft",
+      "foreground": "rgb(112, 73, 0)",
+      "background": "rgb(255, 240, 184)",
+      "ratio": 6.967603408640761,
+      "minimum": 4.5
+    },
+    {
+      "fg": "control",
+      "bg": "surface",
+      "foreground": "rgb(137, 108, 120)",
+      "background": "rgb(255, 255, 255)",
+      "ratio": 4.687593066170165,
+      "minimum": 3
+    },
+    {
+      "fg": "control",
+      "bg": "canvas",
+      "foreground": "rgb(137, 108, 120)",
+      "background": "rgb(255, 248, 243)",
+      "ratio": 4.458386195501286,
+      "minimum": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "foreground": "rgb(108, 61, 145)",
+      "background": "rgb(255, 255, 255)",
+      "ratio": 7.737675975491612,
+      "minimum": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "canvas",
+      "foreground": "rgb(108, 61, 145)",
+      "background": "rgb(255, 248, 243)",
+      "ratio": 7.359330741262226,
+      "minimum": 3
+    }
+  ],
+  "fonts": [
+    {
+      "name": "sarabun_400-s.p.2epet27hlnv7u.woff2",
+      "transferSize": 20308,
+      "encodedBodySize": 20008,
+      "decodedBodySize": 20008
+    },
+    {
+      "name": "sarabun_600-s.p.3wi-l8v94bh_s.woff2",
+      "transferSize": 20328,
+      "encodedBodySize": 20028,
+      "decodedBodySize": 20028
+    },
+    {
+      "name": "geist-latin.woff2",
+      "transferSize": 28656,
+      "encodedBodySize": 28356,
+      "decodedBodySize": 28356
+    },
+    {
+      "name": "mali_600-s.2iac7nm8r-x83.woff2",
+      "transferSize": 32144,
+      "encodedBodySize": 31844,
+      "decodedBodySize": 31844
+    }
+  ],
+  "consoleErrors": []
+}

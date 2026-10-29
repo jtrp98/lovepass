@@ -40,6 +40,21 @@ npm run dev
 
 ## Tests
 
+### คู่รักตัวอย่างสำหรับดู UI
+
+เปิด API และ frontend ตามขั้นตอนด้านบน แล้วรันจากโฟลเดอร์ root (PowerShell):
+
+```powershell
+$env:DEMO_PASSWORD = '<ตั้งรหัสผ่านตัวอย่างอย่างน้อย 8 ตัว มีตัวเลขและตัวพิมพ์เล็ก>'
+node scripts/seed-demo.mjs
+```
+
+สคริปต์สร้าง **มิ้นท์** (`mint@demo.lovepass.test`) และ **ภูมิ** (`phum@demo.lovepass.test`)
+จับคู่และมอบคูปองให้กัน มีคูปองทุกประเภทในคลัง คูปองใกล้หมดอายุ และคำขอรอยืนยัน
+เข้าบัญชีใดก็ได้ด้วยรหัสผ่านที่ตั้งไว้ แล้วเปิด `http://localhost:3000/my-coupons`
+รันซ้ำด้วยรหัสเดิมได้โดยไม่สร้างบัญชีหรือของขวัญที่ยังไม่หมดอายุซ้ำ
+สคริปต์รับเฉพาะ API บน localhost และเพิ่มข้อมูลในฐานข้อมูลที่ API นั้นเชื่อมต่ออยู่
+
 ```bash
 cd backend && dotnet test        # unit tests (domain logic)
 node scripts/api-smoke.mjs       # E2E ผ่าน API จริง (API ต้องรันอยู่ + DB พร้อม)
