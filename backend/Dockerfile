@@ -4,12 +4,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY backend/LovePass.sln ./
 COPY backend/src/LovePass.Domain/LovePass.Domain.csproj src/LovePass.Domain/
 COPY backend/src/LovePass.Application/LovePass.Application.csproj src/LovePass.Application/
 COPY backend/src/LovePass.Infrastructure/LovePass.Infrastructure.csproj src/LovePass.Infrastructure/
 COPY backend/src/LovePass.WebApi/LovePass.WebApi.csproj src/LovePass.WebApi/
-RUN dotnet restore
+RUN dotnet restore src/LovePass.WebApi/LovePass.WebApi.csproj
 
 COPY backend/src ./src
 RUN dotnet publish src/LovePass.WebApi -c Release -o /app/publish --no-restore
