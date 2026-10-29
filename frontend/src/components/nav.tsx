@@ -1,102 +1,134 @@
 "use client";
-
-import { useAuth } from "@/lib/auth";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-
-const userLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/catalog", label: "คลังคูปอง" },
-  { href: "/sets", label: "ชุดคูปอง" },
-  { href: "/my-coupons", label: "คูปองของฉัน" },
-  { href: "/gifts/new", label: "มอบคูปอง" },
-  { href: "/requests", label: "คำขอใช้" },
-  { href: "/history", label: "ประวัติ" },
-  { href: "/couple", label: "คู่ของฉัน" },
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+const links = [
+  { href: "/dashboard", label: "หน้าแรก", icon: "M3 10 12 3l9 7v11h-6v-7H9v7H3Z" },
+  {
+    href: "/catalog",
+    label: "เลือกของขวัญ",
+    icon: "M3 8h18v4H3z M5 12v9h14v-9 M12 8v13 M12 8C2 8 5 0 9 4l3 4c10 0 7-8 3-4Z",
+  },
+  { href: "/my-coupons", label: "คูปองฉัน", icon: "M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4Z M15 5v14" },
+  { href: "/requests", label: "คำขอ", icon: "M3 5h18v14H3Z m0 0 9 8 9-8" },
+  { href: "/more", label: "เพิ่มเติม", icon: "M4 6h16 M4 12h16 M4 18h16" },
 ];
-
 export function Navbar() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-
+  const { user } = useAuth(),
+    pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = navRef.current!;
+    const measure = () =>
+      document.documentElement.style.setProperty(
+        "--nav-height",
+        window.matchMedia("(min-width: 768px)").matches ? "0px" : `${nav.getBoundingClientRect().height}px`,
+      );
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    measure();
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--nav-height");
+    };
+  }, []);
   return (
-    <header className="sticky top-0 z-30 border-b border-rose-100 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-2.5">
-        <Link href="/dashboard" className="mr-2 shrink-0 text-lg font-bold text-rose-600">
-          💝 LOVE PASS
-        </Link>
-
-        <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
-          {userLinks.map((link) => {
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm transition-colors ${
-                  active ? "bg-rose-100 font-semibold text-rose-700" : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-          {user?.isAdmin ? (
-            <Link
-              href="/admin/dashboard"
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm ${
-                pathname.startsWith("/admin") ? "bg-purple-100 font-semibold text-purple-700" : "text-purple-600 hover:bg-purple-50"
-              }`}
-            >
-              Admin
-            </Link>
-          ) : null}
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-2 pl-2">
-          <span className="hidden text-sm text-gray-500 sm:block">{user?.displayName}</span>
-          <button
-            className="rounded-full px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100"
-            onClick={() => {
-              logout();
-              router.push("/login");
-            }}
+    <>
+      <header className="border-b border-love-soft bg-surface">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex min-h-12 items-center font-display text-xl font-semibold text-love"
           >
-            ออกจากระบบ
-          </button>
+            ♡ LOVE PASS
+          </Link>
+          <span className="text-sm text-muted">{user?.displayName}</span>
         </div>
-      </div>
-    </header>
+      </header>
+      <nav
+        ref={navRef}
+        aria-label="เมนูหลัก"
+        className="bottom-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-control bg-surface md:static md:mx-auto md:w-full md:max-w-5xl md:rounded-b-2xl md:border-t-0"
+      >
+        {links.map((link) => {
+          const active =
+            link.href === "/catalog"
+              ? ["/catalog", "/sets", "/gifts/new"].includes(pathname)
+              : link.href === "/more"
+                ? ["/more", "/history", "/couple", "/couple/accept", "/sent-gifts"].includes(pathname)
+                : pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-center text-xs md:min-h-16 md:flex-row md:gap-2 md:text-base ${active ? "bg-love-soft font-semibold text-love" : "text-muted hover:bg-canvas"}`}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d={link.icon} />
+              </svg>
+              <span>{link.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }
-
+export function GiftViews() {
+  const pathname = usePathname();
+  return (
+    <nav aria-label="วิธีเลือกของขวัญ" className="flex flex-wrap gap-2">
+      {[
+        { href: "/catalog", label: "เลือกเอง" },
+        { href: "/sets", label: "เลือกเป็นชุด" },
+      ].map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          aria-current={pathname === link.href ? "page" : undefined}
+          className={`inline-flex min-h-12 items-center rounded-full border border-control px-4 ${pathname === link.href ? "bg-love-soft font-semibold text-love" : "bg-surface text-muted"}`}
+        >
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
 export function AdminNav() {
   const pathname = usePathname();
-  const links = [
-    { href: "/admin/dashboard", label: "ภาพรวม" },
-    { href: "/admin/coupons", label: "Coupon Templates" },
-    { href: "/admin/sets", label: "Coupon Sets" },
-    { href: "/admin/users", label: "ผู้ใช้" },
-    { href: "/admin/overview", label: "รายการทั้งหมด" },
-  ];
-
   return (
-    <nav className="flex items-center gap-1 overflow-x-auto rounded-xl border border-purple-200 bg-purple-50 p-1.5">
-      {links.map((link) => {
-        const active = pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`shrink-0 rounded-lg px-3 py-1.5 text-sm ${
-              active ? "bg-white font-semibold text-purple-700 shadow-sm" : "text-purple-600 hover:bg-purple-100"
-            }`}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
+    <nav
+      aria-label="จัดการระบบ"
+      className="grid grid-cols-2 gap-2 rounded-2xl bg-lavender-soft p-2 md:grid-cols-5"
+    >
+      {[
+        { href: "/admin/dashboard", label: "ภาพรวม" },
+        { href: "/admin/coupons", label: "ต้นแบบคูปอง" },
+        { href: "/admin/sets", label: "ชุดคูปอง" },
+        { href: "/admin/users", label: "ผู้ใช้" },
+        { href: "/admin/overview", label: "กิจกรรม" },
+      ].map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          aria-current={pathname === link.href ? "page" : undefined}
+          className={`flex min-h-12 items-center justify-center rounded-xl px-3 text-center text-sm text-lavender-ink ${pathname === link.href ? "bg-surface font-semibold" : "hover:bg-surface"}`}
+        >
+          {link.label}
+        </Link>
+      ))}
     </nav>
   );
 }

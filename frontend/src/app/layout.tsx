@@ -1,16 +1,25 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Viewport } from "next";
+import localFont from "next/font/local";
 import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const sarabun = localFont({
+  variable: "--font-sarabun",
+  src: [
+    { path: "./fonts/sarabun-400.woff2", weight: "400" },
+    { path: "./fonts/sarabun-600.woff2", weight: "600" },
+  ],
+  display: "swap",
+});
+const mali = localFont({
+  variable: "--font-mali",
+  src: "./fonts/mali-600.woff2",
+  weight: "600",
+  display: "swap",
+  preload: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export const metadata = {
   title: "LOVE PASS — คูปองรักสำหรับสองเรา",
@@ -19,11 +28,8 @@ export const metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="th"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-rose-50/40 text-gray-900">
+    <html lang="th" className={`${sarabun.variable} ${mali.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

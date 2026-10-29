@@ -1,17 +1,27 @@
 "use client";
 
-import { Button, Card, ErrorText, Field, Input, PageTitle, RarityBadge, Textarea, formatDate } from "@/components/ui";
+import {
+  Button,
+  Card,
+  LinkButton,
+  Select,
+  Skeleton,
+  Notice,
+  ErrorState,
+  ErrorText,
+  Field,
+  Input,
+  PageTitle,
+  RarityBadge,
+  Textarea,
+  formatDate,
+} from "@/components/ui";
+import { defaultExpiry, localDate, expiryInstant, quantityBound } from "@/lib/flow";
 import { ApiError, api, giftCart } from "@/lib/api";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import type { CoupleInfo, CouponSet, GiftResult } from "@/types";
-
-function defaultExpiry(): string {
-  const date = new Date();
-  date.setMonth(date.getMonth() + 3);
-  return date.toISOString().slice(0, 10);
-}
 
 function NewGiftForm() {
   const searchParams = useSearchParams();
@@ -28,9 +38,32 @@ function NewGiftForm() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<GiftResult | null>(null);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [setsReady, setSetsReady] = useState(false);
+  const [setsError, setSetsError] = useState<string | null>(null);
+  const lock = useRef(false);
+  async function loadCouple() {
+    setLoadError(null);
+    setCouple(undefined);
+    try {
+      setCouple(await api.couples.me());
+    } catch {
+      setLoadError("โหลดผู้รับไม่สำเร็จ กรุณาลองอีกครั้ง");
+    }
+  }
+  async function loadSets() {
+    setSetsReady(false);
+    setSetsError(null);
+    try {
+      setSets(await api.catalog.sets());
+      setSetsReady(true);
+    } catch {
+      setSetsError("โหลดชุดคูปองไม่สำเร็จ กรุณาลองอีกครั้ง");
+    }
+  }
   useEffect(() => {
-    api.couples.me().then(setCouple).catch(() => setCouple(null));
-    api.catalog.sets().then(setSets).catch(() => setSets([]));
+    void loadCouple();
+    void loadSets();
   }, []);
 
   useEffect(() => {
@@ -40,7 +73,7 @@ function NewGiftForm() {
   function updateQuantity(templateId: number, quantity: number) {
     setCart((prev) => {
       const next = prev
-        .map((i) => (i.couponTemplateId === templateId ? { ...i, quantity } : i))
+        .map((i) => (i.couponTemplateId === templateId ? { ...i, quantity: quantityBound(quantity) } : i))
         .filter((i) => i.quantity > 0);
       giftCart.write(next);
       return next;
@@ -49,6 +82,7 @@ function NewGiftForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (lock.current) return;
     setError(null);
 
     if (!couple) {
@@ -61,7 +95,26 @@ function NewGiftForm() {
       return;
     }
 
-    const expiresAtUtc = new Date(`${expiresAt}T23:59:59`).toISOString();
+    if (
+      selectedSetId !== null &&
+      (!setsReady || !sets.some((s) => s.id === selectedSetId && s.items.length > 0))
+    ) {
+      setError("ยังโหลดรายการของชุดที่เลือกไม่สำเร็จ กรุณาตรวจชุดอีกครั้ง");
+      return;
+    }
+    if (
+      !selectedSetId &&
+      cart.some((i) => i.quantity < 1 || i.quantity > 100 || !Number.isInteger(i.quantity))
+    ) {
+      setError("จำนวนคูปองต้องอยู่ระหว่าง 1–100 ใบ");
+      return;
+    }
+    const expiresAtUtc = expiryInstant(expiresAt);
+    if (!expiresAtUtc) {
+      setError("กรุณาเลือกวันหมดอายุตั้งแต่วันนี้เป็นต้นไป");
+      return;
+    }
+    lock.current = true;
     setSubmitting(true);
 
     try {
@@ -79,12 +132,15 @@ function NewGiftForm() {
             items: cart.map(({ couponTemplateId, quantity }) => ({ couponTemplateId, quantity })),
           });
 
-      giftCart.clear();
-      setCart([]);
+      if (!selectedSetId) {
+        giftCart.clear();
+        setCart([]);
+      }
       setResult(gift);
     } catch (err) {
       setError(err instanceof ApiError ? err.displayMessage : "มอบคูปองไม่สำเร็จ");
     } finally {
+      lock.current = false;
       setSubmitting(false);
     }
   }
@@ -92,14 +148,21 @@ function NewGiftForm() {
   if (result) {
     return (
       <Card className="space-y-4 text-center">
-        <p className="text-5xl">🎉</p>
-        <h1 className="text-xl font-bold">มอบคูปองสำเร็จ!</h1>
-        <p className="text-gray-600">
-          มอบให้ {couple?.partnerDisplayName} รวม {result.totalCoupons} ใบ หมดอายุ {formatDate(result.expiresAt)}
+        <p aria-hidden="true" className="success-pop text-5xl">
+          💝
+        </p>
+        <Notice>ของขวัญส่งถึงแฟนแล้ว</Notice>
+        <h1 className="text-xl font-semibold">มอบคูปองสำเร็จ!</h1>
+        <p className="text-muted">
+          มอบให้ {couple?.partnerDisplayName} รวม {result.totalCoupons} ใบ หมดอายุ{" "}
+          {formatDate(result.expiresAt)}
         </p>
         <ul className="mx-auto max-w-sm space-y-1 text-sm">
           {result.items.map((item) => (
-            <li key={item.couponTemplateId} className="flex items-center justify-between rounded-lg bg-rose-50 px-3 py-1.5">
+            <li
+              key={item.couponTemplateId}
+              className="flex items-center justify-between rounded-lg bg-love-soft px-3 py-1.5"
+            >
               <span>
                 {item.emoji ?? "🎟️"} {item.name}
               </span>
@@ -107,27 +170,26 @@ function NewGiftForm() {
             </li>
           ))}
         </ul>
-        <div className="flex justify-center gap-2">
-          <Link href="/my-coupons">
-            <Button variant="secondary">ดูคูปองของฉัน</Button>
-          </Link>
-          <Button onClick={() => router.push("/dashboard")}>กลับ Dashboard</Button>
+        <div className="flex flex-wrap justify-center gap-2">
+          <LinkButton href="/sent-gifts" variant="secondary">
+            ดูของขวัญที่ส่ง
+          </LinkButton>
+          <Button onClick={() => router.push("/dashboard")}>กลับบ้านของเรา</Button>
         </div>
       </Card>
     );
   }
 
-  if (couple === undefined) return <p className="text-gray-400">กำลังโหลด...</p>;
+  if (loadError) return <ErrorState message={loadError} retry={loadCouple} />;
+  if (couple === undefined) return <Skeleton />;
 
   if (couple === null) {
     return (
       <Card className="space-y-3 text-center">
         <p className="text-4xl">💞</p>
-        <p className="font-semibold">ยังไม่ได้จับคู่</p>
-        <p className="text-sm text-gray-600">ต้องจับคู่กับแฟนก่อนจึงจะมอบคูปองได้</p>
-        <Link href="/couple">
-          <Button>ไปจับคู่</Button>
-        </Link>
+        <h1 className="font-semibold">ยังไม่ได้จับคู่</h1>
+        <p className="text-sm text-muted">ต้องจับคู่กับแฟนก่อนจึงจะมอบคูปองได้</p>
+        <LinkButton href="/couple">ไปจับคู่</LinkButton>
       </Card>
     );
   }
@@ -141,77 +203,136 @@ function NewGiftForm() {
         subtitle={`ผู้รับ: ${couple.partnerDisplayName} — เลือกคูปองเอง หรือเลือกชุดสำเร็จรูป`}
       />
 
-      <Card className="space-y-3">
-        <Field label="เลือกชุดสำเร็จรูป (ถ้าเลือกชุด จะมอบตามเนื้อหาชุดนั้น)">
-          <select
-            value={selectedSetId ?? ""}
-            onChange={(e) => setSelectedSetId(e.target.value ? Number(e.target.value) : null)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
-          >
-            <option value="">— เลือกเองจากตะกร้า —</option>
-            {sets.map((set) => (
-              <option key={set.id} value={set.id}>
-                {set.name} (รวม {set.totalCoupons} ใบ)
-              </option>
-            ))}
-          </select>
-        </Field>
+      <fieldset disabled={submitting}>
+        <Card className="space-y-3">
+          <h2>ทบทวนรายการก่อนส่ง</h2>
+          <p className="text-sm text-muted">
+            เลือกเองจากตะกร้า หรือเลือกชุดสำเร็จรูป — รายการเลือกเองจะเก็บไว้เมื่อส่งเป็นชุด
+          </p>
+          {setsError && <ErrorState message={setsError} retry={loadSets} />}
+          <Field label="รูปแบบของขวัญ">
+            <Select
+              value={selectedSetId ?? ""}
+              onChange={(e) => setSelectedSetId(e.target.value ? Number(e.target.value) : null)}
+              disabled={submitting}
+            >
+              <option value="">— เลือกเองจากตะกร้า —</option>
+              {sets.map((set) => (
+                <option key={set.id} value={set.id}>
+                  {set.name} (รวม {set.totalCoupons} ใบ)
+                </option>
+              ))}
+            </Select>
+          </Field>
 
-        {selectedSet ? (
-          <div className="rounded-lg bg-rose-50 p-3 text-sm">
-            <p className="font-semibold">{selectedSet.name}</p>
-            <p className="mt-1 text-gray-600">
-              {selectedSet.items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700">
-              ตะกร้าคูปอง ({cart.reduce((sum, i) => sum + i.quantity, 0)} ใบ) —{" "}
-              <Link href="/catalog" className="text-rose-600 hover:underline">
-                ไปเลือกเพิ่มที่คลังคูปอง
-              </Link>
-            </p>
-            {cart.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-400">
-                ยังไม่มีคูปองในตะกร้า
+          {selectedSetId !== null && !selectedSet ? (
+            <p role="status">{setsReady ? "ไม่พบชุดที่เลือก กรุณาเลือกใหม่" : "กำลังโหลดรายการชุด…"}</p>
+          ) : selectedSet ? (
+            <div className="rounded-lg bg-love-soft p-3 text-sm">
+              <p className="font-semibold">{selectedSet.name}</p>
+              <p className="mt-1 text-muted">
+                {selectedSet.items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
               </p>
-            ) : (
-              cart.map((item) => (
-                <div key={item.couponTemplateId} className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2">
-                  <span className="flex items-center gap-2 text-sm">
-                    <span className="text-lg">{item.emoji ?? "🎟️"}</span>
-                    {item.name}
-                    <RarityBadge rarity={item.rarity} />
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Button type="button" size="sm" variant="ghost" onClick={() => updateQuantity(item.couponTemplateId, item.quantity - 1)}>
-                      −
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted">
+                ตะกร้าคูปอง ({cart.reduce((sum, i) => sum + i.quantity, 0)} ใบ) —{" "}
+                <Link href="/catalog" className="text-love hover:underline">
+                  ไปเลือกเพิ่มที่คลังคูปอง
+                </Link>
+              </p>
+              {cart.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-control p-4 text-center text-sm text-muted">
+                  ยังไม่มีคูปองในตะกร้า
+                </p>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={item.couponTemplateId}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-control p-3"
+                  >
+                    <span className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-lg">{item.emoji ?? "🎟️"}</span>
+                      {item.name}
+                      <RarityBadge rarity={item.rarity} />
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        aria-label={`ลดจำนวน ${item.name}`}
+                        disabled={submitting || item.quantity <= 1}
+                        onClick={() => updateQuantity(item.couponTemplateId, item.quantity - 1)}
+                      >
+                        −
+                      </Button>
+                      <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        aria-label={`เพิ่มจำนวน ${item.name}`}
+                        disabled={submitting || item.quantity >= 100}
+                        onClick={() => updateQuantity(item.couponTemplateId, item.quantity + 1)}
+                      >
+                        +
+                      </Button>
+                    </span>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={submitting}
+                      aria-label={`ลบ ${item.name} ออกจากของขวัญ`}
+                      onClick={() => {
+                        const next = cart.filter((i) => i.couponTemplateId !== item.couponTemplateId);
+                        setCart(next);
+                        giftCart.write(next);
+                      }}
+                    >
+                      ลบรายการ
                     </Button>
-                    <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                    <Button type="button" size="sm" variant="ghost" onClick={() => updateQuantity(item.couponTemplateId, item.quantity + 1)}>
-                      +
-                    </Button>
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </Card>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </Card>
+      </fieldset>
 
-      <Card className="grid gap-4 sm:grid-cols-2">
-        <Field label="วันหมดอายุ">
-          <Input type="date" value={expiresAt} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExpiresAt(e.target.value)} required />
-        </Field>
-        <Field label="ข้อความถึงแฟน (ไม่บังคับ)">
-          <Textarea value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} placeholder="สุขสันต์วันครบรอบนะ 💕" />
-        </Field>
-      </Card>
+      <fieldset disabled={submitting}>
+        <Card className="grid gap-4 sm:grid-cols-2">
+          <Field label="วันหมดอายุ">
+            <Input
+              type="date"
+              value={expiresAt}
+              min={localDate()}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              required
+            />
+          </Field>
+          <Field label="ข้อความถึงแฟน (ไม่บังคับ)">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={500}
+              placeholder="สุขสันต์วันครบรอบนะ 💕"
+            />
+          </Field>
+        </Card>
+      </fieldset>
 
       <ErrorText message={error} />
 
-      <Button type="submit" disabled={submitting} className="w-full py-3 text-base">
+      <Button
+        type="submit"
+        disabled={
+          submitting ||
+          (selectedSetId !== null ? !setsReady || !selectedSet?.items.length : cart.length === 0)
+        }
+        className="w-full py-3 text-base"
+      >
         {submitting ? "กำลังมอบ..." : "ยืนยันมอบคูปอง 💝"}
       </Button>
     </form>
@@ -220,7 +341,7 @@ function NewGiftForm() {
 
 export default function NewGiftPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<Skeleton />}>
       <NewGiftForm />
     </Suspense>
   );

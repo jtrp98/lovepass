@@ -1,24 +1,23 @@
 "use client";
 
-import { Button, Card, EmptyState, ErrorText, PageTitle, RarityBadge, formatDateTime } from "@/components/ui";
+import {
+  Button,
+  Card,
+  Dialog,
+  StatusBadge,
+  Notice,
+  Skeleton,
+  ErrorState,
+  LinkButton,
+  EmptyState,
+  ErrorText,
+  PageTitle,
+  RarityBadge,
+  formatDateTime,
+} from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Redemption } from "@/types";
-
-const statusStyles: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  CANCELLED: "bg-gray-100 text-gray-500",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusStyles[status] ?? statusStyles.CANCELLED}`}>
-      {status}
-    </span>
-  );
-}
 
 export default function RequestsPage() {
   const [direction, setDirection] = useState<"received" | "sent">("received");
@@ -27,14 +26,21 @@ export default function RequestsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
+  const [review, setReview] = useState<Redemption | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const lock = useRef(false);
+  const sequence = useRef(0);
+
   async function load(dir: "received" | "sent") {
+    const current = ++sequence.current;
     setItems(null);
     setError(null);
     try {
-      setItems(await api.redemptions.list(dir));
+      const data = await api.redemptions.list(dir);
+      if (current === sequence.current) setItems(data);
     } catch (err) {
-      setError(err instanceof ApiError ? err.displayMessage : "โหลดคำขอไม่สำเร็จ");
-      setItems([]);
+      if (current === sequence.current)
+        setError(err instanceof ApiError ? err.displayMessage : "โหลดคำขอไม่สำเร็จ");
     }
   }
 
@@ -43,6 +49,9 @@ export default function RequestsPage() {
   }, [direction]);
 
   async function act(id: number, action: "approve" | "reject" | "cancel") {
+    if (lock.current) return;
+    lock.current = true;
+    setActionError(null);
     setBusyId(id);
     setError(null);
     setNotice(null);
@@ -50,11 +59,21 @@ export default function RequestsPage() {
       if (action === "approve") await api.redemptions.approve(id);
       if (action === "reject") await api.redemptions.reject(id);
       if (action === "cancel") await api.redemptions.cancel(id);
-      setNotice(action === "approve" ? "อนุมัติคำขอเรียบร้อย ✅" : action === "reject" ? "ปฏิเสธคำขอแล้ว คืนสิทธิ์ให้แฟน" : "ยกเลิกคำขอแล้ว ได้สิทธิ์คืน");
+      setNotice(
+        action === "approve"
+          ? "อนุมัติคำขอเรียบร้อย ✅"
+          : action === "reject"
+            ? "ปฏิเสธคำขอแล้ว คืนสิทธิ์ให้แฟน"
+            : "ยกเลิกคำขอแล้ว ได้สิทธิ์คืน",
+      );
+      setReview(null);
       await load(direction);
     } catch (err) {
-      setError(err instanceof ApiError ? err.displayMessage : "ดำเนินการไม่สำเร็จ");
+      const message = err instanceof ApiError ? err.displayMessage : "ดำเนินการไม่สำเร็จ";
+      if (action === "approve") setActionError(message);
+      else setError(message);
     } finally {
+      lock.current = false;
       setBusyId(null);
     }
   }
@@ -63,15 +82,17 @@ export default function RequestsPage() {
     <div className="space-y-6">
       <PageTitle title="คำขอใช้คูปอง 💌" subtitle="อนุมัติ/ปฏิเสธคำขอของแฟน หรือดูคำขอที่ฉันส่งไป" />
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(["received", "sent"] as const).map((dir) => (
           <button
             key={dir}
+            disabled={busyId !== null || review !== null}
+            aria-pressed={direction === dir}
             onClick={() => setDirection(dir)}
-            className={`rounded-full border px-4 py-1.5 text-sm transition ${
+            className={`min-h-12 rounded-full border px-4 py-2 text-sm transition ${
               direction === dir
-                ? "border-rose-400 bg-rose-100 font-semibold text-rose-700"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                ? "border-control bg-love-soft font-semibold text-love"
+                : "border-control text-muted hover:bg-canvas"
             }`}
           >
             {dir === "received" ? "คำขอที่ต้องพิจารณา" : "คำขอที่ฉันส่ง"}
@@ -79,13 +100,19 @@ export default function RequestsPage() {
         ))}
       </div>
 
-      {notice ? <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{notice}</p> : null}
-      <ErrorText message={error} />
+      {notice && <Notice>{notice}</Notice>}
 
-      {!items ? (
-        <p className="text-gray-400">กำลังโหลด...</p>
+      {error ? (
+        <ErrorState message={error} retry={() => load(direction)} />
+      ) : !items ? (
+        <Skeleton />
       ) : items.length === 0 ? (
         <EmptyState
+          action={
+            <LinkButton href={direction === "sent" ? "/my-coupons" : "/dashboard"} variant="secondary">
+              {direction === "sent" ? "ดูคูปองฉัน" : "กลับบ้านของเรา"}
+            </LinkButton>
+          }
           title={direction === "received" ? "ยังไม่มีคำขอที่ต้องพิจารณา" : "ยังไม่ได้ส่งคำขอใช้คูปอง"}
           hint={direction === "received" ? "เมื่อแฟนขอใช้ รายการจะขึ้นที่นี่" : "ไปที่คูปองของฉันแล้วกดขอใช้"}
         />
@@ -96,31 +123,50 @@ export default function RequestsPage() {
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xl">{item.emoji ?? "🎟️"}</span>
-                  <p className="font-bold">{item.couponName}</p>
+                  <p className="font-semibold">{item.couponName}</p>
                   <RarityBadge rarity={item.rarity} />
                   <StatusBadge status={item.status} />
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted">
                   {direction === "received" ? `${item.requesterName} ขอใช้` : `ขอใช้จากแฟน`} ·{" "}
                   {formatDateTime(item.requestedAt)}
                   {item.resolvedAt ? ` · ตัดสิน ${formatDateTime(item.resolvedAt)}` : ""}
                 </p>
-                {item.message ? <p className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm">“{item.message}”</p> : null}
+                {item.message ? (
+                  <p className="rounded-lg bg-love-soft px-3 py-1.5 text-sm">“{item.message}”</p>
+                ) : null}
               </div>
 
               {item.status === "PENDING" ? (
                 <div className="flex gap-2">
                   {direction === "received" ? (
                     <>
-                      <Button size="sm" onClick={() => act(item.id, "approve")} disabled={busyId === item.id}>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setActionError(null);
+                          setReview(item);
+                        }}
+                        disabled={busyId !== null}
+                      >
                         อนุมัติ ✅
                       </Button>
-                      <Button size="sm" variant="danger" onClick={() => act(item.id, "reject")} disabled={busyId === item.id}>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => act(item.id, "reject")}
+                        disabled={busyId !== null}
+                      >
                         ปฏิเสธ
                       </Button>
                     </>
                   ) : (
-                    <Button size="sm" variant="secondary" onClick={() => act(item.id, "cancel")} disabled={busyId === item.id}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => act(item.id, "cancel")}
+                      disabled={busyId !== null}
+                    >
                       ยกเลิกคำขอ
                     </Button>
                   )}
@@ -129,6 +175,23 @@ export default function RequestsPage() {
             </Card>
           ))}
         </div>
+      )}
+      {review && (
+        <Dialog title="ทบทวนก่อนให้ใช้คูปอง" busy={busyId !== null} onClose={() => setReview(null)}>
+          <p>
+            <strong>{review.requesterName}</strong> ขอใช้ “{review.couponName}”
+          </p>
+          <p>เมื่อยืนยันจะใช้สิทธิ์ 1 ใบ การอนุมัติย้อนกลับไม่ได้</p>
+          <ErrorText message={actionError} />
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary" disabled={busyId !== null} onClick={() => setReview(null)}>
+              ยกเลิก
+            </Button>
+            <Button disabled={busyId !== null} onClick={() => act(review.id, "approve")}>
+              ยืนยันให้ใช้ 1 ใบ
+            </Button>
+          </div>
+        </Dialog>
       )}
     </div>
   );

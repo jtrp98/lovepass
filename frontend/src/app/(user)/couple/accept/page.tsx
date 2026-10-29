@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, Card, ErrorText } from "@/components/ui";
+import { Button, Card, LinkButton, Skeleton, ErrorText } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 
 function AcceptForm() {
   const searchParams = useSearchParams();
@@ -14,6 +14,7 @@ function AcceptForm() {
   const [busy, setBusy] = useState(false);
 
   async function handleAccept() {
+    if (busy) return;
     setError(null);
     setBusy(true);
     try {
@@ -29,19 +30,27 @@ function AcceptForm() {
   return (
     <Card className="space-y-4 text-center">
       <p className="text-4xl">💞</p>
-      <h1 className="text-lg font-bold">ยอมรับคำเชิญจับคู่</h1>
+      <h1 className="text-lg font-semibold">ยอมรับคำเชิญจับคู่</h1>
       {token ? (
         <>
-          <p className="text-sm text-gray-600">กดปุ่มด้านล่างเพื่อจับคู่กับคนที่ส่งคำเชิญนี้</p>
+          <p className="text-sm text-muted">กดปุ่มด้านล่างเพื่อจับคู่กับคนที่ส่งคำเชิญนี้</p>
           <ErrorText message={error} />
+          {error && (
+            <p>
+              ขอให้แฟนส่งลิงก์ใหม่ หรือ{" "}
+              <LinkButton href="/couple" variant="secondary">
+                กลับหน้าคู่ของฉัน
+              </LinkButton>
+            </p>
+          )}
           <Button onClick={handleAccept} disabled={busy}>
             {busy ? "กำลังจับคู่..." : "ยอมรับคำเชิญ"}
           </Button>
         </>
       ) : (
         <>
-          <p className="text-sm text-gray-600">ไม่พบโทเคนในลิงก์ — ขอลิงก์ใหม่จากแฟนอีกครั้ง</p>
-          <Link href="/couple" className="text-sm text-rose-600 hover:underline">
+          <p className="text-sm text-muted">ไม่พบรหัสคำเชิญในลิงก์ — ขอลิงก์ใหม่จากแฟนอีกครั้ง</p>
+          <Link href="/couple" className="text-sm text-love hover:underline">
             ไปหน้าจับคู่
           </Link>
         </>
@@ -51,16 +60,11 @@ function AcceptForm() {
 }
 
 export default function AcceptInvitationPage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <div className="mx-auto max-w-md">
-      {mounted ? (
-        <Suspense>
-          <AcceptForm />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={<Skeleton />}>
+        <AcceptForm />
+      </Suspense>
     </div>
   );
 }

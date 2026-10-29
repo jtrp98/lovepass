@@ -1,8 +1,23 @@
 "use client";
 
-import { Button, Card, EmptyState, ErrorText, Field, Input, PageTitle, RarityBadge, Select, Textarea, formatDate } from "@/components/ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorText,
+  ErrorState,
+  Skeleton,
+  Notice,
+  Field,
+  Input,
+  PageTitle,
+  RarityBadge,
+  Select,
+  Textarea,
+  formatDate,
+} from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AdminCouponTemplate, Rarity } from "@/types";
 
 interface TemplateForm {
@@ -30,16 +45,28 @@ export default function AdminCouponsPage() {
   const [editing, setEditing] = useState<AdminCouponTemplate | null>(null);
   const [form, setForm] = useState<TemplateForm>(emptyForm);
   const [showForm, setShowForm] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const mutationLock = useRef(false);
+  const [deleting, setDeleting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (showForm) {
+      formRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+      formRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, [showForm, editing]);
   async function load() {
+    setTemplates(null);
+    setLoadError(null);
     try {
       setTemplates(await api.admin.templates());
     } catch (err) {
-      setError(err instanceof ApiError ? err.displayMessage : "โหลดรายการไม่สำเร็จ");
-      setTemplates([]);
+      setLoadError(err instanceof ApiError ? err.displayMessage : "โหลดรายการไม่สำเร็จ");
     }
   }
 
@@ -71,7 +98,10 @@ export default function AdminCouponsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setFieldErrors({});
+    if (mutationLock.current) return;
     setError(null);
+    mutationLock.current = true;
     setBusy(true);
 
     const body = {
@@ -95,77 +125,120 @@ export default function AdminCouponsPage() {
       setShowForm(false);
       await load();
     } catch (err) {
+      if (err instanceof ApiError && err.errors) setFieldErrors(err.fieldMessages);
       setError(err instanceof ApiError ? err.displayMessage : "บันทึกไม่สำเร็จ");
     } finally {
+      mutationLock.current = false;
       setBusy(false);
     }
   }
 
   async function handleDelete(template: AdminCouponTemplate) {
-    if (!window.confirm(`ลบ "${template.name}"?\n(soft delete — คูปองที่มอบไปแล้วยังใช้ได้ตามเงื่อนไขเดิม)`)) return;
+    if (mutationLock.current) return;
+    if (!window.confirm(`ลบ "${template.name}"?\n(คูปองที่มอบไปแล้วยังใช้ได้ตามเงื่อนไขเดิม)`)) return;
+    mutationLock.current = true;
+    setDeleting(true);
     setError(null);
     try {
       await api.admin.deleteTemplate(template.id);
-      setNotice(`ลบ "${template.name}" เรียบร้อย (soft delete)`);
+      setNotice(`ลบ "${template.name}" เรียบร้อย `);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.displayMessage : "ลบไม่สำเร็จ");
+    } finally {
+      mutationLock.current = false;
+      setDeleting(false);
     }
   }
 
   return (
     <div className="space-y-6">
       <PageTitle
-        title="Coupon Templates"
-        subtitle="ต้นแบบคูปองกลาง — คูปองที่ออกไปแล้วคงเงื่อนไขเดิม (snapshot)"
-        action={<Button onClick={openCreate}>+ สร้าง Template</Button>}
+        title="ต้นแบบคูปอง"
+        subtitle="ต้นแบบคูปองกลาง — คูปองที่ออกไปแล้วคงเงื่อนไขเดิม"
+        action={
+          <Button disabled={busy || deleting} onClick={openCreate}>
+            + สร้างต้นแบบคูปอง
+          </Button>
+        }
       />
 
-      {notice ? <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{notice}</p> : null}
+      {notice && <Notice>{notice}</Notice>}
       <ErrorText message={error} />
+      {deleting && <p role="status">กำลังลบรายการ…</p>}
 
       {showForm ? (
-        <Card className="space-y-4 border-purple-200">
-          <p className="font-bold">{editing ? `แก้ไข: ${editing.name}` : "สร้าง Template ใหม่"}</p>
-          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-            <Field label="ชื่อคูปอง">
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
+        <Card className="space-y-4 border-control">
+          <p className="font-semibold">{editing ? `แก้ไข: ${editing.name}` : "สร้างต้นแบบคูปอง ใหม่"}</p>
+          <form aria-busy={busy} ref={formRef} onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+            <Field label="ชื่อคูปอง" error={fieldErrors.name?.[0]}>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+                maxLength={100}
+              />
             </Field>
-            <Field label="Rarity">
-              <Select value={form.rarity} onChange={(e) => setForm({ ...form, rarity: e.target.value as Rarity })}>
-                <option value="COMMON">COMMON — เทา</option>
-                <option value="RARE">RARE — ฟ้า</option>
-                <option value="EPIC">EPIC — ม่วง</option>
-                <option value="LEGENDARY">LEGENDARY — ทอง</option>
+            <Field label="ประเภทความพิเศษ">
+              <Select
+                value={form.rarity}
+                onChange={(e) => setForm({ ...form, rarity: e.target.value as Rarity })}
+              >
+                <option value="COMMON">อบอุ่น · COMMON</option>
+                <option value="RARE">พิเศษ · RARE</option>
+                <option value="EPIC">สุดพิเศษ · EPIC</option>
+                <option value="LEGENDARY">ล้ำค่า · LEGENDARY</option>
               </Select>
             </Field>
             <Field label="Emoji">
-              <Input value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} maxLength={16} placeholder="🤗" />
+              <Input
+                value={form.emoji}
+                onChange={(e) => setForm({ ...form, emoji: e.target.value })}
+                maxLength={16}
+                placeholder="🤗"
+              />
             </Field>
             <Field label="Image URL (ไม่บังคับ)">
-              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." />
+              <Input
+                value={form.imageUrl}
+                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                placeholder="https://..."
+              />
             </Field>
             <div className="sm:col-span-2">
-              <Field label="คำอธิบาย">
-                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={500} />
+              <Field label="คำอธิบาย" error={fieldErrors.description?.[0]}>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  maxLength={500}
+                />
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="เงื่อนไขการใช้งาน">
-                <Textarea value={form.terms} onChange={(e) => setForm({ ...form, terms: e.target.value })} maxLength={1000} />
+              <Field label="เงื่อนไขการใช้งาน" error={fieldErrors.terms?.[0]}>
+                <Textarea
+                  value={form.terms}
+                  onChange={(e) => setForm({ ...form, terms: e.target.value })}
+                  maxLength={1000}
+                />
               </Field>
             </div>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
                 className="size-4 accent-purple-600"
               />
-              Active (แสดงในคลังคูปอง)
+              เปิดให้เลือกในคลังคูปอง
             </label>
             <div className="flex justify-end gap-2 sm:col-span-2">
-              <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy || deleting}
+                onClick={() => setShowForm(false)}
+              >
                 ยกเลิก
               </Button>
               <Button type="submit" disabled={busy}>
@@ -176,17 +249,19 @@ export default function AdminCouponsPage() {
         </Card>
       ) : null}
 
-      {!templates ? (
-        <p className="text-gray-400">กำลังโหลด...</p>
+      {loadError ? (
+        <ErrorState message={loadError} retry={load} />
+      ) : !templates ? (
+        <Skeleton />
       ) : templates.length === 0 ? (
-        <EmptyState title="ยังไม่มี Template" hint="กดสร้าง Template แรกของระบบ" />
+        <EmptyState title="ยังไม่มีต้นแบบคูปอง" hint="กดสร้างต้นแบบคูปอง แรกของระบบ" />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="admin-table overflow-x-auto rounded-xl border border-control bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase text-gray-500">
+              <tr className="border-b border-control bg-canvas text-left text-xs uppercase text-muted">
                 <th className="px-4 py-3">คูปอง</th>
-                <th className="px-4 py-3">Rarity</th>
+                <th className="px-4 py-3">ประเภท</th>
                 <th className="px-4 py-3">สถานะ</th>
                 <th className="px-4 py-3">สร้างเมื่อ</th>
                 <th className="px-4 py-3"></th>
@@ -194,30 +269,42 @@ export default function AdminCouponsPage() {
             </thead>
             <tbody>
               {templates.map((template) => (
-                <tr key={template.id} className="border-b border-gray-100 last:border-0">
-                  <td className="px-4 py-3">
+                <tr key={template.id} className="border-b border-control last:border-0">
+                  <td data-label="คูปอง" className="px-4 py-3">
                     <span className="mr-2 text-lg">{template.emoji ?? "🎟️"}</span>
                     <span className="font-semibold">{template.name}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td data-label="ประเภท" className="px-4 py-3">
                     <RarityBadge rarity={template.rarity} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td data-label="สถานะ" className="px-4 py-3">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                        template.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        template.isActive ? "bg-mint-soft text-mint-ink" : "bg-canvas text-muted"
                       }`}
                     >
-                      {template.isActive ? "ACTIVE" : "INACTIVE"}
+                      {template.isActive ? "เปิดให้เลือก" : "ซ่อนไว้"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">{formatDate(template.createdAt)}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td data-label="สร้างเมื่อ" className="px-4 py-3 text-muted">
+                    {formatDate(template.createdAt)}
+                  </td>
+                  <td data-label="จัดการ" className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => openEdit(template)}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={busy || deleting}
+                        onClick={() => openEdit(template)}
+                      >
                         แก้ไข
                       </Button>
-                      <Button size="sm" variant="danger" onClick={() => handleDelete(template)}>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        disabled={busy || deleting}
+                        onClick={() => handleDelete(template)}
+                      >
                         ลบ
                       </Button>
                     </div>

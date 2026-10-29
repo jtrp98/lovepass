@@ -52,9 +52,28 @@ export class ApiError extends Error {
     this.errors = errors;
   }
 
+  get fieldMessages(): Record<string, string[]> {
+    return Object.fromEntries(
+      Object.entries(this.errors ?? {}).map(([key, messages]) => [
+        key.toLowerCase(),
+        messages.map((message) =>
+          /[\u0E00-\u0E7F]/.test(message) ? message : "ข้อมูลในช่องนี้ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง",
+        ),
+      ]),
+    );
+  }
+
   get displayMessage(): string {
+    if (this.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
+    if (this.status === 403) return "คุณไม่มีสิทธิ์ดำเนินการกับรายการนี้";
+    if (this.status === 404) return "ไม่พบรายการนี้ อาจถูกลบหรือใช้ไม่ได้แล้ว";
+    if (this.status >= 500) return "ระบบขัดข้องชั่วคราว กรุณาลองอีกครั้ง";
     const first = this.errors ? Object.values(this.errors)[0]?.[0] : undefined;
-    return first ?? this.message;
+    const message = first ?? this.message;
+    if (/[\u0E00-\u0E7F]/.test(message)) return message;
+    return this.status === 400 || this.status === 422
+      ? "กรุณาตรวจสอบข้อมูลที่กรอกอีกครั้ง"
+      : "ดำเนินการไม่สำเร็จ กรุณาโหลดรายการแล้วลองอีกครั้ง";
   }
 }
 
@@ -72,14 +91,15 @@ async function tryRefresh(): Promise<boolean> {
         body: JSON.stringify({ refreshToken }),
       });
       if (!res.ok) {
-        tokenStore.clear();
-        return false;
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          tokenStore.clear();
+          return false;
+        }
+        throw await toApiError(res);
       }
       const pair = (await res.json()) as TokenPair;
       tokenStore.set(pair.accessToken, pair.refreshToken);
       return true;
-    } catch {
-      return false;
     } finally {
       refreshInFlight = null;
     }
@@ -112,6 +132,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     res = await doFetch();
   }
 
+  if (res.status === 401) {
+    tokenStore.clear();
+    window.dispatchEvent(new Event("lovepass:session-expired"));
+  }
   if (!res.ok) throw await toApiError(res);
   // 204 (เช่น Ok(null) ของ .NET) หมายถึง "ไม่มีข้อมูล" — คืน null ไม่ใช่ undefined
   if (res.status === 204) return null as T;
@@ -162,10 +186,18 @@ export const api = {
   },
 
   gifts: {
-    createCustom: (input: { receiverId: number; expiresAt: string; message?: string; items: GiftItemInput[] }) =>
-      post<GiftResult>("/api/v1/gifts", { ...input, couponSetId: null }),
-    createFromSet: (input: { receiverId: number; expiresAt: string; message?: string; couponSetId: number }) =>
-      post<GiftResult>("/api/v1/gifts", { ...input, items: [] }),
+    createCustom: (input: {
+      receiverId: number;
+      expiresAt: string;
+      message?: string;
+      items: GiftItemInput[];
+    }) => post<GiftResult>("/api/v1/gifts", { ...input, couponSetId: null }),
+    createFromSet: (input: {
+      receiverId: number;
+      expiresAt: string;
+      message?: string;
+      couponSetId: number;
+    }) => post<GiftResult>("/api/v1/gifts", { ...input, items: [] }),
     sent: () => get<SentGift[]>("/api/v1/gifts/sent"),
   },
 
@@ -193,12 +225,15 @@ export const api = {
       post<AdminCouponTemplate>("/api/v1/admin/coupon-templates", body),
     updateTemplate: (id: number, body: Omit<AdminCouponTemplate, "id" | "createdAt" | "updatedAt">) =>
       put<AdminCouponTemplate>(`/api/v1/admin/coupon-templates/${id}`, { ...body, id }),
-    deleteTemplate: (id: number) => apiFetch<void>(`/api/v1/admin/coupon-templates/${id}`, { method: "DELETE" }),
+    deleteTemplate: (id: number) =>
+      apiFetch<void>(`/api/v1/admin/coupon-templates/${id}`, { method: "DELETE" }),
     sets: () => get<AdminCouponSet[]>("/api/v1/admin/coupon-sets"),
     createSet: (body: { name: string; description: string; items: GiftItemInput[] }) =>
       post<AdminCouponSet>("/api/v1/admin/coupon-sets", body),
-    updateSet: (id: number, body: { name: string; description: string; items: GiftItemInput[]; isActive: boolean }) =>
-      put<AdminCouponSet>(`/api/v1/admin/coupon-sets/${id}`, { ...body, id }),
+    updateSet: (
+      id: number,
+      body: { name: string; description: string; items: GiftItemInput[]; isActive: boolean },
+    ) => put<AdminCouponSet>(`/api/v1/admin/coupon-sets/${id}`, { ...body, id }),
     deleteSet: (id: number) => apiFetch<void>(`/api/v1/admin/coupon-sets/${id}`, { method: "DELETE" }),
     users: () => get<AdminUser[]>("/api/v1/admin/users"),
     deleteUser: (id: number) => apiFetch<void>(`/api/v1/admin/users/${id}`, { method: "DELETE" }),

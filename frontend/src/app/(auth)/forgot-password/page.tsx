@@ -8,17 +8,21 @@ import { useState } from "react";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitting) return;
+    setFieldErrors({});
     setError(null);
     setSubmitting(true);
     try {
       await api.auth.forgotPassword(email);
       setSent(true);
     } catch (err) {
+      if (err instanceof ApiError && err.errors) setFieldErrors(err.fieldMessages);
       setError(err instanceof ApiError ? err.displayMessage : "ส่งคำขอไม่สำเร็จ");
     } finally {
       setSubmitting(false);
@@ -29,12 +33,16 @@ export default function ForgotPasswordPage() {
     return (
       <div className="space-y-3 text-center">
         <p className="text-3xl">📧</p>
-        <h1 className="text-lg font-bold">ตรวจสอบอีเมลของคุณ</h1>
-        <p className="text-sm text-gray-600">
-          หากอีเมลนี้ลงทะเบียนไว้ ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ให้ (ถ้าไม่ได้ตั้งค่า Resend ใน backend
-          อีเมลจะถูกข้ามและปรากฏใน log ของ API)
+        <h1 className="text-lg font-semibold" role="status">
+          ตรวจสอบอีเมลของคุณ
+        </h1>
+        <p className="text-sm text-muted">
+          หากอีเมลนี้ลงทะเบียนไว้ เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ {email} ลองดูในจดหมายขยะด้วย
         </p>
-        <Link href="/login" className="block text-sm text-rose-600 hover:underline">
+        <Button variant="secondary" onClick={() => setSent(false)}>
+          แก้ไขอีเมล
+        </Button>
+        <Link href="/login" className="block text-sm text-love hover:underline">
           กลับไปหน้าเข้าสู่ระบบ
         </Link>
       </div>
@@ -43,16 +51,24 @@ export default function ForgotPasswordPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h1 className="text-xl font-bold">ลืมรหัสผ่าน</h1>
-      <Field label="อีเมลที่ใช้สมัคร">
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+      <h1 className="text-xl font-semibold">ลืมรหัสผ่าน</h1>
+      <Field label="อีเมลที่ใช้สมัคร" error={fieldErrors.email?.[0]}>
+        <Input
+          autoComplete="email"
+          inputMode="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="you@example.com"
+        />
       </Field>
       <ErrorText message={error} />
       <Button type="submit" disabled={submitting} className="w-full">
         {submitting ? "กำลังส่ง..." : "ส่งลิงก์รีเซ็ตรหัสผ่าน"}
       </Button>
-      <p className="text-center text-sm text-gray-500">
-        <Link href="/login" className="hover:text-rose-600">
+      <p className="text-center text-sm text-muted">
+        <Link href="/login" className="hover:text-love">
           กลับไปหน้าเข้าสู่ระบบ
         </Link>
       </p>

@@ -1,75 +1,108 @@
 "use client";
-
-import { Button, Card, ErrorText, PageTitle, StatCard } from "@/components/ui";
-import { ApiError, api } from "@/lib/api";
+import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton } from "@/components/ui";
+import { api } from "@/lib/api";
+import { useResource } from "@/lib/use-resource";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { CoupleInfo, Dashboard as DashboardData } from "@/types";
-
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardData | null>(null);
-  const [couple, setCouple] = useState<CoupleInfo | null | undefined>(undefined); // undefined = loading
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    api.coupons.dashboard().then(setStats).catch(() => setStats(null));
-    api.couples
-      .me()
-      .then(setCouple)
-      .catch((err) => {
-        setCouple(undefined);
-        setError(err instanceof ApiError ? err.displayMessage : null);
-      });
-  }, []);
-
+  const stats = useResource(api.coupons.dashboard),
+    couple = useResource(api.couples.me);
+  const data = stats.data;
   return (
     <div className="space-y-6">
-      <PageTitle title="Dashboard" subtitle="ภาพรวมคูปองรักของเรา" />
-
-      {couple === null ? (
-        <Card className="flex flex-wrap items-center justify-between gap-3 border-rose-200 bg-rose-50">
-          <div>
-            <p className="font-semibold text-rose-700">ยังไม่ได้จับคู่ 💞</p>
-            <p className="text-sm text-rose-600">จับคู่กับแฟนก่อน ถึงจะมอบคูปองให้กันได้</p>
-          </div>
-          <Link href="/couple">
-            <Button>ไปจับคู่</Button>
-          </Link>
+      <PageTitle
+        title="บ้านของเรา"
+        subtitle={
+          couple.data
+            ? `สมุดตั๋วของคุณกับ ${couple.data.partnerDisplayName}`
+            : "ความสุขเล็ก ๆ ที่ให้กันได้ทุกวัน"
+        }
+      />
+      {couple.error ? (
+        <ErrorState message={couple.error} retry={couple.retry} />
+      ) : couple.loading ? (
+        <Skeleton />
+      ) : couple.data === null ? (
+        <Card className="space-y-3 !bg-mint-soft">
+          <h2 className="text-xl">เริ่มสมุดตั๋วของสองเรา</h2>
+          <p>ชวนแฟนมาใช้ด้วยกัน แล้วเริ่มมอบคำสัญญาเล็ก ๆ ให้กัน</p>
+          <LinkButton href="/couple">ชวนแฟนมาใช้ด้วยกัน</LinkButton>
         </Card>
-      ) : null}
-
-      {error ? <ErrorText message={error} /> : null}
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="คูปองที่ได้รับ (ใบ)" value={stats?.receivedCoupons ?? "-"} accent="rose" />
-        <StatCard label="ใช้ไปแล้ว (ครั้ง)" value={stats?.usedCoupons ?? "-"} accent="blue" />
-        <StatCard label="ใกล้หมดอายุ (ชุด)" value={stats?.expiringSoon ?? "-"} accent="amber" />
-        <StatCard label="คำขอรอพิจารณา" value={stats?.pendingRequests ?? "-"} accent="purple" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Link href="/gifts/new">
-          <Card className="h-full transition hover:border-rose-300 hover:shadow-md">
-            <p className="text-2xl">🎁</p>
-            <p className="mt-2 font-semibold">มอบคูปองให้แฟน</p>
-            <p className="text-sm text-gray-500">เลือกทีละใบ หรือจัดชุดเองก็ได้</p>
-          </Card>
-        </Link>
-        <Link href="/my-coupons">
-          <Card className="h-full transition hover:border-rose-300 hover:shadow-md">
-            <p className="text-2xl">🎟️</p>
-            <p className="mt-2 font-semibold">คูปองของฉัน</p>
-            <p className="text-sm text-gray-500">ดูคูปองที่ได้รับและขอใช้สิทธิ์</p>
-          </Card>
-        </Link>
-        <Link href="/requests">
-          <Card className="h-full transition hover:border-rose-300 hover:shadow-md">
-            <p className="text-2xl">💌</p>
-            <p className="mt-2 font-semibold">คำขอใช้คูปอง</p>
-            <p className="text-sm text-gray-500">อนุมัติหรือปฏิเสธคำขอของแฟน</p>
-          </Card>
-        </Link>
-      </div>
+      ) : stats.error ? (
+        <ErrorState message={stats.error} retry={stats.retry} />
+      ) : stats.loading ? (
+        <Skeleton />
+      ) : (
+        <Card className="space-y-3 !bg-love-soft">
+          <h2 className="text-xl">
+            {data?.pendingRequests
+              ? "มีคำขอที่รอคุณยืนยัน"
+              : data?.expiringSoon
+                ? "อย่าลืมใช้ความสุขก่อนหมดอายุ"
+                : data?.receivedCoupons
+                  ? "วันนี้อยากใช้คูปองใบไหนดี?"
+                  : "ส่งความสุขใบแรกให้แฟน"}
+          </h2>
+          <p>
+            {data?.pendingRequests
+              ? `มี ${data.pendingRequests} คำขอ เปิดดูรายละเอียดก่อนให้ใช้สิทธิ์`
+              : "เลือกเวลาที่ใช่ แล้วทำตามคำสัญญาของสองเรา"}
+          </p>
+          <LinkButton
+            href={data?.pendingRequests ? "/requests" : data?.receivedCoupons ? "/my-coupons" : "/catalog"}
+          >
+            {data?.pendingRequests
+              ? "พิจารณาคำขอ"
+              : data?.receivedCoupons
+                ? "ดูคูปองของฉัน"
+                : "เลือกของขวัญให้แฟน"}
+          </LinkButton>
+        </Card>
+      )}
+      <section className="space-y-3" aria-label="ข้อมูลคูปองล่าสุด">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2>ตั๋วของเรา</h2>
+          <Button variant="ghost" disabled={stats.loading} onClick={stats.retry}>
+            รีเฟรชข้อมูล
+          </Button>
+        </div>
+        {stats.error ? (
+          couple.data ? null : (
+            <ErrorState message={stats.error} retry={stats.retry} />
+          )
+        ) : stats.loading ? (
+          <Skeleton />
+        ) : (
+          data && (
+            <dl className="grid grid-cols-2 gap-3 rounded-2xl border border-love-soft bg-surface p-4 sm:grid-cols-4">
+              {[
+                { label: "ได้รับแล้ว", value: data.receivedCoupons, href: "/my-coupons" },
+                { label: "ใช้ไปแล้ว", value: data.usedCoupons, href: "/history" },
+                { label: "ใกล้หมดอายุ", value: data.expiringSoon, href: "/my-coupons" },
+                { label: "คำขอรอพิจารณา", value: data.pendingRequests, href: "/requests" },
+              ].map((item) => (
+                <div key={item.label}>
+                  <dt className="text-sm text-muted">{item.label}</dt>
+                  <dd>
+                    <Link
+                      className="inline-flex min-h-12 items-center text-xl font-semibold text-love"
+                      href={item.href}
+                    >
+                      {item.value}
+                    </Link>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
+        )}
+      </section>
+      <Card className="space-y-2 !bg-butter-soft">
+        <h2>ความใส่ใจไม่ต้องรอวันพิเศษ</h2>
+        <p>เลือกคูปองเอง หรือเลือกชุดที่เตรียมไว้ แล้วตรวจของขวัญก่อนส่ง</p>
+        <LinkButton href="/catalog" variant="secondary">
+          เลือกของขวัญให้แฟน
+        </LinkButton>
+      </Card>
     </div>
   );
 }
