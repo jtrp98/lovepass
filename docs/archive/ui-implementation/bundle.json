@@ -1,0 +1,63 @@
+{
+  "scope": "All static JS/CSS chunks in the tested production build; not route transfer, no comparable pre-change build",
+  "totals": {
+    "raw": 723189,
+    "gzip": 229581
+  },
+  "largest": [
+    {
+      "name": "2ki52vdnbo2ft.js",
+      "raw": 229850,
+      "gzip": 71991
+    },
+    {
+      "name": "3l_qmp-61z4yc.js",
+      "raw": 168793,
+      "gzip": 46576
+    },
+    {
+      "name": "0cz1d0mv5g_q7.js",
+      "raw": 112594,
+      "gzip": 39627
+    },
+    {
+      "name": "3smi2h0e3tpuq.js",
+      "raw": 38714,
+      "gzip": 11910
+    },
+    {
+      "name": "06bs-nf19b2js.js",
+      "raw": 29512,
+      "gzip": 7705
+    },
+    {
+      "name": "3mcodpos4v7ut.css",
+      "raw": 24038,
+      "gzip": 5833
+    },
+    {
+      "name": "1tq6ppe__m8m-.js",
+      "raw": 14090,
+      "gzip": 3602
+    },
+    {
+      "name": "turbopack-3-ry682tkyiqk.js",
+      "raw": 10030,
+      "gzip": 3940
+    }
+  ],
+  "fonts": [
+    {
+      "name": "mali-600.woff2",
+      "raw": 31844
+    },
+    {
+      "name": "sarabun-400.woff2",
+      "raw": 20008
+    },
+    {
+      "name": "sarabun-600.woff2",
+      "raw": 20028
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # LOVE PASS — ตารางคำนวณ contrast
 
-วันที่ตรวจ: 30 ตุลาคม 2026 · เอกสารประกอบ [รายงานหลัก](C:/src/_projectX/lovepass/docs/ui-audit-report.md)
+วันที่ตรวจ: 30 ตุลาคม 2026 · เอกสารประกอบ [รายงานหลัก](ui-audit-report.md)
 
 ## วิธีคำนวณและขอบเขต
 
