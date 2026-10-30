@@ -10,8 +10,9 @@ export function SentGiftCard({ gift }: { gift: SentGift }) {
   return (
     <article className="pocket-ticket sent-gift-sheet" aria-labelledby={heading}>
       <header className="pocket-face sent-gift-header">
+        <span className="postage-mark" aria-hidden="true" />
         <div className="pocket-topline">
-          <span className="pocket-mono">GIFT NOTE / GF-{String(gift.id).padStart(4, "0")}</span>
+          <span className="pocket-mono">AIRMAIL · PAR AVION / GF-{String(gift.id).padStart(4, "0")}</span>
           <span className="sent-gift-sent"><span aria-hidden="true">♡</span> มอบให้แล้ว</span>
         </div>
         <h2 id={heading}>ส่งความรักไป {total} ใบ</h2>

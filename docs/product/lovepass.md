@@ -74,14 +74,15 @@ User A และ User B มีสิทธิ์เท่ากัน สาม�
 
 ## 3. ระบบ Rarity
 
-ไม่มีระบบหมวดหมู่ แบ่งคูปองตามความหายาก 4 ระดับเท่านั้น
+แบ่งคูปองตามความพิเศษ 5 ระดับ (หมวดหมู่เป็นอีกแกนหนึ่ง ดู [coupon-categories.md](coupon-categories.md))
 
-| Rarity | สี |
-| --- | --- |
-| `COMMON` | เทา (Grey) |
-| `RARE` | ฟ้า (Blue) |
-| `EPIC` | ม่วง (Purple) |
-| `LEGENDARY` | ทอง (Gold) |
+| Rarity | ป้าย | สี |
+| --- | --- | --- |
+| `COMMON` | อบอุ่น | ชมพู |
+| `RARE` | พิเศษ | ฟ้า |
+| `EPIC` | สุดพิเศษ | ม่วง |
+| `LEGENDARY` | ล้ำค่า | ทอง |
+| `MYTHIC` | ในฝัน | รุ้งพาสเทลแบบฟอยล์โฮโลแกรม — คูปองที่มีมูลค่าหรืองบตั้งแต่ 10,000 บาท |
 
 - Admin เป็นผู้กำหนด Rarity ของ Coupon Template
 - Rarity มีผลต่อรูปลักษณ์ของคูปอง เช่น สีขอบ สีพื้นหลัง และเอฟเฟกต์พิเศษ แต่ไม่จำเป็นต้องสัมพันธ์กับมูลค่าของคูปอง
@@ -197,6 +198,24 @@ Admin สามารถสร้าง Set สำเร็จรูปเพื
 | `CANCELLED` | ผู้ขอยกเลิกเอง คืนสิทธิ์ที่กันไว้ |
 
 ต้องป้องกันการกดใช้คูปองซ้ำเกินจำนวนที่มี (ใช้ Database Transaction + Optimistic/Row Concurrency)
+
+### คูปองพลังพิเศษ (หมวด `POWER`)
+
+คูปองที่ `Effect` ไม่ใช่ `NONE` ใช้กับคูปองอื่น ผู้รับต้องเลือกเป้าหมายตอนขอใช้ กติกาอยู่ที่ `MetaCouponRules` ใน Domain และอธิบายเหตุผลใน [coupon-library-proposal.md](../coupon-library-proposal.md) ส่วน F
+
+| Effect | เป้าหมาย | ผลเมื่อผู้มอบยืนยัน |
+| --- | --- | --- |
+| `EXTEND` | คูปองที่ยังใช้ได้ทุกระดับ | กันสิทธิ์เป้าหมาย 1 ใบตอนขอ แล้วต่ออายุ 60 วัน ถ้าแถวมีหลายใบจะแยกใบนั้นเป็นแถวใหม่ |
+| `FASTPASS` | คูปอง COMMON / RARE ที่ยังใช้ได้ | หักทั้งสองใบ ผู้มอบทำตามคูปองเป้าหมายภายใน 24 ชั่วโมง |
+| `UPGRADE` | คูปอง COMMON–EPIC ที่ยังใช้ได้ | หักทั้งสองใบ ส่วนเพิ่มที่เลือกเขียนในข้อความคำขอ |
+| `WILDCARD` | template COMMON / RARE ที่เปิดใช้ | หักใบ WILDCARD และใช้สิทธิ์ตาม template ที่เลือก |
+| `REPLAY` | คูปอง COMMON–EPIC ที่เคยยืนยันใช้แล้ว | หักใบ REPLAY และใช้สิทธิ์ตาม snapshot ของใบเดิมอีกครั้ง |
+| `REPLAYGOLD` | คูปอง COMMON–LEGENDARY ที่เคยยืนยันใช้แล้ว | เหมือน `REPLAY` |
+
+- เป้าหมายต้องได้จากผู้มอบคนเดียวกัน, ห้ามเป็นคูปองพลังพิเศษ และคูปองที่ `MetaLocked` (เงิน ของขวัญ และ MYTHIC) ใช้ได้เฉพาะ `EXTEND`
+- ปฏิเสธหรือยกเลิกคำขอ คืนสิทธิ์ทั้งใบพลังพิเศษและใบเป้าหมายที่กันไว้
+- API: `GET /api/v1/coupons/{id}/meta-targets` คืนรายการเป้าหมายที่ใช้ได้ (`issuedCouponId` หรือ `couponTemplateId`, `name`, `rarity`, `category`, `terms`, `expiresAt`, `usedCount`) และ `POST /api/v1/redemptions` รับ `targetIssuedCouponId` หรือ `targetTemplateId` เพิ่ม (ส่งได้อย่างใดอย่างหนึ่ง คูปองปกติต้องไม่ส่ง)
+- Response ของคำขอใช้ เพิ่ม `effect`, `targetName`, `targetRarity`, `targetCategory` และคูปอง/template เพิ่ม `effect` (admin เพิ่ม `metaLocked`) ทุก field เป็นแบบเพิ่ม client เดิมยังอ่านได้
 
 ---
 
@@ -378,7 +397,10 @@ RDBMS: **PostgreSQL** เข้าถึงผ่าน **EF Core** (Provider: N
 | Name | text |
 | Description | text |
 | Terms | text |
-| Rarity | text (`COMMON`/`RARE`/`EPIC`/`LEGENDARY`) |
+| Rarity | text (`COMMON`/`RARE`/`EPIC`/`LEGENDARY`/`MYTHIC`) |
+| Category | text (ดู coupon-categories.md) |
+| Effect | text (`NONE` และพลังพิเศษ 6 แบบ) |
+| MetaLocked | boolean — กันพลังพิเศษยกเว้นต่อเวลา |
 | ImageUrl | text (nullable) |
 | Emoji | text (nullable) |
 | IsActive | boolean |
@@ -445,6 +467,9 @@ RDBMS: **PostgreSQL** เข้าถึงผ่าน **EF Core** (Provider: N
 | Status | text (`PENDING`/`APPROVED`/`REJECTED`/`CANCELLED`) |
 | RequestedAt | timestamptz |
 | ResolvedAt | timestamptz (nullable) |
+| TargetIssuedCouponId | int4 FK → IssuedCoupons (nullable) — เป้าหมายของพลังพิเศษ |
+| TargetTemplateId | int4 FK → CouponTemplates (nullable) — template ที่ WILDCARD เลือก |
+| TargetSnapshot | jsonb (nullable) — สำเนาเป้าหมาย ณ วันขอ |
 
 ### CoupleInvitations
 
@@ -512,8 +537,8 @@ RDBMS: **PostgreSQL** เข้าถึงผ่าน **EF Core** (Provider: N
 
 ```
 lovepass/
-├── docs/
-│   └── lovepass.md              # เอกสารนี้
+├── docs/                        # สารบัญที่ docs/README.md
+│   └── product/lovepass.md      # เอกสารนี้
 ├── frontend/                    # Next.js application
 ├── backend/                     # .NET solution
 │   ├── LovePass.sln

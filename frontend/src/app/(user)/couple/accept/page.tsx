@@ -5,6 +5,7 @@ import { ApiError, api } from "@/lib/api";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { WaxSeal } from "@/components/stationery";
 
 function AcceptForm() {
   const searchParams = useSearchParams();
@@ -28,8 +29,8 @@ function AcceptForm() {
   }
 
   return (
-    <Card className="space-y-4 text-center">
-      <p className="text-4xl">💞</p>
+    <Card variant="letter" className="space-y-4 text-center">
+      <WaxSeal className="mx-auto" />
       <h1 className="text-lg font-semibold">ยอมรับคำเชิญจับคู่</h1>
       {token ? (
         <>

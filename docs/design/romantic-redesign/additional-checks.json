@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "16 couple/history/sent-gifts/more viewport checks at 320/768/1024/1440",
+    "12 landing/auth/privacy checks at 320/1440",
+    "history stamp uses actual event date",
+    "landing sample opens details and closes with Escape"
+  ],
+  "consoleErrors": []
+}

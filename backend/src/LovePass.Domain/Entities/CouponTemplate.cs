@@ -10,6 +10,9 @@ public class CouponTemplate : BaseEntity, ISoftDeletable
     public string Terms { get; set; } = string.Empty;
     public Rarity Rarity { get; set; } = Rarity.Common;
     public CouponCategory Category { get; set; } = CouponCategory.Other;
+    public CouponEffect Effect { get; set; } = CouponEffect.None;
+    /// <summary>ปิดไม่ให้พลังพิเศษ (ยกเว้นต่อเวลา) ใช้กับคูปองนี้ เช่น เงิน ของขวัญ และรางวัล MYTHIC</summary>
+    public bool MetaLocked { get; set; }
     public string? ImageUrl { get; set; }
     public string? Emoji { get; set; }
     public bool IsActive { get; set; } = true;

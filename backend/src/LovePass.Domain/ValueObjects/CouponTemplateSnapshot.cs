@@ -13,7 +13,9 @@ public sealed record CouponTemplateSnapshot(
     string Rarity,
     string? Emoji,
     string? ImageUrl,
-    string Category = "OTHER")
+    string Category = "OTHER",
+    string Effect = "NONE",
+    bool MetaLocked = false)
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -29,5 +31,7 @@ public sealed record CouponTemplateSnapshot(
         template.Rarity.ToString().ToUpperInvariant(),
         template.Emoji,
         template.ImageUrl,
-        template.Category.ToString().ToUpperInvariant());
+        template.Category.ToString().ToUpperInvariant(),
+        template.Effect.ToString().ToUpperInvariant(),
+        template.MetaLocked);
 }

@@ -8,7 +8,7 @@ export default function MorePage() {
   return (
     <div className="space-y-4">
       <PageTitle title="เพิ่มเติม" subtitle="เรื่องราวและบัญชีของเรา" />
-      <Card className="grid gap-3 sm:grid-cols-2">
+      <Card variant="journal" className="grid gap-3 sm:grid-cols-2">
         {[
           { href: "/couple", label: "คู่ของฉัน" },
           { href: "/history", label: "ประวัติ" },

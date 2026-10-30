@@ -138,7 +138,7 @@ async function main() {
   const [credentialsPath, senderEmail] = process.argv.slice(2);
   if (!credentialsPath || !senderEmail) {
     console.log('Usage: node scripts/setup-gmail.mjs "C:\\path\\client_secret.json" sender@gmail.com');
-    console.log('Create a Desktop app OAuth client first. See docs/gmail-setup.md.');
+    console.log('Create a Desktop app OAuth client first. See docs/guides/gmail-setup.md.');
     process.exitCode = 1;
     return;
   }
@@ -159,12 +159,12 @@ async function main() {
   }
   console.log('Gmail connected. Credentials saved in backend/.env; no tokens were printed.');
   console.log('Restart the backend. For Render, copy Email__Provider and Gmail__* into its Environment settings.');
-  console.log('If the Google app is in Testing, its refresh token expires after 7 days. See docs/gmail-setup.md.');
+  console.log('If the Google app is in Testing, its refresh token expires after 7 days. See docs/guides/gmail-setup.md.');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main().catch(() => {
-    console.error('Gmail setup failed. Check the Desktop app JSON, sender address and Google consent. See docs/gmail-setup.md.');
+    console.error('Gmail setup failed. Check the Desktop app JSON, sender address and Google consent. See docs/guides/gmail-setup.md.');
     process.exitCode = 1;
   });
 }

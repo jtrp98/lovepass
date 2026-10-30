@@ -17,4 +17,9 @@ public sealed class CouponsController(ISender mediator) : ControllerBase
     [HttpGet("dashboard")]
     public async Task<IActionResult> Dashboard(CancellationToken cancellationToken)
         => Ok(await mediator.Send(new GetDashboardQuery(), cancellationToken));
+
+    /// <summary>คูปองที่คูปองพลังพิเศษใบนี้เลือกเป็นเป้าหมายได้</summary>
+    [HttpGet("{id:int}/meta-targets")]
+    public async Task<IActionResult> MetaTargets(int id, CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new GetMetaTargetsQuery(id), cancellationToken));
 }

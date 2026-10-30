@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Card } from "@/components/ui";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -6,10 +7,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <Link href="/" className="text-2xl font-semibold text-love">
-            💝 LOVE PASS
+            <span aria-hidden="true" className="brand-heart">♡</span> LOVE PASS
           </Link>
         </div>
-        <div className="rounded-2xl border border-control bg-white p-6 shadow-sm">{children}</div>
+        <Card variant="letter" className="p-6">{children}</Card>
       </div>
     </main>
   );

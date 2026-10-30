@@ -19,12 +19,13 @@ public static class EmailTemplates
         return ($"{senderName} มอบคูปองให้คุณ 💝", html);
     }
 
-    public static (string Subject, string Html) RedemptionRequested(string approverName, string requesterName, string couponName, string rarity, string? message, int issuedCouponId, AppOptions app)
+    public static (string Subject, string Html) RedemptionRequested(string approverName, string requesterName, string couponName, string rarity, string? message, int issuedCouponId, AppOptions app, string? targetName = null)
     {
         var link = $"{app.FrontendUrl}/requests?redemption={issuedCouponId}";
         var html = $"""
             <h2>มีคำขอใช้คูปอง</h2>
             <p><b>{Escape(requesterName)}</b> ขอใช้คูปอง <b>{Escape(couponName)}</b> ({rarity})</p>
+            {(string.IsNullOrWhiteSpace(targetName) ? "" : $"<p>ใช้กับ: <b>{Escape(targetName)}</b></p>")}
             {(string.IsNullOrWhiteSpace(message) ? "" : $"<p>ข้อความ: \"{Escape(message)}\"</p>")}
             <p><a href="{link}">ดูคำขอและยืนยัน / ปฏิเสธ</a></p>
             """;

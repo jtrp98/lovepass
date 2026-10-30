@@ -277,6 +277,13 @@ namespace LovePass.Infrastructure.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("Effect")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("None");
+
                     b.Property<string>("Emoji")
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
@@ -289,6 +296,11 @@ namespace LovePass.Infrastructure.Data.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("MetaLocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -446,6 +458,15 @@ namespace LovePass.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int?>("TargetIssuedCouponId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TargetSnapshot")
+                        .HasColumnType("jsonb");
+
+                    b.Property<int?>("TargetTemplateId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApproverId");
@@ -453,6 +474,10 @@ namespace LovePass.Infrastructure.Data.Migrations
                     b.HasIndex("IssuedCouponId");
 
                     b.HasIndex("RequesterId");
+
+                    b.HasIndex("TargetIssuedCouponId");
+
+                    b.HasIndex("TargetTemplateId");
 
                     b.HasIndex("Status", "ApproverId");
 
@@ -759,11 +784,23 @@ namespace LovePass.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("LovePass.Domain.Entities.IssuedCoupon", "TargetIssuedCoupon")
+                        .WithMany()
+                        .HasForeignKey("TargetIssuedCouponId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("LovePass.Domain.Entities.CouponTemplate", null)
+                        .WithMany()
+                        .HasForeignKey("TargetTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Approver");
 
                     b.Navigation("IssuedCoupon");
 
                     b.Navigation("Requester");
+
+                    b.Navigation("TargetIssuedCoupon");
                 });
 
             modelBuilder.Entity("LovePass.Domain.Entities.RefreshToken", b =>

@@ -31,7 +31,7 @@ services:
         sync: false
       - key: Cors__AllowedOrigins
         sync: false
-      # เชื่อมบัญชีตาม docs/gmail-setup.md แล้วเติม Gmail__* ด้านล่างให้ครบก่อน deploy
+      # เชื่อมบัญชีตาม docs/guides/gmail-setup.md แล้วเติม Gmail__* ด้านล่างให้ครบก่อน deploy
       - key: Email__Provider
         value: Gmail
       - key: Gmail__SenderEmail

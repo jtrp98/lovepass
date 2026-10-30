@@ -1,8 +1,8 @@
 import type { Viewport } from "next";
 import localFont from "next/font/local";
 import { AuthProvider } from "@/lib/auth";
+import { MaterialDefs } from "@/components/material-defs";
 import "./globals.css";
-import "./vouchers.css";
 import "./pocket.css";
 
 const sarabun = localFont({
@@ -33,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="th" className={`${sarabun.variable} ${mali.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <MaterialDefs />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

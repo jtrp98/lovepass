@@ -1,6 +1,7 @@
 using LovePass.Application.Common.Abstractions;
 using LovePass.Application.Common.Interfaces;
 using LovePass.Domain.Enums;
+using LovePass.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,11 @@ public sealed record RedemptionListDto(
     DateTime RequestedAt,
     DateTime? ResolvedAt,
     DateTime CouponExpiresAt,
-    string Category = "OTHER");
+    string Category = "OTHER",
+    string Effect = "NONE",
+    string? TargetName = null,
+    string? TargetRarity = null,
+    string? TargetCategory = null);
 
 public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetRedemptionsQuery, List<RedemptionListDto>>
@@ -53,6 +58,7 @@ public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurren
         return rows.Select(r =>
         {
             var s = r.IssuedCoupon!.ReadSnapshot();
+            var target = r.TargetSnapshot is null ? null : CouponTemplateSnapshot.FromJson(r.TargetSnapshot);
             return new RedemptionListDto(
                 r.Id,
                 r.IssuedCouponId,
@@ -68,7 +74,11 @@ public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurren
                 r.RequestedAt,
                 r.ResolvedAt,
                 r.IssuedCoupon.ExpiresAt,
-                s.Category);
+                s.Category,
+                s.Effect,
+                target?.Name,
+                target?.Rarity,
+                target?.Category);
         }).ToList();
     }
 }

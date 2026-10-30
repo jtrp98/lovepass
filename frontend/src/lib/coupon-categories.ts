@@ -5,6 +5,8 @@ export const couponCategories = {
   CARE: { label: "ดูแลกัน", icon: "/illustrations/coupons/care.svg" },
   WISH: { label: "ขอพร", icon: "/illustrations/coupons/wish.svg" },
   ADVENTURE: { label: "เที่ยวด้วยกัน", icon: "/illustrations/coupons/adventure.svg" },
+  GIFT: { label: "ของขวัญและเงิน", icon: "/illustrations/coupons/gift.svg" },
+  POWER: { label: "พลังพิเศษ", icon: "/illustrations/coupons/power.svg" },
   OTHER: { label: "คำสัญญาอื่น ๆ", icon: "/illustrations/coupons/other.svg" },
 } as const;
 

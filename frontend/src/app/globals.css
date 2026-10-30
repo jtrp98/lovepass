@@ -1,26 +1,50 @@
 @import "tailwindcss";
 @theme {
-  --color-canvas: #fff8f3;
-  --color-surface: #ffffff;
-  --color-ink: #3b2430;
-  --color-muted: #71545f;
-  --color-love: #b83258;
-  --color-love-hover: #9c2648;
-  --color-love-soft: #ffe3eb;
-  --color-line: #eadbd9;
-  --color-mint-soft: #dff5e8;
-  --color-mint-ink: #205d46;
-  --color-sky-soft: #e3f0ff;
-  --color-sky-ink: #214e78;
-  --color-lavender-soft: #eee5ff;
-  --color-lavender-ink: #563580;
-  --color-butter-soft: #fff0b8;
-  --color-butter-ink: #704900;
-  --color-danger: #b42335;
-  --color-danger-hover: #901c2a;
-  --color-danger-soft: #fde7eb;
-  --color-control: #896c78;
-  --color-focus: #6c3d91;
+  --color-canvas: #fff5f7;
+  --color-surface: #fffcf7;
+  --color-ink: #59424c;
+  --color-muted: #785d67;
+  --color-love: #a64062;
+  --color-love-hover: #8c3151;
+  --color-love-soft: #fadbe5;
+  --color-line: #e8cbd5;
+  --color-stamp: #a4516b;
+  --color-mint-soft: #e5eee4;
+  --color-mint-ink: #425d49;
+  --color-sky-soft: #e6edf4;
+  --color-sky-ink: #465d76;
+  --color-lavender-soft: #efe4f0;
+  --color-lavender-ink: #75517c;
+  --color-butter-soft: #f6ebcf;
+  --color-butter-ink: #755b2f;
+  --color-danger: #a6364c;
+  --color-danger-hover: #8b263a;
+  --color-danger-soft: #fce4e8;
+  --color-control: #987181;
+  --color-focus: #943c60;
+  --color-on-action: #ffffff;
+  --color-disabled: #eee3e6;
+  --color-disabled-ink: #78656c;
+  --color-paper-edge: #eddcd3;
+  --color-tape: #f2d4dc;
+  --color-overlay: #59424c66;
+  --color-success-paper: var(--color-mint-soft);
+  --color-success-ink: var(--color-mint-ink);
+  --color-pending-paper: var(--color-butter-soft);
+  --color-pending-ink: var(--color-butter-ink);
+  --color-rarity-common-paper: var(--color-love-soft);
+  --color-rarity-common-ink: var(--color-ink);
+  --color-rarity-rare-paper: var(--color-sky-soft);
+  --color-rarity-rare-ink: var(--color-sky-ink);
+  --color-rarity-epic-paper: var(--color-lavender-soft);
+  --color-rarity-epic-ink: var(--color-lavender-ink);
+  --color-rarity-legendary-paper: var(--color-butter-soft);
+  --color-rarity-legendary-ink: var(--color-butter-ink);
+  --color-rarity-mythic-paper: var(--color-mint-soft);
+  --color-rarity-mythic-ink: var(--color-ink);
+  --radius-paper: .5rem;
+  --radius-control: .5rem;
+  --shadow-paper: 0 1px 2px #59424c08, 0 8px 24px -14px #59424c40;
 }
 @theme inline {
   --font-sans: var(--font-sarabun);
@@ -30,6 +54,16 @@
   :root {
     color-scheme: light;
     --nav-height: calc(5rem + env(safe-area-inset-bottom));
+    --motion-press: 120ms;
+    --motion-soft: 200ms;
+    --ease-paper: cubic-bezier(.2,.7,.3,1);
+    --space-paper: 1.5rem;
+    /* Authored SVG materials (public/materials, see scripts/materials.mjs). */
+    --paper-grain: url("/materials/paper/paper-fiber.svg");
+    /* MYTHIC holographic foil: a pastel rainbow built only from the existing palette. */
+    --rarity-mythic-foil: linear-gradient(115deg, var(--color-love-soft), var(--color-butter-soft) 25%, var(--color-mint-soft) 50%, var(--color-sky-soft) 75%, var(--color-lavender-soft));
+    --shadow-ticket: drop-shadow(0 0 .6px #59424c59) drop-shadow(0 2px 2px #59424c14) drop-shadow(0 10px 12px #59424c1c);
+    --shadow-ticket-lifted: drop-shadow(0 0 .6px #59424c59) drop-shadow(0 4px 3px #59424c17) drop-shadow(0 18px 18px #59424c24);
   }
   body {
     background: var(--color-canvas);
@@ -81,12 +115,14 @@
   button {
     cursor: pointer;
   }
+  button:disabled { cursor: not-allowed; }
   input[type="checkbox"] {
     width: 1.5rem;
     height: 1.5rem;
     accent-color: var(--color-love);
   }
 }
+.material-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
 .bottom-nav {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -94,10 +130,203 @@
   padding-top: 2rem;
   padding-bottom: calc(var(--nav-height) + 1.5rem);
 }
+.paper-card {
+  position: relative;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-paper);
+  background: var(--paper-grain), var(--color-surface);
+  box-shadow: var(--shadow-paper), inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
+}
+/* Letter: a ruled letterhead and a pressed wax seal. */
+.paper-card[data-material="letter"] {
+  padding-top: 2.25rem;
+  background:
+    linear-gradient(var(--color-line) 0 0) 50% 12px / calc(100% - 2.5rem) 1px no-repeat,
+    linear-gradient(var(--color-line) 0 0) 50% 15px / calc(100% - 2.5rem) 1px no-repeat,
+    var(--paper-grain), var(--color-surface);
+}
+.wax-seal, .paper-card[data-material="letter"]::before {
+  display: block; width: 3.25rem; height: 3.25rem;
+  background: url("/materials/illustrations/wax-seal.svg") center / contain no-repeat;
+  filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--color-ink) 22%, transparent));
+  pointer-events: none;
+}
+.paper-card[data-material="letter"]::before { content: ""; position: absolute; top: -1.2rem; right: 1.25rem; transform: rotate(10deg); }
+/* Booklet: cloth spine with saddle stitching over a short stack of pages. */
+.paper-card[data-material="booklet"] {
+  padding-left: 2.25rem;
+  box-shadow: 3px 3px 0 -1px var(--color-surface), 3px 3px 0 0 var(--color-line), 6px 6px 0 -1px var(--color-surface), 6px 6px 0 0 var(--color-line), var(--shadow-paper);
+}
+.paper-card[data-material="booklet"]::before {
+  content: ""; position: absolute; top: -1px; bottom: -1px; left: -1px; width: 1rem; pointer-events: none;
+  border-radius: var(--radius-paper) 0 0 var(--radius-paper);
+  background:
+    repeating-linear-gradient(transparent 0 7px, color-mix(in srgb, var(--color-love) 65%, transparent) 7px 14px) 50% 0 / 1.5px 100% no-repeat,
+    linear-gradient(90deg, color-mix(in srgb, var(--color-love) 26%, var(--color-love-soft)), var(--color-love-soft) 70%, color-mix(in srgb, var(--color-ink) 10%, var(--color-love-soft)));
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+/* Journal: rose margin rule and a ribbon bookmark hanging below the page. */
+.paper-card[data-material="journal"] {
+  padding-left: 2rem;
+  background:
+    linear-gradient(90deg, transparent 1rem, color-mix(in srgb, var(--color-love) 32%, transparent) 1rem calc(1rem + 1px), transparent calc(1rem + 1px)),
+    var(--paper-grain), var(--color-surface);
+}
+.paper-card[data-material="journal"]::after {
+  content: ""; position: absolute; z-index: 1; left: 2.5rem; bottom: -1.1rem; width: .875rem; height: 2.1rem; pointer-events: none;
+  background: linear-gradient(90deg, #0000001a, transparent 30% 70%, #00000014), var(--color-love);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+}
+.journal-welcome { position: relative; padding-right: 8rem; }
+.journal-welcome > .love-doodle { position: absolute; width: 6.5rem; top: 1.5rem; right: 1rem; }
+.journal-stats { border-radius: var(--radius-paper); background: var(--paper-grain), var(--color-surface); box-shadow: var(--shadow-paper); }
+.journal-stats > div { padding: .5rem; border-bottom: 1px dashed var(--color-line); }
+/* Scrapbook: entries taped onto the page with alternating washi strips. */
+.scrapbook-list { display: grid; gap: 1.75rem; padding-left: .75rem; border-left: 1px dashed var(--color-line); }
+.scrapbook-entry::before {
+  content: ""; position: absolute; top: -.7rem; left: 1.25rem; width: 4.75rem; height: 1.3rem; pointer-events: none;
+  background: url("/materials/paper/washi-tape.svg") center / 100% 100% no-repeat; transform: rotate(-5deg);
+}
+.scrapbook-entry:nth-child(even)::before { left: auto; right: 1.5rem; transform: rotate(4deg); }
+.scrapbook-entry:nth-child(odd) { rotate: -.25deg; }
+.scrapbook-entry:nth-child(even) { rotate: .3deg; }
+.scrapbook-icon { flex-shrink: 0; width: 2.75rem; height: 2.75rem; padding: .45rem; border-radius: 50%; }
+.scrapbook-entry .rubber-stamp { --stamp-size: 88px; margin: -.5rem 0 -.25rem auto; }
+@media (min-width: 640px) {
+  .scrapbook-entry:has(.rubber-stamp) { padding-right: 8rem; }
+  .scrapbook-entry .rubber-stamp { position: absolute; right: 1.25rem; top: 50%; margin: -44px 0 0; }
+}
+/* Landing: a playable ticket and the three states of a real one. */
+.ticket-demo { display: grid; gap: 14px; }
+.ticket-demo-label { color: var(--color-muted); }
+.demo-steps { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--color-muted); }
+.demo-steps li { display: inline-flex; align-items: center; gap: 6px; }
+.demo-steps li > span, .landing-showcase-caption > span {
+  display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid var(--color-line); border-radius: 50%;
+  background: var(--color-surface); font: 600 11px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.demo-steps li[aria-current="step"] { color: var(--color-love); font-weight: 600; }
+.demo-steps li[aria-current="step"] > span { border-color: var(--color-love); background: var(--color-love); color: var(--color-on-action); }
+.demo-steps li[data-done] > span { border-color: transparent; background: var(--color-success-paper); color: var(--color-success-ink); }
+.demo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.landing-showcase { display: grid; gap: 6px; }
+.landing-showcase-list { display: grid; gap: 28px; margin-top: 18px; }
+.landing-showcase-caption { display: flex; align-items: center; gap: 8px; margin-bottom: 22px; color: var(--color-muted); font-size: 14px; }
+@media (min-width: 960px) {
+  .landing-showcase-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story { grid-template-columns: minmax(0, 1fr) 76px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story h2 { font-size: 22px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .rubber-stamp { --stamp-size: 92px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-stub-serial { display: none; }
+  .landing-showcase-list > li:has(> .pocket-ticket[data-open]) { grid-column: 1 / -1; justify-self: center; width: min(100%, 46rem); }
+}
+/* Landing: a static picture of the signed-in home ("บ้านของเรา"). */
+.landing-home { display: grid; align-items: center; gap: 32px; }
+.landing-home-copy { display: grid; justify-items: start; gap: 14px; }
+.landing-home-copy ul { display: grid; gap: 10px; }
+.landing-home-copy li { display: flex; align-items: center; gap: 10px; }
+.landing-home-copy .stationery-icon { flex-shrink: 0; width: 1.75rem; height: 1.75rem; color: var(--color-love); }
+.dashboard-preview { position: relative; margin: 0; }
+.dashboard-preview-page {
+  display: grid; gap: 14px; padding: 18px 18px 12px;
+  border: 1px solid var(--color-line); border-radius: 14px;
+  background: var(--paper-grain), var(--color-canvas);
+  box-shadow: var(--shadow-paper), 0 28px 40px -28px color-mix(in srgb, var(--color-ink) 35%, transparent);
+  rotate: .8deg; user-select: none;
+}
+.dashboard-preview-tag {
+  position: absolute; z-index: 2; top: -.8rem; left: 1.5rem; padding: .15rem 1.1rem;
+  background: url("/materials/paper/washi-tape.svg") center / 100% 100% no-repeat;
+  font-size: 12px; font-weight: 600; rotate: -4deg;
+}
+.dashboard-preview figcaption { margin-top: 14px; color: var(--color-muted); font-size: 13px; text-align: center; }
+.dashboard-preview-header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--color-line); }
+.dashboard-preview-header .brand-heart { width: 2rem; height: 2rem; margin: 0; font-size: 1.35rem; }
+.dashboard-preview-title { font-family: var(--font-mali), sans-serif; font-size: 18px; font-weight: 600; line-height: 1.3; }
+.dashboard-preview-subtitle { color: var(--color-muted); font-size: 12px; }
+.dashboard-preview-welcome { padding: 14px 6.5rem 22px 2rem; font-size: 13px; }
+.dashboard-preview-welcome > .love-doodle { top: .9rem; right: .75rem; width: 5rem; }
+.dashboard-preview-heading { font-family: var(--font-mali), sans-serif; font-size: 16px; font-weight: 600; }
+.dashboard-preview-button { display: inline-flex; margin-top: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+.dashboard-preview-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 1px solid var(--color-line); }
+.dashboard-preview-stats dt { color: var(--color-muted); font-size: 11px; line-height: 1.4; }
+.dashboard-preview-stats dd { color: var(--color-love); font-size: 18px; font-weight: 600; }
+.dashboard-preview-tickets { display: grid; gap: 8px; filter: var(--shadow-ticket); }
+/* Mini ticket: notched edge, printed stub and rarity colour, sized for previews. */
+.mini-ticket {
+  --accent: var(--color-rarity-common-paper); --ink: var(--color-rarity-common-ink);
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 14px 9px 18px; color: var(--ink); font-size: 13px;
+  background: var(--paper-grain), color-mix(in srgb, var(--accent) 45%, var(--color-surface));
+  mask:
+    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+}
+.mini-ticket[data-rarity="RARE"] { --accent: var(--color-rarity-rare-paper); --ink: var(--color-rarity-rare-ink); }
+.mini-ticket[data-rarity="EPIC"] { --accent: var(--color-rarity-epic-paper); --ink: var(--color-rarity-epic-ink); }
+.mini-ticket[data-rarity="LEGENDARY"] { --accent: var(--color-rarity-legendary-paper); --ink: var(--color-rarity-legendary-ink); }
+.mini-ticket[data-rarity="MYTHIC"] { --accent: var(--color-rarity-mythic-paper); --ink: var(--color-rarity-mythic-ink); background: var(--paper-grain), var(--rarity-mythic-foil); }
+.rarity-foil { background: var(--rarity-mythic-foil); }
+.mini-ticket-name { font-weight: 600; }
+.mini-ticket-status { padding-left: 12px; border-left: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent); font-size: 12px; white-space: nowrap; }
+.mini-ticket[data-state="pending"] .mini-ticket-status { color: var(--color-pending-ink); }
+.mini-ticket[data-state="used"] .mini-ticket-status { color: var(--color-stamp); }
+.mini-ticket[data-state="used"]::after {
+  content: "USED ♡"; position: absolute; top: 50%; right: 38%; translate: 0 -50%; rotate: -9deg; padding: 0 6px;
+  border: 1.5px solid currentColor; border-radius: 4px; color: var(--color-stamp);
+  font: 700 10px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .1em;
+  filter: url(#lp-stamp-ink); mix-blend-mode: multiply; opacity: .8;
+}
+.dashboard-preview-nav { display: flex; justify-content: space-around; padding-top: 10px; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: 11px; }
+.dashboard-preview-nav span { display: grid; justify-items: center; gap: 2px; }
+.dashboard-preview-nav .stationery-icon { width: 1.4rem; height: 1.4rem; }
+.dashboard-preview-nav [data-current] { color: var(--color-love); font-weight: 600; }
+@media (min-width: 768px) {
+  .landing-home { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+}
+@media (max-width: 479px) {
+  .dashboard-preview-page { rotate: none; padding: 14px 12px 10px; }
+  .dashboard-preview-welcome { padding-right: 1.25rem; }
+  .dashboard-preview-welcome > .love-doodle { position: static; width: 4rem; margin-left: auto; }
+  .dashboard-preview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mini-ticket[data-state="used"]::after { right: 46%; }
+}
+.couple-story { max-width: 36rem; margin-inline: auto; padding-block: 2rem; }
+.couple-story .love-doodle { width: 9rem; margin-inline: auto; }
+.gift-success { animation: gift-arrive 350ms var(--ease-paper) both; }
+/* Envelope: resting state is open; the animation plays the opening once. */
+.envelope { position: relative; width: min(15rem, 80%); aspect-ratio: 200 / 130; margin: 5.5rem auto 1rem; perspective: 700px; }
+.envelope > svg, .envelope-flap { position: absolute; left: 0; top: 0; width: 100%; }
+.envelope > svg { height: 100%; }
+.envelope-back { z-index: 0; }
+.envelope-front { z-index: 2; filter: drop-shadow(0 6px 8px color-mix(in srgb, var(--color-ink) 14%, transparent)); }
+.envelope-letter {
+  position: absolute; z-index: 1; left: 8%; right: 8%; top: 7%; height: 82%;
+  display: grid; align-content: start; justify-items: center; gap: 0; padding: .6rem .5rem;
+  border: 1px solid var(--color-line); border-radius: 3px;
+  background: linear-gradient(var(--color-line) 0 0) 50% 1.6rem / 70% 1px no-repeat, var(--paper-grain), var(--color-surface);
+  color: var(--color-muted); font-size: .75rem; line-height: 1.5; text-align: center;
+  transform: translateY(-44%);
+}
+.envelope-letter strong { font-family: var(--font-mali), sans-serif; font-size: 1.75rem; line-height: 1.3; color: var(--color-love); margin-top: .35rem; }
+.envelope-flap { z-index: 0; height: 61.5%; transform-origin: 50% 0; transform: rotateX(180deg); transform-style: preserve-3d; }
+.envelope-flap > svg { display: block; width: 100%; height: 100%; }
+.envelope-flap > .wax-seal { position: absolute; left: 50%; bottom: -1.1rem; width: 2.5rem; height: 2.5rem; margin-left: -1.25rem; backface-visibility: hidden; transform: translateZ(1px); }
+.envelope-flap { animation: envelope-open 650ms var(--ease-paper) 250ms both; }
+.envelope-letter { animation: letter-rise 650ms var(--ease-paper) 750ms both; }
+@keyframes envelope-open { 0%, 49% { transform: none; z-index: 3; } 50%, 100% { z-index: 0; } 100% { transform: rotateX(180deg); } }
+@keyframes letter-rise { from { transform: none; } to { transform: translateY(-44%); } }
+.app-dialog { border: 1px solid var(--color-line); }
+.app-dialog::backdrop { background: var(--color-overlay); }
+.page-heading { padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-line); }
+@media (max-width: 479px) {
+  .journal-welcome { padding-right: 1.25rem; }
+  .journal-welcome > .love-doodle { position: static; width: 5rem; margin-left: auto; }
+}
 .cart-bar {
   bottom: var(--nav-height);
 }
-.app-header { background: var(--color-canvas); }
+.app-header { background: var(--color-surface); }
 .brand-heart {
   display: inline-grid;
   place-items: center;
@@ -110,53 +339,6 @@
   font-size: 2rem;
   transform: rotate(-10deg);
   transition: transform 240ms ease;
-}
-.love-note {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 10rem;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  border: 1px solid var(--color-line);
-  border-radius: 1rem 1rem 2.5rem 1rem;
-  background: var(--color-surface);
-  background-image: radial-gradient(var(--color-line) .75px, transparent .75px);
-  background-size: 12px 12px;
-}
-.love-note::before {
-  content: "";
-  position: absolute;
-  top: -.5rem;
-  left: 2rem;
-  width: 4rem;
-  height: 1rem;
-  background: var(--color-love-soft);
-  opacity: .85;
-  transform: rotate(-5deg);
-}
-.love-note .page-heading { margin-bottom: 0; }
-.love-note h1 { line-height: 1.6; }
-.note-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: .5rem;
-  color: var(--color-love);
-  font-size: .625rem;
-  font-weight: 600;
-  letter-spacing: .14em;
-}
-.note-eyebrow span { font-size: 1.25rem; }
-.note-link { margin: .5rem 0 0 -.75rem; color: var(--color-love); font-size: .875rem; }
-.note-caption {
-  position: absolute;
-  right: 1.5rem;
-  bottom: .75rem;
-  color: var(--color-muted);
-  font-family: var(--font-mali), sans-serif;
-  font-size: .625rem;
-  transform: rotate(-4deg);
 }
 .love-doodle { width: 100%; max-width: 15rem; overflow: visible; }
 .doodle-friend { transform-box: fill-box; transform-origin: center bottom; }
@@ -192,33 +374,21 @@
   transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 .rarity-filter[aria-pressed="true"] { border-color: var(--color-love); background: var(--color-surface); color: var(--color-love); }
-.coupon-ticket {
-  position: relative;
-  border-color: color-mix(in srgb, var(--ticket-color) 75%, var(--color-control));
-  background: color-mix(in srgb, var(--ticket-color) 38%, var(--color-surface));
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--ticket-color) 75%, var(--color-line));
-  animation: content-arrive 600ms cubic-bezier(.2,.8,.2,1) backwards;
-  transition: transform 240ms ease, box-shadow 240ms ease;
+.ui-button {
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  transition: color var(--motion-soft), background-color var(--motion-soft), box-shadow var(--motion-soft), transform var(--motion-press);
 }
-.coupon-ticket:nth-child(2n) { animation-delay: 80ms; }
-.coupon-ticket:nth-child(3n) { animation-delay: 160ms; }
-.coupon-ticket:nth-child(4n) { animation-delay: 240ms; }
-.coupon-ticket h2 { line-height: 1.7; }
-.coupon-sticker {
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 3.5rem;
-  height: 3.5rem;
-  border: 2px solid var(--color-surface);
-  border-radius: 42% 50% 44% 48%;
-  background: var(--ticket-color, var(--color-love-soft));
-  box-shadow: 0 2px 0 #3b243012;
-  font-size: 2rem;
-  transform: rotate(-8deg);
-  transition: transform 300ms cubic-bezier(.2,.8,.2,1.4);
-}
-.ui-button { transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+.ui-button-primary { background: var(--color-love); color: var(--color-on-action); box-shadow: 0 2px 0 var(--color-love-hover); }
+.ui-button-secondary { background: var(--color-surface); color: var(--color-love); border-color: var(--color-control); }
+.ui-button-danger { background: var(--color-danger-soft); color: var(--color-danger); border-color: var(--color-danger); }
+.ui-button-ghost { color: var(--color-muted); }
+.ui-button[data-size="sm"] { min-height: 2.75rem; min-width: 2.75rem; padding: .5rem .75rem; font-size: .875rem; }
+.ui-button:disabled { background: var(--color-disabled); color: var(--color-disabled-ink); border-color: var(--color-line); box-shadow: none; }
+.ui-control { border-radius: var(--radius-control); transition: border-color var(--motion-soft), box-shadow var(--motion-soft); }
+.ui-control:focus-visible { border-color: var(--color-focus); }
+.ui-control[aria-invalid="true"] { border-color: var(--color-danger); background: var(--color-danger-soft); }
+.ui-control:disabled, fieldset:disabled .ui-control { background: var(--color-disabled); color: var(--color-disabled-ink); cursor: not-allowed; }
 .ui-button:not(:disabled):active { transform: translateY(2px) scale(.97); box-shadow: none; }
 .page-enter { animation: page-arrive 360ms ease backwards; }
 .love-notice { animation: content-arrive 400ms cubic-bezier(.2,.8,.2,1) both; }
@@ -234,11 +404,13 @@
   animation: sticker-arrive 400ms ease both;
 }
 @media (hover: hover) and (pointer: fine) {
-  .coupon-ticket:hover { transform: translateY(-5px) rotate(-.5deg); box-shadow: 0 8px 0 -3px var(--ticket-color); }
+  .ui-button-primary:not(:disabled):hover { background: var(--color-love-hover); }
+  .ui-button-secondary:not(:disabled):hover, .ui-button-ghost:not(:disabled):hover { background: var(--color-love-soft); color: var(--color-love-hover); }
+  .ui-button-danger:not(:disabled):hover { background: var(--color-danger); color: var(--color-on-action); }
   .nav-link:hover svg { transform: translateY(-3px) rotate(-5deg); }
   .app-header a:hover .brand-heart { transform: rotate(8deg) scale(1.08); }
   .rarity-filter:hover { transform: translateY(-2px); }
-  .status-tab:hover { color: var(--color-love); background: var(--color-love-soft); }
+  .status-tab:not(:disabled):hover { color: var(--color-love); background: var(--color-love-soft); }
 }
 @keyframes content-arrive {
   from { opacity: 0; transform: translateY(18px) rotate(-1deg) scale(.97); }
@@ -250,15 +422,8 @@
 @keyframes friend-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg) translateY(-3px); } }
 @keyframes heart-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.08); } }
 @keyframes sparkle { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
-@media (min-width: 640px) {
-  .love-note { grid-template-columns: minmax(0, 1fr) 13rem; padding: 2rem; }
-  .note-eyebrow { font-size: .75rem; }
-  .note-caption { right: 2rem; bottom: 1rem; font-size: .75rem; }
-}
+
 @media (max-width: 479px) {
-  .love-note { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 1.25rem; }
-  .love-note .love-doodle { width: 7rem; justify-self: end; margin-top: -.75rem; }
-  .note-caption { left: 1.25rem; right: auto; bottom: 2rem; }
   .status-tab { padding-inline: .75rem; }
 }
 .success-pop {

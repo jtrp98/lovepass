@@ -12,9 +12,13 @@ Category describes the promise and chooses the illustration. Rarity/tier describ
 | `CARE` | ดูแลกัน | `frontend/public/illustrations/coupons/care.svg` — warm cup |
 | `WISH` | ขอพร | `frontend/public/illustrations/coupons/wish.svg` — folded wishing star |
 | `ADVENTURE` | เที่ยวด้วยกัน | `frontend/public/illustrations/coupons/adventure.svg` — folded map |
+| `GIFT` | ของขวัญและเงิน | `frontend/public/illustrations/coupons/gift.svg` — ribbon-tied box with a tag |
+| `POWER` | พลังพิเศษ | `frontend/public/illustrations/coupons/power.svg` — perforated ticket with a replay arrow |
 | `OTHER` | คำสัญญาอื่น ๆ | `frontend/public/illustrations/coupons/other.svg` — heart fallback |
 
-All seven are original SVG sources with `viewBox="0 0 120 110"` and a shared `drawing` group. `TicketIllustration` references them with `<use href="/illustrations/coupons/wish.svg#drawing">`, inheriting `currentColor` and `--pocket-accent` from the ticket. Replacing one file updates the illustration for the entire category; there are no per-coupon images to regenerate. API values are mapped through a local allowlist, never treated as asset paths or injected SVG markup.
+`GIFT` holds money and gifts handed over. `POWER` holds coupons that act on other coupons; their behaviour comes from the template's `Effect`, never from the category. `OTHER` stays as the fallback for old snapshots.
+
+All nine are original SVG sources with `viewBox="0 0 120 110"` and a shared `drawing` group. `TicketIllustration` references them with `<use href="/illustrations/coupons/wish.svg#drawing">`, inheriting `currentColor` and `--pocket-accent` from the ticket. Replacing one file updates the illustration for the entire category; there are no per-coupon images to regenerate. API values are mapped through a local allowlist, never treated as asset paths or injected SVG markup.
 
 `frontend/src/lib/coupon-categories.ts` owns the Thai labels and asset paths. `CouponCategory.cs` owns the backend enum. Add a new value to both when extending the fixed catalogue. These are a small fixed list; a new category-management database table or SVG upload system is unnecessary for this feature.
 

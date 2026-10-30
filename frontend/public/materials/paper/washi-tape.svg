@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="26" viewBox="0 0 96 26">
+  <!-- Translucent washi tape: torn fibrous ends, printed dots and a faint woven sheen. -->
+  <defs>
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+      <circle cx="2" cy="2" r=".9" fill="#fffcf7" opacity=".75"/>
+      <path d="M6 6.6s-1.3-.8-1.3-1.6c0-.8 1-1 1.3-.3.4-.7 1.3-.5 1.3.3 0 .8-1.3 1.6-1.3 1.6Z" fill="#c9688a" opacity=".55"/>
+    </pattern>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".35"/>
+      <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a64062" stop-opacity=".08"/>
+    </linearGradient>
+  </defs>
+  <path id="strip" d="M3 1.2 1.4 4l1.8 2.3L.8 9.6l2 2.6-1.6 3 1.9 2.4-1.7 3.4 1.6 2.4L2.6 25h90.6l1.6-2.5-1.4-2.6 1.8-3-1.7-2.7 1.9-2.6-1.6-3.1 1.7-2.4-1.8-2.8L95 1.2Z" fill="#f2c4d2" fill-opacity=".82"/>
+  <path d="M3 1.2 1.4 4l1.8 2.3L.8 9.6l2 2.6-1.6 3 1.9 2.4-1.7 3.4 1.6 2.4L2.6 25h90.6l1.6-2.5-1.4-2.6 1.8-3-1.7-2.7 1.9-2.6-1.6-3.1 1.7-2.4-1.8-2.8L95 1.2Z" fill="url(#dots)"/>
+  <path d="M3 1.2 1.4 4l1.8 2.3L.8 9.6l2 2.6-1.6 3 1.9 2.4-1.7 3.4 1.6 2.4L2.6 25h90.6l1.6-2.5-1.4-2.6 1.8-3-1.7-2.7 1.9-2.6-1.6-3.1 1.7-2.4-1.8-2.8L95 1.2Z" fill="url(#sheen)"/>
+  <path d="M5 3.4h86M5 22.6h86" stroke="#fffcf7" stroke-width=".6" stroke-dasharray="3 2" opacity=".6"/>
+</svg>

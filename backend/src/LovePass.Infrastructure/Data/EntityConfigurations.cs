@@ -52,6 +52,8 @@ public class CouponTemplateConfiguration : IEntityTypeConfiguration<CouponTempla
         builder.Property(t => t.Terms).HasMaxLength(1000);
         builder.Property(t => t.Rarity).HasConversion<string>().HasMaxLength(20);
         builder.Property(t => t.Category).HasConversion<string>().HasMaxLength(20).HasDefaultValue(LovePass.Domain.Enums.CouponCategory.Other);
+        builder.Property(t => t.Effect).HasConversion<string>().HasMaxLength(20).HasDefaultValue(LovePass.Domain.Enums.CouponEffect.None);
+        builder.Property(t => t.MetaLocked).HasDefaultValue(false);
         builder.Property(t => t.Emoji).HasMaxLength(16);
         builder.HasQueryFilter(t => !t.IsDeleted);
     }
@@ -113,6 +115,9 @@ public class RedemptionConfiguration : IEntityTypeConfiguration<Redemption>
         builder.HasIndex(r => new { r.Status, r.ApproverId });
 
         builder.HasOne(r => r.IssuedCoupon).WithMany().HasForeignKey(r => r.IssuedCouponId).OnDelete(DeleteBehavior.Restrict);
+        builder.Property(r => r.TargetSnapshot).HasColumnType("jsonb");
+        builder.HasOne(r => r.TargetIssuedCoupon).WithMany().HasForeignKey(r => r.TargetIssuedCouponId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CouponTemplate>().WithMany().HasForeignKey(r => r.TargetTemplateId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(r => r.Requester).WithMany().HasForeignKey(r => r.RequesterId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(r => r.Approver).WithMany().HasForeignKey(r => r.ApproverId).OnDelete(DeleteBehavior.SetNull);
     }

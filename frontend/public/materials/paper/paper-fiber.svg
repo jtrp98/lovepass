@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+  <!-- Tileable cotton-paper surface: tonal mottling, two fibre directions and fine grain. Transparent; lay over a paper colour. -->
+  <defs>
+    <filter id="mottle" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".009" numOctaves="2" seed="4" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 .86  0 0 0 0 .64  0 0 0 0 .66  1.6 0 0 0 -.68"/>
+    </filter>
+    <filter id="fibres-a" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency=".011 .085" numOctaves="2" seed="11" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .36  0 0 0 0 .41  -7 0 0 0 .52"/>
+    </filter>
+    <filter id="fibres-b" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency=".08 .013" numOctaves="2" seed="29" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .36  0 0 0 0 .41  -7 0 0 0 .5"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".92" numOctaves="2" seed="2" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .29  2.4 0 0 0 -1.12"/>
+    </filter>
+    <filter id="flecks" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="1" seed="17" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  9 0 0 0 -5.6"/>
+    </filter>
+  </defs>
+  <rect width="320" height="320" filter="url(#mottle)" opacity=".1"/>
+  <rect width="320" height="320" filter="url(#fibres-a)" opacity=".11"/>
+  <rect width="320" height="320" filter="url(#fibres-b)" opacity=".08"/>
+  <rect width="320" height="320" filter="url(#grain)" opacity=".13"/>
+  <rect width="320" height="320" filter="url(#flecks)" opacity=".5"/>
+</svg>

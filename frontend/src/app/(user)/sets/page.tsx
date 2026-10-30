@@ -4,6 +4,7 @@ import { LinkButton, ErrorState, Skeleton, Card, EmptyState, PageTitle, RarityBa
 import { useResource } from "@/lib/use-resource";
 import { api } from "@/lib/api";
 import { GiftViews } from "@/components/nav";
+import { StationeryIcon } from "@/components/stationery";
 
 export default function SetsPage() {
   const resource = useResource(api.catalog.sets);
@@ -27,7 +28,7 @@ export default function SetsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {sets.map((set) => (
-            <Card key={set.id} className="flex flex-col gap-3">
+            <Card key={set.id} variant="booklet" className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2 items-center justify-between">
                 <p className="text-lg font-semibold">{set.name}</p>
                 <span className="rounded-full bg-love-soft px-2.5 py-0.5 text-xs font-semibold text-love">
@@ -40,10 +41,10 @@ export default function SetsPage() {
                 {set.items.map((item) => (
                   <li
                     key={item.couponTemplateId}
-                    className="flex flex-wrap gap-2 items-center justify-between gap-2 rounded-lg bg-canvas px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-line px-3 py-2"
                   >
                     <span className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="text-lg">{item.emoji ?? "🎟️"}</span>
+                      <StationeryIcon name="ticket" className="h-6 w-6 text-love" />
                       {item.name}
                     </span>
                     <span className="flex flex-wrap items-center gap-2">

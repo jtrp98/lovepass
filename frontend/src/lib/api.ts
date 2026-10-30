@@ -12,6 +12,7 @@ import type {
   GiftResult,
   HistoryEntry,
   InvitationResult,
+  MetaTarget,
   MyCoupon,
   Redemption,
   SentGift,
@@ -204,11 +205,12 @@ export const api = {
   coupons: {
     my: (rarity?: string) => get<MyCoupon[]>(`/api/v1/coupons/my${rarity ? `?rarity=${rarity}` : ""}`),
     dashboard: () => get<Dashboard>("/api/v1/coupons/dashboard"),
+    metaTargets: (issuedCouponId: number) => get<MetaTarget[]>(`/api/v1/coupons/${issuedCouponId}/meta-targets`),
   },
 
   redemptions: {
-    request: (issuedCouponId: number, message?: string) =>
-      post<Redemption>("/api/v1/redemptions", { issuedCouponId, message }),
+    request: (issuedCouponId: number, message?: string, target?: { targetIssuedCouponId?: number; targetTemplateId?: number }) =>
+      post<Redemption>("/api/v1/redemptions", { issuedCouponId, message, ...target }),
     list: (direction: "sent" | "received") => get<Redemption[]>(`/api/v1/redemptions?direction=${direction}`),
     approve: (id: number) => post<Redemption>(`/api/v1/redemptions/${id}/approve`),
     reject: (id: number) => post<Redemption>(`/api/v1/redemptions/${id}/reject`),

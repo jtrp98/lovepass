@@ -2,7 +2,6 @@
 
 import {
   Button,
-  Dialog,
   LinkButton,
   Notice,
   ErrorState,
@@ -11,13 +10,13 @@ import {
   RarityBadge,
 } from "@/components/ui";
 import { GiftViews } from "@/components/nav";
-import { LoveTicket, TicketDetail, type LoveTicketData } from "@/components/love-ticket";
+import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { useResource } from "@/lib/use-resource";
 import { api, giftCart, type CartItem } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
 import type { CouponTemplate, Rarity } from "@/types";
 
-const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"];
+const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
 
 function toTicket(template: CouponTemplate): LoveTicketData {
   return { id: `LP-${String(template.id).padStart(4, "0")}`, name: template.name, note: template.description, terms: template.terms, rarity: template.rarity, category: template.category, state: "available" };
@@ -110,25 +109,17 @@ export default function CatalogPage() {
       ) : (
         <div className="pocket-collection">
           {templates.map((template) => (
-            <LoveTicket key={template.id} ticket={toTicket(template)} catalog onOpen={() => {
+            <LoveTicket key={template.id} ticket={toTicket(template)} catalog open={selected?.id === template.id} onClose={() => setSelected(null)} onOpen={() => {
               setFeedback(null);
               setSelected(template);
-            }} />
+            }}>
+              {feedback?.id === template.id && <Notice>{feedback.text}</Notice>}
+              <Button onClick={() => addToCart(template, 1)}>เพิ่มลงของขวัญ</Button>
+            </LoveTicket>
           ))}
         </div>
       )}
 
-      {selected && (
-        <Dialog title={selected.name} className="ticket-dialog" onClose={() => setSelected(null)}>
-          <TicketDetail ticket={toTicket(selected)}>
-            {feedback?.id === selected.id && <Notice>{feedback.text}</Notice>}
-            <div className="pocket-dialog-actions">
-              <Button variant="secondary" className="flex-1" onClick={() => setSelected(null)}>ปิด</Button>
-              <Button className="flex-1" onClick={() => addToCart(selected, 1)}>เพิ่มลงของขวัญ</Button>
-            </div>
-          </TicketDetail>
-        </Dialog>
-      )}
 
       {totalInCart > 0 ? (
         <div className="cart-bar fixed inset-x-0 z-30 border-t border-control bg-surface p-3">
