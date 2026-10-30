@@ -38,8 +38,12 @@ public sealed class GetMyCouponsQueryHandler(IApplicationDbContext db, ICurrentU
         var userId = currentUser.RequiredUserId();
         var now = DateTime.UtcNow;
 
+        var partnerIds = await ActivePartnerIds(db, userId, cancellationToken);
+
+        // คูปองจากคู่ที่ยกเลิกไปแล้วไม่อยู่ในกระเป๋าที่ใช้ได้ — ยังดูเป็นประวัติได้ที่หน้าคำขอและของขวัญ
         var coupons = await db.IssuedCoupons.AsNoTracking()
             .Where(c => c.ReceiverId == userId
+                && partnerIds.Contains(c.SenderId)
                 && c.Status == IssuedCouponStatus.Active
                 && c.ExpiresAt > now)
             .OrderBy(c => c.ExpiresAt) // FEFO — หมดอายุเร็วที่สุดมาก่อน
@@ -55,6 +59,13 @@ public sealed class GetMyCouponsQueryHandler(IApplicationDbContext db, ICurrentU
 
         return result;
     }
+
+    /// <summary>ผู้ใช้ที่จับคู่อยู่กับ userId ตอนนี้ (คู่ที่ Active เท่านั้น)</summary>
+    internal static Task<List<int>> ActivePartnerIds(IApplicationDbContext db, int userId, CancellationToken cancellationToken)
+        => db.CoupleMembers.AsNoTracking()
+            .Where(m => m.Couple!.Status == CoupleStatus.Active && m.Couple.Members.Any(o => o.UserId == userId) && m.UserId != userId)
+            .Select(m => m.UserId)
+            .ToListAsync(cancellationToken);
 
     internal static MyCouponDto Map(IssuedCoupon c, DateTime now)
     {
@@ -153,8 +164,9 @@ public sealed class GetDashboardQueryHandler(IApplicationDbContext db, ICurrentU
         var now = DateTime.UtcNow;
         var soon = now.AddDays(7);
 
+        var partnerIds = await GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
         var received = await db.IssuedCoupons.AsNoTracking()
-            .Where(c => c.ReceiverId == userId && c.Status == IssuedCouponStatus.Active && c.ExpiresAt > now)
+            .Where(c => c.ReceiverId == userId && partnerIds.Contains(c.SenderId) && c.Status == IssuedCouponStatus.Active && c.ExpiresAt > now)
             .ToListAsync(cancellationToken);
 
         var used = await db.Redemptions.AsNoTracking()
