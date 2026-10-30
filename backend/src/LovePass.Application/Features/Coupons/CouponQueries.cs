@@ -170,7 +170,7 @@ public sealed class GetDashboardQueryHandler(IApplicationDbContext db, ICurrentU
             .ToListAsync(cancellationToken);
 
         var used = await db.Redemptions.AsNoTracking()
-            .CountAsync(r => r.RequesterId == userId && r.Status == RedemptionStatus.Approved, cancellationToken);
+            .CountAsync(r => r.RequesterId == userId && partnerIds.Contains(r.IssuedCoupon!.SenderId) && r.Status == RedemptionStatus.Approved, cancellationToken);
 
         var pending = await db.Redemptions.AsNoTracking()
             .CountAsync(r => r.Status == RedemptionStatus.Pending
