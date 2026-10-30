@@ -271,7 +271,7 @@ export default function AdminCouponsPage() {
       ) : templates.length === 0 ? (
         <EmptyState title="ยังไม่มีต้นแบบคูปอง" hint="กดสร้างต้นแบบคูปอง แรกของระบบ" />
       ) : (
-        <div className="admin-table overflow-x-auto rounded-xl border border-control bg-white">
+        <div className="admin-table overflow-x-auto rounded-xl border border-control bg-surface">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-control bg-canvas text-left text-xs uppercase text-muted">

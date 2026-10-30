@@ -1,10 +1,16 @@
 "use client";
-import { CouponCard, LinkButton } from "@/components/ui";
+import { Button, Dialog, LinkButton } from "@/components/ui";
+import { LoveTicket, TicketDetail, type LoveTicketData } from "@/components/love-ticket";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+const example: LoveTicketData = {
+  id: "FOR-YOU", name: "กอดเติมพลัง", note: "เหนื่อยเมื่อไหร่ มารับกอดอุ่น ๆ ได้หนึ่งครั้ง",
+  terms: "เลือกเวลาที่เราทั้งคู่สะดวก", rarity: "COMMON", category: "AFFECTION", state: "available",
+};
 export default function LandingPage() {
+  const [showExample, setShowExample] = useState(false);
   const { user, ready } = useAuth(),
     router = useRouter();
   useEffect(() => {
@@ -30,16 +36,10 @@ export default function LandingPage() {
           </LinkButton>
         </div>
       </div>
-      <CouponCard rarity="RARE" className="space-y-4">
-        <p className="text-sm text-sky-ink">ตัวอย่างคูปอง · สำหรับคนพิเศษ</p>
-        <span aria-hidden="true" className="block text-5xl">
-          🤗
-        </span>
-        <h2 className="text-2xl">กอดเติมพลัง</h2>
-        <p>เหนื่อยเมื่อไหร่ มารับกอดอุ่น ๆ ได้หนึ่งครั้ง</p>
-        <p className="text-sm text-muted">เงื่อนไข: เลือกเวลาที่เราทั้งคู่สะดวก</p>
-        <p className="text-sm text-love">คำสัญญาเล็ก ๆ ที่ให้กันได้ทุกวัน</p>
-      </CouponCard>
+      <section aria-label="ตัวอย่างคูปอง" className="space-y-3">
+        <p className="pocket-mono text-muted">A LITTLE PREVIEW / ตัวอย่างคูปอง</p>
+        <LoveTicket ticket={example} catalog onOpen={() => setShowExample(true)} />
+      </section>
       <ol className="grid gap-4 md:col-span-2 md:grid-cols-3">
         {["เลือกคูปองที่อยากให้", "ส่งให้แฟนพร้อมวันหมดอายุ", "แฟนขอใช้ คุณกดยืนยัน"].map((text, i) => (
           <li key={text} className="rounded-xl bg-mint-soft p-4">
@@ -56,6 +56,14 @@ export default function LandingPage() {
           ติดต่อผู้ดูแล LOVE PASS
         </a>
       </footer>
+      {showExample && <Dialog title="ตัวอย่างคูปอง · กอดเติมพลัง" className="ticket-dialog" onClose={() => setShowExample(false)}>
+        <TicketDetail ticket={example} />
+        <p className="text-sm text-muted">นี่คือตั๋วตัวอย่าง เริ่มสมุดของคุณเพื่อเลือกคูปองให้คนพิเศษ</p>
+        <div className="pocket-dialog-actions">
+          <Button variant="secondary" onClick={() => setShowExample(false)}>ปิด</Button>
+          <LinkButton href="/register">เริ่มสมุดตั๋วของเรา</LinkButton>
+        </div>
+      </Dialog>}
     </main>
   );
 }

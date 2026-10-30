@@ -1,0 +1,73 @@
+{
+  "checks": [
+    "two Thai coupons in available/used/expired states reflow at 320, 390, 768, 1024 and 1440; actions ≥44px",
+    "confirm/back preserves note; request waits for approval; only one of two wish sheets is consumed",
+    "whole-card tapping, Enter, Escape, focus trap and focus restoration work",
+    "320px text-spacing overrides reflow; reduced motion disables lift and transitions",
+    "8 paper/accent/state text color pairs exceed 4.5:1",
+    "real request integration: no POST before confirmation, errors retain message/quantity, retry locks duplicate clicks, refresh shows reserved sheet without used stamp",
+    "pending and expired real coupon details cannot submit a new request",
+    "catalog ticket detail preserves the gift cart action"
+  ],
+  "screenshots": [
+    "pocket-available-320.png",
+    "pocket-available-390.png",
+    "pocket-used-390.png",
+    "pocket-receipt-390.png",
+    "pocket-expired-390.png",
+    "pocket-available-768.png",
+    "pocket-available-1024.png",
+    "pocket-available-1440.png",
+    "pocket-cards-1440.png",
+    "pocket-used-1440.png",
+    "pocket-receipt-1440.png",
+    "pocket-expired-1440.png",
+    "pocket-detail-390.png",
+    "pocket-confirm-390.png",
+    "pocket-stamped-390.png",
+    "pocket-product-320.png"
+  ],
+  "consoleErrors": [],
+  "contrast": [
+    {
+      "fg": "rgb(89, 66, 76)",
+      "bg": "rgb(255, 252, 247)",
+      "ratio": 8.888884464989298
+    },
+    {
+      "fg": "rgb(120, 93, 103)",
+      "bg": "rgb(255, 252, 247)",
+      "ratio": 5.7634939073390115
+    },
+    {
+      "fg": "rgb(117, 81, 124)",
+      "bg": "rgb(255, 252, 247)",
+      "ratio": 6.363738239794984
+    },
+    {
+      "fg": "rgb(89, 66, 76)",
+      "bg": "rgb(229, 238, 228)",
+      "ratio": 7.6596703648190045
+    },
+    {
+      "fg": "rgb(117, 81, 124)",
+      "bg": "rgb(239, 228, 240)",
+      "ratio": 5.280286670135815
+    },
+    {
+      "fg": "rgb(164, 81, 107)",
+      "bg": "rgb(255, 252, 247)",
+      "ratio": 5.171464152282799
+    },
+    {
+      "fg": "rgb(120, 93, 103)",
+      "bg": "rgb(255, 245, 247)",
+      "ratio": 5.521036687520608
+    },
+    {
+      "fg": "rgb(255, 255, 255)",
+      "bg": "rgb(166, 64, 98)",
+      "ratio": 5.947113306390086
+    }
+  ]
+}

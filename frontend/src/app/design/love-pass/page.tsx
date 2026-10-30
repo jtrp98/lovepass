@@ -19,8 +19,8 @@ const wish: LoveTicketData = {
   id: "LP-0015", name: "ตั๋วขอพร 1 ข้อ", note: "ขอมาได้หนึ่งอย่าง เราจะตั้งใจฟังเลย", terms: "คูปอง 1 ใบ ขอพรได้ 1 ข้อ ตกลงสิ่งที่เราทั้งคู่สบายใจก่อนใช้", rarity: "EPIC", state: "available", quantity: 2, expiresAt: "2026-11-29T16:59:59Z", from: "เจ", to: "เธอคนโปรด",
 };
 const initial: LoveTicketData[] = [hug, wish,
-  { ...hug, id: "LP-0008", state: "used", quantity: 0 },
-  { ...wish, id: "LP-0009", state: "used", quantity: 0 },
+  { ...hug, id: "LP-0008", state: "used", quantity: 0, redeemedAt: "2026-10-28T12:00:00Z" },
+  { ...wish, id: "LP-0009", state: "used", quantity: 0, redeemedAt: "2026-10-29T12:00:00Z" },
   { ...hug, id: "LP-0002", state: "expired", quantity: 0, expiresAt: "2026-09-29T16:59:59Z" },
   { ...wish, id: "LP-0003", state: "expired", quantity: 0, expiresAt: "2026-09-29T16:59:59Z" },
 ];
@@ -42,7 +42,7 @@ export default function LovePassDesign() {
   }
   function approve() {
     if (!selected || selected.state !== "pending") return;
-    const used = { ...selected, state: "used" as const, reserved: 0 };
+    const used = { ...selected, state: "used" as const, reserved: 0, redeemedAt: new Date().toISOString() };
     setTickets((items) => items.map((item) => item.id === used.id ? used : item));
     setSelected(used);
     setJustUsed(true);
@@ -111,7 +111,7 @@ export default function LovePassDesign() {
       </main>
       {selected && <Dialog title={selected.name} className="ticket-dialog" onClose={() => setSelected(null)}>
         {selected.state === "used" ? <div className="pocket-success">
-          <RedemptionReceipt ticket={selected} />
+          <RedemptionReceipt ticket={selected} animateStamp={justUsed} />
           <p className="pocket-demo-note">นี่คือการจำลองในสมุดตัวอย่าง</p>
           <div className="pocket-dialog-actions"><Button onClick={() => { setSelected(null); if (justUsed) setView("used"); }}>{justUsed ? "เก็บเข้าความทรงจำ" : "เก็บใบเสร็จไว้"}</Button></div>
         </div> : <TicketDetail ticket={selected}>

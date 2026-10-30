@@ -11,7 +11,6 @@ import {
   useState,
   type ReactElement,
   type ComponentProps,
-  type CSSProperties,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -21,13 +20,13 @@ import {
 
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 const variants = {
-  primary: "bg-love text-white hover:bg-love-hover",
-  secondary: "border border-control bg-love-soft text-love hover:bg-canvas",
-  danger: "bg-danger text-white hover:bg-danger-hover",
-  ghost: "text-muted hover:bg-canvas",
+  primary: "ui-button-primary",
+  secondary: "ui-button-secondary",
+  danger: "ui-button-danger",
+  ghost: "ui-button-ghost",
 };
 function buttonStyle(variant: Variant, className: string) {
-  return `ui-button inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-4 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`;
+  return `ui-button inline-flex min-h-12 min-w-12 items-center justify-center gap-2 px-4 py-2 text-base font-semibold ${variants[variant]} ${className}`;
 }
 export function Button({
   variant = "primary",
@@ -45,7 +44,7 @@ export function LinkButton({
   return <Link className={buttonStyle(variant, className)} {...props} />;
 }
 const controlStyle =
-  "min-h-12 w-full min-w-0 rounded-xl border border-control bg-surface px-3 py-2 text-base text-ink disabled:bg-canvas";
+  "ui-control min-h-12 w-full min-w-0 border border-control bg-surface px-3 py-2 text-base text-ink";
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`${controlStyle} ${className}`} {...props} />;
 }
@@ -105,60 +104,38 @@ export function Field({
     </div>
   );
 }
-export function Card({ className = "", children }: { className?: string; children: ReactNode }) {
+export function Card({ className = "", children, variant = "paper" }: {
+  className?: string;
+  children: ReactNode;
+  variant?: "paper" | "letter" | "booklet" | "journal";
+}) {
   return (
     <div
-      className={`min-w-0 rounded-2xl border border-love-soft bg-surface p-5 text-ink shadow-sm ${className}`}
+      className={`paper-card min-w-0 p-5 text-ink ${className}`}
+      data-material={variant}
     >
       {children}
     </div>
   );
 }
-export const rarityStyles: Record<Rarity, { label: string; badge: string; border: string; color: string }> = {
+export const rarityStyles: Record<Rarity, { label: string; badge: string }> = {
   COMMON: {
     label: "อบอุ่น · COMMON",
-    badge: "bg-mint-soft text-mint-ink",
-    border: "border-control",
-    color: "var(--color-mint-soft)",
+    badge: "bg-rarity-common-paper text-rarity-common-ink",
   },
   RARE: {
     label: "พิเศษ · RARE",
-    badge: "bg-sky-soft text-sky-ink",
-    border: "border-control",
-    color: "var(--color-sky-soft)",
+    badge: "bg-rarity-rare-paper text-rarity-rare-ink",
   },
   EPIC: {
     label: "สุดพิเศษ · EPIC",
-    badge: "bg-lavender-soft text-lavender-ink",
-    border: "border-control",
-    color: "var(--color-lavender-soft)",
+    badge: "bg-rarity-epic-paper text-rarity-epic-ink",
   },
   LEGENDARY: {
     label: "ล้ำค่า · LEGENDARY",
-    badge: "bg-butter-soft text-butter-ink",
-    border: "border-control",
-    color: "var(--color-butter-soft)",
+    badge: "bg-rarity-legendary-paper text-rarity-legendary-ink",
   },
 };
-export function CouponCard({
-  rarity = "COMMON",
-  className = "",
-  children,
-}: {
-  rarity?: Rarity;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <article
-      data-rarity={rarity}
-      style={{ "--ticket-color": rarityStyles[rarity].color } as CSSProperties}
-      className={`coupon-ticket min-w-0 rounded-2xl border p-5 text-ink sm:p-6 ${className}`}
-    >
-      {children}
-    </article>
-  );
-}
 export function RarityBadge({ rarity }: { rarity: Rarity | string }) {
   const style = rarityStyles[rarity as Rarity] ?? rarityStyles.COMMON;
   return (
@@ -178,9 +155,9 @@ export function StatusBadge({ status }: { status: string }) {
   };
   const style =
     status === "PENDING"
-      ? "bg-butter-soft text-butter-ink"
+      ? "bg-pending-paper text-pending-ink"
       : ["APPROVED", "ACTIVE"].includes(status)
-        ? "bg-mint-soft text-mint-ink"
+        ? "bg-success-paper text-success-ink"
         : status === "REJECTED"
           ? "bg-danger-soft text-danger"
           : "bg-canvas text-muted";
@@ -218,7 +195,7 @@ export function ErrorState({ message, retry }: { message: string; retry: () => v
 }
 export function Notice({ children }: { children: ReactNode }) {
   return (
-    <p role="status" className="love-notice rounded-xl bg-mint-soft px-3 py-2 text-mint-ink">
+    <p role="status" className="love-notice rounded-xl bg-success-paper px-3 py-2 text-success-ink">
       ✓ {children}
     </p>
   );

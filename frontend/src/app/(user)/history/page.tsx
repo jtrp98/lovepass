@@ -11,6 +11,7 @@ import {
 } from "@/components/ui";
 import { useResource } from "@/lib/use-resource";
 import { api } from "@/lib/api";
+import { RubberStamp } from "@/components/rubber-stamp";
 
 const typeMeta: Record<string, { emoji: string; label: string; className: string }> = {
   GIFT: { emoji: "🎁", label: "มอบคูปอง", className: "bg-love-soft text-love" },
@@ -38,11 +39,11 @@ export default function HistoryPage() {
           title="ยังไม่มีประวัติ"
         />
       ) : (
-        <div className="space-y-2">
+        <div className="scrapbook-list">
           {entries.map((entry, index) => {
             const meta = typeMeta[entry.type] ?? typeMeta.RECEIVED;
             return (
-              <Card key={index} className="flex flex-wrap items-center gap-3 py-3">
+              <Card key={index} className="scrapbook-entry flex flex-wrap items-center gap-3">
                 <span className="text-xl">{meta.emoji}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">{entry.title}</p>
@@ -52,8 +53,9 @@ export default function HistoryPage() {
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${meta.className}`}>
                     {meta.label}
                   </span>
-                  <span className="text-sm text-muted">{formatDateTime(entry.occurredAt)}</span>
+                  <time dateTime={entry.occurredAt} className="text-sm text-muted">{formatDateTime(entry.occurredAt)}</time>
                 </div>
+                {["USED", "REDEEMED_OUT"].includes(entry.type) && <RubberStamp date={entry.occurredAt} />}
               </Card>
             );
           })}

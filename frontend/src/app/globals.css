@@ -1,26 +1,48 @@
 @import "tailwindcss";
 @theme {
-  --color-canvas: #fff8f3;
-  --color-surface: #ffffff;
-  --color-ink: #3b2430;
-  --color-muted: #71545f;
-  --color-love: #b83258;
-  --color-love-hover: #9c2648;
-  --color-love-soft: #ffe3eb;
-  --color-line: #eadbd9;
-  --color-mint-soft: #dff5e8;
-  --color-mint-ink: #205d46;
-  --color-sky-soft: #e3f0ff;
-  --color-sky-ink: #214e78;
-  --color-lavender-soft: #eee5ff;
-  --color-lavender-ink: #563580;
-  --color-butter-soft: #fff0b8;
-  --color-butter-ink: #704900;
-  --color-danger: #b42335;
-  --color-danger-hover: #901c2a;
-  --color-danger-soft: #fde7eb;
-  --color-control: #896c78;
-  --color-focus: #6c3d91;
+  --color-canvas: #fff5f7;
+  --color-surface: #fffcf7;
+  --color-ink: #59424c;
+  --color-muted: #785d67;
+  --color-love: #a64062;
+  --color-love-hover: #8c3151;
+  --color-love-soft: #fadbe5;
+  --color-line: #e8cbd5;
+  --color-stamp: #a4516b;
+  --color-mint-soft: #e5eee4;
+  --color-mint-ink: #425d49;
+  --color-sky-soft: #e6edf4;
+  --color-sky-ink: #465d76;
+  --color-lavender-soft: #efe4f0;
+  --color-lavender-ink: #75517c;
+  --color-butter-soft: #f6ebcf;
+  --color-butter-ink: #755b2f;
+  --color-danger: #a6364c;
+  --color-danger-hover: #8b263a;
+  --color-danger-soft: #fce4e8;
+  --color-control: #987181;
+  --color-focus: #943c60;
+  --color-on-action: #ffffff;
+  --color-disabled: #eee3e6;
+  --color-disabled-ink: #78656c;
+  --color-paper-edge: #eddcd3;
+  --color-tape: #f2d4dc;
+  --color-overlay: #59424c66;
+  --color-success-paper: var(--color-mint-soft);
+  --color-success-ink: var(--color-mint-ink);
+  --color-pending-paper: var(--color-butter-soft);
+  --color-pending-ink: var(--color-butter-ink);
+  --color-rarity-common-paper: var(--color-love-soft);
+  --color-rarity-common-ink: var(--color-ink);
+  --color-rarity-rare-paper: var(--color-sky-soft);
+  --color-rarity-rare-ink: var(--color-sky-ink);
+  --color-rarity-epic-paper: var(--color-lavender-soft);
+  --color-rarity-epic-ink: var(--color-lavender-ink);
+  --color-rarity-legendary-paper: var(--color-butter-soft);
+  --color-rarity-legendary-ink: var(--color-butter-ink);
+  --radius-paper: .5rem;
+  --radius-control: .5rem;
+  --shadow-paper: 0 1px 2px #59424c08, 0 8px 24px -14px #59424c40;
 }
 @theme inline {
   --font-sans: var(--font-sarabun);
@@ -30,6 +52,11 @@
   :root {
     color-scheme: light;
     --nav-height: calc(5rem + env(safe-area-inset-bottom));
+    --motion-press: 120ms;
+    --motion-soft: 200ms;
+    --ease-paper: cubic-bezier(.2,.7,.3,1);
+    --space-paper: 1.5rem;
+    --paper-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath opacity='.035' filter='url(%23n)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
   }
   body {
     background: var(--color-canvas);
@@ -81,6 +108,7 @@
   button {
     cursor: pointer;
   }
+  button:disabled { cursor: not-allowed; }
   input[type="checkbox"] {
     width: 1.5rem;
     height: 1.5rem;
@@ -94,10 +122,53 @@
   padding-top: 2rem;
   padding-bottom: calc(var(--nav-height) + 1.5rem);
 }
+.paper-card {
+  position: relative;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-paper);
+  background: var(--paper-grain), var(--color-surface);
+  box-shadow: var(--shadow-paper);
+}
+.paper-card[data-material="letter"] { padding-top: 2rem; border-top: 3px double var(--color-line); }
+.paper-card[data-material="letter"]::before {
+  content: "♡"; position: absolute; top: -.75rem; right: 1.5rem;
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  border: 3px double var(--color-stamp); border-radius: 50%;
+  background: var(--color-love-soft); color: var(--color-love);
+  transform: rotate(12deg); pointer-events: none;
+}
+.paper-card[data-material="booklet"] {
+  border-left: .5rem solid var(--color-love-soft);
+  box-shadow: 3px 3px 0 var(--color-surface), 4px 4px 0 var(--color-line), 6px 6px 0 var(--color-surface), 7px 7px 0 var(--color-line);
+}
+.paper-card[data-material="journal"] {
+  padding-left: 2rem;
+  background-image: linear-gradient(90deg, transparent 1rem, var(--color-line) 1rem, var(--color-line) calc(1rem + 1px), transparent calc(1rem + 1px)), var(--paper-grain);
+}
+.journal-welcome { position: relative; padding-right: 8rem; }
+.journal-welcome > .love-doodle { position: absolute; width: 6.5rem; top: 1.5rem; right: 1rem; }
+.journal-stats { border-radius: var(--radius-paper); background: var(--color-surface); box-shadow: var(--shadow-paper); }
+.journal-stats > div { padding: .5rem; border-bottom: 1px dashed var(--color-line); }
+.scrapbook-list { display: grid; gap: 1.5rem; padding-left: .75rem; border-left: 1px solid var(--color-line); }
+.scrapbook-entry::before {
+  content: ""; position: absolute; top: -.4rem; left: 1.25rem; width: 3rem; height: .8rem;
+  background: var(--color-tape); transform: rotate(-4deg); opacity: .8; pointer-events: none;
+}
+.scrapbook-entry .rubber-stamp { margin: .25rem 0; }
+.couple-story { max-width: 36rem; margin-inline: auto; padding-block: 2rem; }
+.couple-story .love-doodle { width: 9rem; margin-inline: auto; }
+.gift-success { animation: gift-arrive 350ms var(--ease-paper) both; }
+.app-dialog { border: 1px solid var(--color-line); }
+.app-dialog::backdrop { background: var(--color-overlay); }
+.page-heading { padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-line); }
+@media (max-width: 479px) {
+  .journal-welcome { padding-right: 1.25rem; }
+  .journal-welcome > .love-doodle { position: static; width: 5rem; margin-left: auto; }
+}
 .cart-bar {
   bottom: var(--nav-height);
 }
-.app-header { background: var(--color-canvas); }
+.app-header { background: var(--color-surface); }
 .brand-heart {
   display: inline-grid;
   place-items: center;
@@ -110,53 +181,6 @@
   font-size: 2rem;
   transform: rotate(-10deg);
   transition: transform 240ms ease;
-}
-.love-note {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 10rem;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  border: 1px solid var(--color-line);
-  border-radius: 1rem 1rem 2.5rem 1rem;
-  background: var(--color-surface);
-  background-image: radial-gradient(var(--color-line) .75px, transparent .75px);
-  background-size: 12px 12px;
-}
-.love-note::before {
-  content: "";
-  position: absolute;
-  top: -.5rem;
-  left: 2rem;
-  width: 4rem;
-  height: 1rem;
-  background: var(--color-love-soft);
-  opacity: .85;
-  transform: rotate(-5deg);
-}
-.love-note .page-heading { margin-bottom: 0; }
-.love-note h1 { line-height: 1.6; }
-.note-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: .5rem;
-  color: var(--color-love);
-  font-size: .625rem;
-  font-weight: 600;
-  letter-spacing: .14em;
-}
-.note-eyebrow span { font-size: 1.25rem; }
-.note-link { margin: .5rem 0 0 -.75rem; color: var(--color-love); font-size: .875rem; }
-.note-caption {
-  position: absolute;
-  right: 1.5rem;
-  bottom: .75rem;
-  color: var(--color-muted);
-  font-family: var(--font-mali), sans-serif;
-  font-size: .625rem;
-  transform: rotate(-4deg);
 }
 .love-doodle { width: 100%; max-width: 15rem; overflow: visible; }
 .doodle-friend { transform-box: fill-box; transform-origin: center bottom; }
@@ -192,33 +216,21 @@
   transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 .rarity-filter[aria-pressed="true"] { border-color: var(--color-love); background: var(--color-surface); color: var(--color-love); }
-.coupon-ticket {
-  position: relative;
-  border-color: color-mix(in srgb, var(--ticket-color) 75%, var(--color-control));
-  background: color-mix(in srgb, var(--ticket-color) 38%, var(--color-surface));
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--ticket-color) 75%, var(--color-line));
-  animation: content-arrive 600ms cubic-bezier(.2,.8,.2,1) backwards;
-  transition: transform 240ms ease, box-shadow 240ms ease;
+.ui-button {
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  transition: color var(--motion-soft), background-color var(--motion-soft), box-shadow var(--motion-soft), transform var(--motion-press);
 }
-.coupon-ticket:nth-child(2n) { animation-delay: 80ms; }
-.coupon-ticket:nth-child(3n) { animation-delay: 160ms; }
-.coupon-ticket:nth-child(4n) { animation-delay: 240ms; }
-.coupon-ticket h2 { line-height: 1.7; }
-.coupon-sticker {
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 3.5rem;
-  height: 3.5rem;
-  border: 2px solid var(--color-surface);
-  border-radius: 42% 50% 44% 48%;
-  background: var(--ticket-color, var(--color-love-soft));
-  box-shadow: 0 2px 0 #3b243012;
-  font-size: 2rem;
-  transform: rotate(-8deg);
-  transition: transform 300ms cubic-bezier(.2,.8,.2,1.4);
-}
-.ui-button { transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+.ui-button-primary { background: var(--color-love); color: var(--color-on-action); box-shadow: 0 2px 0 var(--color-love-hover); }
+.ui-button-secondary { background: var(--color-surface); color: var(--color-love); border-color: var(--color-control); }
+.ui-button-danger { background: var(--color-danger-soft); color: var(--color-danger); border-color: var(--color-danger); }
+.ui-button-ghost { color: var(--color-muted); }
+.ui-button[data-size="sm"] { min-height: 2.75rem; min-width: 2.75rem; padding: .5rem .75rem; font-size: .875rem; }
+.ui-button:disabled { background: var(--color-disabled); color: var(--color-disabled-ink); border-color: var(--color-line); box-shadow: none; }
+.ui-control { border-radius: var(--radius-control); transition: border-color var(--motion-soft), box-shadow var(--motion-soft); }
+.ui-control:focus-visible { border-color: var(--color-focus); }
+.ui-control[aria-invalid="true"] { border-color: var(--color-danger); background: var(--color-danger-soft); }
+.ui-control:disabled, fieldset:disabled .ui-control { background: var(--color-disabled); color: var(--color-disabled-ink); cursor: not-allowed; }
 .ui-button:not(:disabled):active { transform: translateY(2px) scale(.97); box-shadow: none; }
 .page-enter { animation: page-arrive 360ms ease backwards; }
 .love-notice { animation: content-arrive 400ms cubic-bezier(.2,.8,.2,1) both; }
@@ -234,11 +246,13 @@
   animation: sticker-arrive 400ms ease both;
 }
 @media (hover: hover) and (pointer: fine) {
-  .coupon-ticket:hover { transform: translateY(-5px) rotate(-.5deg); box-shadow: 0 8px 0 -3px var(--ticket-color); }
+  .ui-button-primary:not(:disabled):hover { background: var(--color-love-hover); }
+  .ui-button-secondary:not(:disabled):hover, .ui-button-ghost:not(:disabled):hover { background: var(--color-love-soft); color: var(--color-love-hover); }
+  .ui-button-danger:not(:disabled):hover { background: var(--color-danger); color: var(--color-on-action); }
   .nav-link:hover svg { transform: translateY(-3px) rotate(-5deg); }
   .app-header a:hover .brand-heart { transform: rotate(8deg) scale(1.08); }
   .rarity-filter:hover { transform: translateY(-2px); }
-  .status-tab:hover { color: var(--color-love); background: var(--color-love-soft); }
+  .status-tab:not(:disabled):hover { color: var(--color-love); background: var(--color-love-soft); }
 }
 @keyframes content-arrive {
   from { opacity: 0; transform: translateY(18px) rotate(-1deg) scale(.97); }
@@ -250,15 +264,8 @@
 @keyframes friend-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg) translateY(-3px); } }
 @keyframes heart-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.08); } }
 @keyframes sparkle { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
-@media (min-width: 640px) {
-  .love-note { grid-template-columns: minmax(0, 1fr) 13rem; padding: 2rem; }
-  .note-eyebrow { font-size: .75rem; }
-  .note-caption { right: 2rem; bottom: 1rem; font-size: .75rem; }
-}
+
 @media (max-width: 479px) {
-  .love-note { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 1.25rem; }
-  .love-note .love-doodle { width: 7rem; justify-self: end; margin-top: -.75rem; }
-  .note-caption { left: 1.25rem; right: auto; bottom: 2rem; }
   .status-tab { padding-inline: .75rem; }
 }
 .success-pop {

@@ -147,7 +147,7 @@ function NewGiftForm() {
 
   if (result) {
     return (
-      <Card className="space-y-4 text-center">
+      <Card variant="letter" className="gift-success space-y-4 text-center">
         <p aria-hidden="true" className="success-pop text-5xl">
           💝
         </p>
@@ -204,7 +204,7 @@ function NewGiftForm() {
       />
 
       <fieldset disabled={submitting}>
-        <Card className="space-y-3">
+        <Card variant="booklet" className="space-y-3">
           <h2>ทบทวนรายการก่อนส่ง</h2>
           <p className="text-sm text-muted">
             เลือกเองจากตะกร้า หรือเลือกชุดสำเร็จรูป — รายการเลือกเองจะเก็บไว้เมื่อส่งเป็นชุด
@@ -302,7 +302,7 @@ function NewGiftForm() {
       </fieldset>
 
       <fieldset disabled={submitting}>
-        <Card className="grid gap-4 sm:grid-cols-2">
+        <Card variant="letter" className="grid gap-4 sm:grid-cols-2">
           <Field label="วันหมดอายุ">
             <Input
               type="date"

@@ -3,6 +3,7 @@ import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton } from "@/com
 import { api } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
 import Link from "next/link";
+import { LoveDoodle } from "@/components/love-doodle";
 export default function DashboardPage() {
   const stats = useResource(api.coupons.dashboard),
     couple = useResource(api.couples.me);
@@ -22,7 +23,8 @@ export default function DashboardPage() {
       ) : couple.loading ? (
         <Skeleton />
       ) : couple.data === null ? (
-        <Card className="space-y-3 !bg-mint-soft">
+        <Card variant="journal" className="journal-welcome space-y-3">
+          <LoveDoodle />
           <h2 className="text-xl">เริ่มสมุดตั๋วของสองเรา</h2>
           <p>ชวนแฟนมาใช้ด้วยกัน แล้วเริ่มมอบคำสัญญาเล็ก ๆ ให้กัน</p>
           <LinkButton href="/couple">ชวนแฟนมาใช้ด้วยกัน</LinkButton>
@@ -32,7 +34,8 @@ export default function DashboardPage() {
       ) : stats.loading ? (
         <Skeleton />
       ) : (
-        <Card className="space-y-3 !bg-love-soft">
+        <Card variant="journal" className="journal-welcome space-y-3">
+          <LoveDoodle />
           <h2 className="text-xl">
             {data?.pendingRequests
               ? "มีคำขอที่รอคุณยืนยัน"
@@ -73,7 +76,7 @@ export default function DashboardPage() {
           <Skeleton />
         ) : (
           data && (
-            <dl className="grid grid-cols-2 gap-3 rounded-2xl border border-love-soft bg-surface p-4 sm:grid-cols-4">
+            <dl className="journal-stats grid grid-cols-2 gap-3 border border-line p-4 sm:grid-cols-4">
               {[
                 { label: "ได้รับแล้ว", value: data.receivedCoupons, href: "/my-coupons" },
                 { label: "ใช้ไปแล้ว", value: data.usedCoupons, href: "/history" },
@@ -96,7 +99,7 @@ export default function DashboardPage() {
           )
         )}
       </section>
-      <Card className="space-y-2 !bg-butter-soft">
+      <Card variant="letter" className="space-y-2">
         <h2>ความใส่ใจไม่ต้องรอวันพิเศษ</h2>
         <p>เลือกคูปองเอง หรือเลือกชุดที่เตรียมไว้ แล้วตรวจของขวัญก่อนส่ง</p>
         <LinkButton href="/catalog" variant="secondary">

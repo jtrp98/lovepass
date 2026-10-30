@@ -16,6 +16,7 @@ import { invitationCode } from "@/lib/flow";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import type { CoupleInfo, InvitationResult } from "@/types";
+import { LoveDoodle } from "@/components/love-doodle";
 
 export default function CouplePage() {
   const [couple, setCouple] = useState<CoupleInfo | null | undefined>(undefined);
@@ -81,8 +82,8 @@ export default function CouplePage() {
     return (
       <div className="space-y-6">
         <PageTitle title="คู่ของฉัน" subtitle="ข้อมูลคู่รักที่จับคู่ไว้" />
-        <Card className="space-y-3 text-center">
-          <p className="text-4xl">💑</p>
+        <Card variant="journal" className="couple-story space-y-3 text-center">
+          <LoveDoodle />
           <p className="text-lg font-semibold">คุณ & {couple.partnerDisplayName}</p>
           <p className="text-sm text-muted">{couple.partnerEmail}</p>
           <p className="text-sm text-muted">จับคู่เมื่อ {formatDate(couple.coupledSince)}</p>
@@ -97,7 +98,7 @@ export default function CouplePage() {
       <PageTitle title="คู่ของฉัน" subtitle="ยังไม่ได้จับคู่ — สร้างคำเชิญส่งให้แฟน หรือใส่รหัสที่แฟนส่งมา" />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="space-y-3">
+        <Card variant="letter" className="space-y-3">
           <p className="font-semibold">ส่งคำเชิญให้แฟน</p>
           <p className="text-sm text-muted">ส่งลิงก์นี้ให้แฟน ให้กดเข้ามายอมรับ (อายุ 7 วัน)</p>
           <Button onClick={handleCreate} disabled={busy}>
@@ -107,7 +108,7 @@ export default function CouplePage() {
           {invitation ? (
             <div className="space-y-2 rounded-lg bg-love-soft p-3">
               <p className="text-xs font-medium text-love">ลิงก์คำเชิญ (คัดลอกส่งให้แฟน):</p>
-              <code className="block break-all rounded bg-white p-2 text-xs">{invitation.inviteLink}</code>
+              <code className="block break-all rounded bg-surface p-2 text-xs">{invitation.inviteLink}</code>
               <Button
                 size="sm"
                 variant="secondary"

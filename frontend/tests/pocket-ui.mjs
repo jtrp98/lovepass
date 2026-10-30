@@ -49,8 +49,9 @@ try {
       await page.getByRole("group", { name: "สถานะตั๋วตัวอย่าง" }).getByRole("button", { name: new RegExp(label) }).click();
       assert.equal(await page.locator(`.pocket-ticket[data-state="${state}"]`).count(), 2);
       if (state === "used") {
-        assert.equal(await page.locator(".pocket-watermark[aria-hidden=true]").count(), 2);
-        assert.equal(await page.locator(".pocket-watermark").first().evaluate((e) => getComputedStyle(e).pointerEvents), "none");
+        assert.equal(await page.locator(".rubber-stamp[aria-hidden=true]").count(), 2);
+        assert.equal(await page.locator(".rubber-stamp").first().evaluate((e) => getComputedStyle(e).pointerEvents), "none");
+        assert.equal(await page.locator(".rubber-stamp time").count(), 2);
       }
       await reflow();
       if ([390, 1440].includes(width)) await shot(`pocket-${state}-${width}`);
@@ -121,8 +122,16 @@ try {
   await page.keyboard.press("Escape");
   pass("320px text-spacing overrides reflow; reduced motion disables lift and transitions");
   evidence.contrast = await page.evaluate(() => {
-    const colors = [["#30473f", "#fff9f0"], ["#62675e", "#fff9f0"], ["#5a4077", "#fff9f0"], ["#30473f", "#dcefe5"], ["#5a4077", "#e9e1f7"], ["#a84458", "#fff9f0"], ["#686057", "#fff9f0"], ["#62675e", "#f5f2ea"]];
-    const lum = (hex) => { const c = hex.match(/[a-f\d]{2}/gi).map((n) => parseInt(n, 16) / 255).map((n) => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4); return c[0] * .2126 + c[1] * .7152 + c[2] * .0722; };
+    const token = (name) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--color-' + name + ')';
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    };
+    const colors = [["ink", "surface"], ["muted", "surface"], ["lavender-ink", "surface"], ["ink", "mint-soft"], ["lavender-ink", "lavender-soft"], ["stamp", "surface"], ["muted", "canvas"], ["on-action", "love"]].map(pair => pair.map(token));
+    const lum = (rgb) => { const c = rgb.match(/[\d.]+/g).slice(0, 3).map((n) => Number(n) / 255).map((n) => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4); return c[0] * .2126 + c[1] * .7152 + c[2] * .0722; };
     return colors.map(([fg, bg]) => { const [a, b] = [lum(fg), lum(bg)]; return { fg, bg, ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05) }; });
   });
   for (const pair of evidence.contrast) assert.ok(pair.ratio >= 4.5, JSON.stringify(pair));
@@ -173,7 +182,7 @@ try {
   assert.equal(submittedMessage, "ขอกอดเย็นนี้นะ");
   assert.equal(coupon.available, 1);
   await page.getByText(/คูปองพร้อมใช้ 1 ใบ.*รอยืนยัน 1 ใบ/).waitFor();
-  assert.equal(await page.locator(".pocket-watermark").count(), 0);
+  assert.equal(await page.locator(".rubber-stamp").count(), 0);
   await shot("pocket-product-320");
   pass("real request integration: no POST before confirmation, errors retain message/quantity, retry locks duplicate clicks, refresh shows reserved sheet without used stamp");
   coupon.available = 0;

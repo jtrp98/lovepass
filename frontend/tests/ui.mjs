@@ -201,7 +201,7 @@ async function run() {
         await wait(400);
         const id = Number(p.split("/").at(-2));
         state.requests = state.requests.map((r) =>
-          r.id === id ? { ...r, status: p.endsWith("/approve") ? "APPROVED" : p.endsWith("/cancel") ? "CANCELLED" : "REJECTED" } : r,
+          r.id === id ? { ...r, status: p.endsWith("/approve") ? "APPROVED" : p.endsWith("/cancel") ? "CANCELLED" : "REJECTED", resolvedAt: "2026-10-30T12:00:00Z" } : r,
         );
         body = state.requests.find((r) => r.id === id);
       } else if (p === "/api/v1/gifts" && req.method() === "POST") {
@@ -289,6 +289,20 @@ async function run() {
   await page.getByRole("button", { name: "อนุมัติ", exact: false }).first().waitFor();
   assert.equal(await page.locator(".request-ticket").count(), 2);
   assert.match(await page.locator(".request-ticket use").first().getAttribute("href"), /affection\.svg/);
+  // A shared variant must keep its disabled appearance even while hovered.
+  for (const variant of ['primary', 'secondary', 'danger']) {
+    const button = page.locator('button.ui-button-' + variant).first();
+    await button.evaluate(e => { e.disabled = true; });
+    await wait(250);
+    const before = await button.evaluate(e => getComputedStyle(e).backgroundColor);
+    await button.hover();
+    await wait(250);
+    assert.equal(await button.evaluate(e => getComputedStyle(e).backgroundColor), before);
+    assert.equal(await button.evaluate(e => getComputedStyle(e).transform), 'none');
+    await button.evaluate(e => { e.disabled = false; });
+  }
+  await page.mouse.move(0, 0);
+  pass('shared primary/secondary/danger disabled states resist hover overrides');
   await page.evaluate(() => document.fonts.ready);
   await screenshot(page, "requests-paper-390");
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -298,6 +312,7 @@ async function run() {
   const opener = page.getByRole("button", { name: "อนุมัติ", exact: false }).first();
   await opener.click();
   await page.getByRole("dialog").waitFor();
+  assert.equal(await page.locator('.rubber-stamp').count(), 0);
   assert.equal(approveCalls(), 0);
   await page.keyboard.press("Tab");
   assert.equal(await page.evaluate(() => document.activeElement.closest("dialog") !== null), true);
@@ -315,11 +330,21 @@ async function run() {
   await page.getByRole("dialog").getByRole("button", { name: "ยกเลิก", exact: true }).click();
   assert.equal(approveCalls(), 0);
   await opener.click();
+  state.errors["/api/v1/redemptions/1/approve"] = 500;
+  await page.getByRole("button", { name: "ยืนยันให้ใช้ 1 ใบ" }).click();
+  await page.getByRole("dialog").getByRole("alert").waitFor();
+  assert.equal(await page.locator('.rubber-stamp').count(), 0, "a failed approval must never stamp the ticket");
+  delete state.errors["/api/v1/redemptions/1/approve"];
   await page.getByRole("button", { name: "ยืนยันให้ใช้ 1 ใบ" }).dblclick();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
-  assert.equal(approveCalls(), 1);
+  assert.equal(approveCalls(), 2, "one failed attempt and one successful approval");
   await page.waitForFunction(() => document.activeElement?.tagName === "H1");
   await page.getByText("ใช้แล้ว", { exact: true }).waitFor();
+  const approvedStamp = page.locator('.request-ticket[data-status="APPROVED"] .rubber-stamp');
+  await approvedStamp.waitFor();
+  assert.equal(await approvedStamp.getAttribute('data-animate'), 'true');
+  assert.equal(await approvedStamp.locator('time').getAttribute('datetime'), '2026-10-30T12:00:00Z');
+  await screenshot(page, "approved-stamp-390");
   pass("review/Escape/cancel do not approve; confirm double click creates one request; focus returns");
   await page.getByRole("button", { name: "ปฏิเสธ", exact: true }).click();
   await page.getByText("ปฏิเสธแล้ว", { exact: true }).waitFor();
@@ -548,7 +573,7 @@ async function run() {
     bg: getComputedStyle(document.body).backgroundColor,
     color: getComputedStyle(document.body).color,
   }));
-  assert.equal(theme.bg, "rgb(255, 248, 243)");
+  assert.equal(theme.bg, "rgb(255, 245, 247)");
   pass("OS dark preference keeps complete light theme; reduced motion CSS active");
   assert.equal(await page.locator(".pocket-ticket").first().evaluate((e) => getComputedStyle(e).animationName), "none");
   await page.emulateMedia({ reducedMotion: "no-preference" });

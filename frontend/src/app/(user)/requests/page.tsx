@@ -22,6 +22,7 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [stampedId, setStampedId] = useState<number | null>(null);
 
   const [review, setReview] = useState<Redemption | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export default function RequestsPage() {
     setNotice(null);
     try {
       if (action === "approve") await api.redemptions.approve(id);
+      if (action === "approve") setStampedId(id);
       if (action === "reject") await api.redemptions.reject(id);
       if (action === "cancel") await api.redemptions.cancel(id);
       setNotice(
@@ -92,7 +94,7 @@ export default function RequestsPage() {
             key={dir}
             disabled={busyId !== null || review !== null}
             aria-pressed={direction === dir}
-            onClick={() => setDirection(dir)}
+            onClick={() => { setStampedId(null); setDirection(dir); }}
             className="status-tab disabled:opacity-60"
           >
             {dir === "received" ? "คำขอที่ต้องพิจารณา" : "คำขอที่ฉันส่ง"}
@@ -119,7 +121,7 @@ export default function RequestsPage() {
       ) : (
         <div className="pocket-collection">
           {items.map((item) => (
-            <CouponRequestCard key={item.id} item={item} direction={direction}>
+            <CouponRequestCard key={item.id} item={item} direction={direction} animateStamp={item.id === stampedId}>
               {item.status === "PENDING" ? (
                 <>
                   {direction === "received" ? (

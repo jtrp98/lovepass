@@ -28,7 +28,7 @@ function AcceptForm() {
   }
 
   return (
-    <Card className="space-y-4 text-center">
+    <Card variant="letter" className="space-y-4 text-center">
       <p className="text-4xl">💞</p>
       <h1 className="text-lg font-semibold">ยอมรับคำเชิญจับคู่</h1>
       {token ? (

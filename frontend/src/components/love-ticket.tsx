@@ -4,6 +4,7 @@ import { useId, type ReactNode } from "react";
 import type { Rarity } from "@/types";
 import { formatDate, rarityStyles } from "./ui";
 import { TicketIllustration } from "./ticket-illustration";
+import { RubberStamp } from "./rubber-stamp";
 import { couponCategories, resolveCategory, type CouponCategory } from "@/lib/coupon-categories";
 
 export type TicketState = "available" | "pending" | "used" | "expired";
@@ -18,6 +19,7 @@ export interface LoveTicketData {
   quantity?: number;
   reserved?: number;
   expiresAt?: string;
+  redeemedAt?: string;
   from?: string;
   to?: string;
 }
@@ -50,11 +52,11 @@ export function LoveTicket({ ticket, onOpen, catalog = false }: {
           {ticket.expiresAt ? <time dateTime={ticket.expiresAt}>{ticket.state === "expired" ? "หมดอายุ" : "ใช้ได้ถึง"} {formatDate(ticket.expiresAt)}</time> : <span>คำสัญญาเล็ก ๆ สำหรับเราสองคน</span>}
           <span className="pocket-edition" aria-hidden="true">a little love, to keep.</span>
         </div>
-        {ticket.state === "used" && <span className="pocket-watermark" aria-hidden="true">REDEEMED ♡</span>}
       </div>
       <div className="pocket-perforation" aria-hidden="true" />
       <div className="pocket-stub">
         <div className="pocket-stub-copy">
+          {ticket.state === "used" && <RubberStamp date={ticket.redeemedAt} />}
           {catalog ? <><span className="pocket-from">เขียนให้เธอ ด้วยความรัก</span><span className="pocket-quantity-note">เปิดอ่านรายละเอียดก่อนเลือกให้แฟน</span></> : <>
             <span className="pocket-from">จาก {ticket.from ?? "คนที่รักเธอ"}</span>
             <span className="pocket-quantity-note">{ticket.state === "available" ? `คูปองพร้อมใช้ ${ticket.quantity ?? 1} ใบ` : ticket.state === "pending" ? `คูปองรอยืนยัน ${ticket.reserved ?? 1} ใบ` : "เก็บใบนี้ไว้ เป็นความทรงจำ"}{ticket.state === "available" && !!ticket.reserved && ` · รอยืนยัน ${ticket.reserved} ใบ`}</span>
