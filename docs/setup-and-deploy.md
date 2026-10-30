@@ -2,6 +2,10 @@
 
 รายละเอียดวิธีรัน local และ deploy ทั้งหมด (ย้ายมาจาก README) — ภาพรวม requirements/architecture ดูที่ [lovepass.md](lovepass.md)
 
+ส่งเมลจาก Gmail ของคุณโดยไม่ต้องมีโดเมน: [ตั้งค่า Gmail API](gmail-setup.md)
+หลังอนุญาต Google แล้ว สคริปต์จะบันทึกค่าและสลับเป็น Gmail ให้ใน `backend/.env`
+สำหรับ Render ต้องคัดลอกค่าไป Environment แยกต่างหาก
+
 ## เริ่มต้นการพัฒนา
 
 ### 0) เติมค่า env (ทำครั้งเดียว)
@@ -75,13 +79,16 @@ node scripts/api-smoke.mjs       # E2E ผ่าน API จริง (API ต้
 
 4. ไม่ต้องสร้างตารางเอง — API รัน migration อัตโนมัติตอน startup และ seed บัญชี Admin + คูปองตัวอย่าง (ตั้งค่าใน `Seed:*`)
 
+สถานะและ URL ของระบบที่ deploy แล้วอยู่ที่ [online-deployment.md](online-deployment.md)
+
 ### 2) Render — Backend API
 
 1. สร้าง **Postgres ไม่ต้อง** (ใช้ Supabase) → New + → **Blueprint** → เลือก repo นี้ → ใช้ `render.yaml` ที่เตรียมไว้ (Docker, health check `/health`)
 2. กรอกค่าที่ขอตอนสร้าง (secret — ห้ามใส่ในไฟล์):
    - `ConnectionStrings__DefaultConnection` — จากขั้นตอน Supabase
    - `App__FrontendUrl` และ `Cors__AllowedOrigins` — ชั่วคราวใส่ Vercel URL คาดเดาไว้ได้ (เช่น `https://lovepass.vercel.app`)
-   - `Resend__ApiKey` — ไม่ใส่ก็ได้ ระบบจะข้ามการส่งอีเมลและ log แทน
+   - `Email__Provider=Gmail` และค่า `Gmail__SenderEmail` / `Gmail__ClientId` / `Gmail__ClientSecret` / `Gmail__RefreshToken` — ดู [gmail-setup.md](gmail-setup.md)
+   - ถ้าเลือก `Email__Provider=Resend` แทน ให้ตั้ง `Resend__ApiKey` และผู้ส่งที่ยืนยันกับ Resend แล้ว
    - `Seed__AdminEmail` / `Seed__AdminPassword` — บัญชี Admin เริ่มต้น
    - `Jwt__SigningKey` ให้ Render สุ่มให้ (generateValue) — หรือใส่ random 64+ ตัวอักษรเอง
 3. Deploy เสร็จจะได้ URL เช่น `https://lovepass-api.onrender.com` → ทดสอบ `GET /health`
@@ -91,7 +98,12 @@ node scripts/api-smoke.mjs       # E2E ผ่าน API จริง (API ต้
 1. Import repo บน Vercel → **Root Directory: `frontend`** (Next.js จะถูกตรวจพบอัตโนมัติ)
 2. Environment Variables:
    - `NEXT_PUBLIC_API_BASE_URL` = `https://<render-service>.onrender.com`
-3. Deploy แล้วเอา URL จริงกลับไปอัพเดต `App__FrontendUrl` + `Cors__AllowedOrigins` บน Render (Environment → Save → Auto Deploy)
+   - `GOOGLE_SITE_VERIFICATION` = รหัส HTML tag จาก Google Search Console ถ้าต้องยืนยันเจ้าของ URL สำหรับ Google OAuth
+3. Deploy แล้วเอา URL จริงกลับไปอัพเดต `App__FrontendUrl` + `Cors__AllowedOrigins` บน Render แล้ว deploy ให้ค่ามีผล (`Cors__AllowedOrigins` คั่นหลาย origin ด้วย `;`)
+
+หน้า `/privacy` เปิดอ่านได้โดยไม่เข้าสู่ระบบ และมีลิงก์จากหน้าแรกสำหรับ Google OAuth
+โปรเจกต์ใช้ Webpack + Tailwind PostCSS ตามวิธีติดตั้งมาตรฐาน เพื่อเลี่ยง Turbopack child-process crash บน Windows
+ไฟล์ `backend/.env.production.local` เป็นค่าลับสำหรับ deployment ต้องคงไว้ในเครื่องและห้าม commit
 
 > หมายเหตุ: Render free tier จะ sleep เมื่อไม่มี traffic ~15 นาที — request แรกหลังตื่นช้าราว 30–60 วินาที ถ้าไม่อยากเจอ ใช้ Starter plan
 

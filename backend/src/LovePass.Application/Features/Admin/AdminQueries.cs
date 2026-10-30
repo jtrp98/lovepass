@@ -79,7 +79,7 @@ public sealed class GetAdminGiftsQueryHandler(IApplicationDbContext db)
             [.. b.Coupons.Select(c =>
             {
                 var s = c.ReadSnapshot();
-                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt);
+                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
             })])).ToList();
     }
 }

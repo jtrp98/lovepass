@@ -26,6 +26,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 export const metadata = {
   title: "LOVE PASS — คูปองรักสำหรับสองเรา",
   description: "มอบคูปองของขวัญให้แฟนได้ง่าย ๆ พร้อมระบบขอใช้และยืนยัน",
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

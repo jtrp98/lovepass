@@ -21,4 +21,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 8080
 
 # Render กำหนด PORT env — bind ตามค่านั้น (local ใช้ 8080)
-CMD ["sh", "-c", "dotnet LovePass.WebApi.dll --urls http://+:${PORT:-8080}"]
+CMD ["sh", "-c", "exec dotnet LovePass.WebApi.dll --urls http://+:${PORT:-8080}"]

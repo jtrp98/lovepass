@@ -103,6 +103,7 @@ export interface MyCoupon {
 }
 
 export interface SentGiftCoupon {
+  category?: CouponCategory;
   name: string;
   emoji: string | null;
   rarity: Rarity;
@@ -130,6 +131,7 @@ export interface Dashboard {
 export type RedemptionStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export interface Redemption {
+  category?: CouponCategory;
   id: number;
   issuedCouponId: number;
   couponName: string;

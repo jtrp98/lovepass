@@ -5,6 +5,8 @@
 services:
   - type: web
     name: lovepass-api
+    plan: free
+    region: frankfurt
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
@@ -28,6 +30,17 @@ services:
       - key: App__FrontendUrl
         sync: false
       - key: Cors__AllowedOrigins
+        sync: false
+      # เชื่อมบัญชีตาม docs/gmail-setup.md แล้วเติม Gmail__* ด้านล่างให้ครบก่อน deploy
+      - key: Email__Provider
+        value: Gmail
+      - key: Gmail__SenderEmail
+        sync: false
+      - key: Gmail__ClientId
+        sync: false
+      - key: Gmail__ClientSecret
+        sync: false
+      - key: Gmail__RefreshToken
         sync: false
       - key: Resend__ApiKey
         sync: false

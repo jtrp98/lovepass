@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "paper gift groups at 320/390/768/1440 without overflow",
+    "14 coupon sheets counted across 7 types; original/remaining quantities and expiry retained",
+    "category SVGs with legacy heart fallback",
+    "320px text-spacing reflow",
+    "API error/retry and empty-state recovery",
+    "read-only page sends no mutations; no browser errors"
+  ],
+  "consoleErrors": []
+}
