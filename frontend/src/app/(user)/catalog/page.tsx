@@ -16,7 +16,7 @@ import { api, giftCart, type CartItem } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
 import type { CouponTemplate, Rarity } from "@/types";
 
-const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"];
+const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
 
 function toTicket(template: CouponTemplate): LoveTicketData {
   return { id: `LP-${String(template.id).padStart(4, "0")}`, name: template.name, note: template.description, terms: template.terms, rarity: template.rarity, category: template.category, state: "available" };

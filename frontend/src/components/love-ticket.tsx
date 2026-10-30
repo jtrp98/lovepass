@@ -26,13 +26,14 @@ export interface LoveTicketData {
 const statuses: Record<TicketState, string> = {
   available: "พร้อมใช้", pending: "รอแฟนยืนยัน", used: "ใช้แล้ว", expired: "หมดอายุแล้ว",
 };
-const pips: Record<Rarity, number> = { COMMON: 1, RARE: 2, EPIC: 3, LEGENDARY: 4 };
+const pips: Record<Rarity, number> = { COMMON: 1, RARE: 2, EPIC: 3, LEGENDARY: 4, MYTHIC: 5 };
+const maxPips = Math.max(...Object.values(pips));
 
 /** Printed hearts that count rarity; the rarity name beside them is the readable label. */
 export function RarityPips({ rarity }: { rarity: Rarity }) {
   return (
     <span className="rarity-pips" aria-hidden="true">
-      {Array.from({ length: 4 }, (_, index) => (
+      {Array.from({ length: maxPips }, (_, index) => (
         <svg key={index} viewBox="0 0 12 11" data-filled={index < pips[rarity] || undefined}>
           <path d="M6 10S1 6.9 1 3.7C1 1.2 4.4.5 6 3c1.6-2.5 5-1.8 5 .7C11 6.9 6 10 6 10Z" />
         </svg>

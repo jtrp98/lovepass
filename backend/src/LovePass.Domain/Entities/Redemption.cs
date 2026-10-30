@@ -16,5 +16,13 @@ public class Redemption : BaseEntity
     public DateTime RequestedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
 
+    /// <summary>คูปองเป้าหมายของคูปองพลังพิเศษ (ต่อเวลา, FAST PASS, UPGRADE, REPLAY)</summary>
+    public int? TargetIssuedCouponId { get; set; }
+    public IssuedCoupon? TargetIssuedCoupon { get; set; }
+    /// <summary>template ที่ WILDCARD เลือก</summary>
+    public int? TargetTemplateId { get; set; }
+    /// <summary>สำเนาเป้าหมาย ณ วันขอ เพื่อแสดงผลแม้ template ถูกแก้ภายหลัง</summary>
+    public string? TargetSnapshot { get; set; }
+
     public bool IsPending => Status == RedemptionStatus.Pending;
 }

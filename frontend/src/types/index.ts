@@ -34,9 +34,25 @@ export interface InvitationResult {
 
 // ---------------- Catalog ----------------
 
-export type Rarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+export type Rarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY" | "MYTHIC";
+
+/** พลังพิเศษของคูปองที่มีผลกับคูปองอื่น — NONE คือคูปองปกติ */
+export type CouponEffect = "NONE" | "EXTEND" | "FASTPASS" | "UPGRADE" | "WILDCARD" | "REPLAY" | "REPLAYGOLD";
+
+/** เป้าหมายที่คูปองพลังพิเศษเลือกได้: คูปองที่ได้รับแล้ว หรือ template สำหรับ WILDCARD */
+export interface MetaTarget {
+  issuedCouponId: number | null;
+  couponTemplateId: number | null;
+  name: string;
+  rarity: Rarity;
+  category: CouponCategory;
+  terms: string;
+  expiresAt: string | null;
+  usedCount: number;
+}
 
 export interface CouponTemplate {
+  effect?: CouponEffect;
   category?: CouponCategory;
   id: number;
   name: string;
@@ -86,6 +102,7 @@ export interface GiftResult {
 }
 
 export interface MyCoupon {
+  effect?: CouponEffect;
   category?: CouponCategory;
   id: number;
   name: string;
@@ -146,6 +163,11 @@ export interface Redemption {
   requestedAt: string;
   resolvedAt: string | null;
   couponExpiresAt: string;
+  effect?: CouponEffect;
+  /** คูปองที่คูปองพลังพิเศษใบนี้ใช้ด้วย */
+  targetName?: string | null;
+  targetRarity?: Rarity | null;
+  targetCategory?: CouponCategory | null;
 }
 
 // ---------------- History ----------------
@@ -162,6 +184,8 @@ export interface HistoryEntry {
 // ---------------- Admin ----------------
 
 export interface AdminCouponTemplate {
+  effect?: CouponEffect;
+  metaLocked?: boolean;
   category?: CouponCategory;
   id: number;
   name: string;

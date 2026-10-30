@@ -29,6 +29,10 @@ public class IssuedCoupon : BaseEntity
     [NotMapped]
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
 
+    /// <summary>จำนวนครั้งที่ผู้มอบยืนยันการใช้แล้ว</summary>
+    [NotMapped]
+    public int ConfirmedUses => Quantity - RemainingQuantity;
+
     [NotMapped]
     public bool IsUsable => Status == IssuedCouponStatus.Active && !IsExpired && AvailableQuantity > 0;
 
@@ -47,6 +51,38 @@ public class IssuedCoupon : BaseEntity
         ReservedQuantity--;
         RemainingQuantity--;
         if (RemainingQuantity == 0) Status = IssuedCouponStatus.FullyRedeemed;
+        return true;
+    }
+
+    /// <summary>
+    /// ต่ออายุ 1 ใบที่ถูกกันสิทธิ์ไว้ ถ้าแถวนี้มีใบเดียวจะเลื่อนวันหมดอายุในแถวเดิม
+    /// ถ้ามีหลายใบจะแยกใบนั้นออกเป็นแถวใหม่ เพื่อไม่ให้ใบอื่นได้อายุเพิ่มไปด้วย
+    /// </summary>
+    public bool TryExtendReservedUnit(TimeSpan extension, out IssuedCoupon? split)
+    {
+        split = null;
+        if (ReservedQuantity <= 0 || RemainingQuantity <= 0) return false;
+        ReservedQuantity--;
+        if (Quantity == 1)
+        {
+            ExpiresAt = ExpiresAt.Add(extension);
+            return true;
+        }
+
+        Quantity--;
+        RemainingQuantity--;
+        if (RemainingQuantity == 0) Status = IssuedCouponStatus.FullyRedeemed;
+        split = new IssuedCoupon
+        {
+            GiftBatchId = GiftBatchId,
+            CouponTemplateId = CouponTemplateId,
+            SenderId = SenderId,
+            ReceiverId = ReceiverId,
+            Quantity = 1,
+            RemainingQuantity = 1,
+            ExpiresAt = ExpiresAt.Add(extension),
+            TemplateSnapshot = TemplateSnapshot
+        };
         return true;
     }
 

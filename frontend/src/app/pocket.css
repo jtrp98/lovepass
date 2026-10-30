@@ -20,6 +20,9 @@
 [data-rarity="EPIC"].pocket-ticket, [data-rarity="EPIC"].pocket-detail { --pocket-accent: var(--color-rarity-epic-paper); --pocket-print: var(--color-rarity-epic-ink); }
 [data-rarity="RARE"].pocket-ticket, [data-rarity="RARE"].pocket-detail { --pocket-accent: var(--color-rarity-rare-paper); --pocket-print: var(--color-rarity-rare-ink); }
 [data-rarity="LEGENDARY"].pocket-ticket, [data-rarity="LEGENDARY"].pocket-detail { --pocket-accent: var(--color-rarity-legendary-paper); --pocket-print: var(--color-rarity-legendary-ink); }
+[data-rarity="MYTHIC"].pocket-ticket, [data-rarity="MYTHIC"].pocket-detail { --pocket-accent: var(--color-rarity-mythic-paper); --pocket-print: var(--color-rarity-mythic-ink); }
+/* MYTHIC is printed on holographic foil: the band and stub carry the pastel rainbow, the ink stays solid. */
+[data-rarity="MYTHIC"].pocket-ticket { --pocket-band: var(--rarity-mythic-foil); --stub-foil: var(--rarity-mythic-foil); }
 
 /* ── Love ticket ──────────────────────────────────────────────────────────
    Each paper part masks its own die-cut corners or notches; the drop-shadow on the
@@ -39,7 +42,7 @@
   position: relative; isolation: isolate; overflow: hidden;
   padding: calc(var(--frame) + 14px) calc(var(--frame) + 16px) calc(var(--frame) + 10px);
   background:
-    linear-gradient(color-mix(in srgb, var(--pocket-accent) 70%, transparent) 0 0) 0 0 / 100% calc(var(--frame) + 38px) no-repeat,
+    var(--pocket-band, linear-gradient(color-mix(in srgb, var(--pocket-accent) 70%, transparent) 0 0)) 0 0 / 100% calc(var(--frame) + 38px) no-repeat,
     radial-gradient(140% 110% at 50% 10%, transparent 70%, color-mix(in srgb, var(--color-paper-edge) 40%, transparent)),
     var(--paper-grain), var(--pocket-paper);
   mask:
@@ -120,7 +123,7 @@
 .pocket-stub {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
   padding: 10px 24px 20px;
-  background: url("/materials/tickets/guilloche.svg") 0 4px / 48px 14px, var(--paper-grain), var(--stub-paper);
+  background: url("/materials/tickets/guilloche.svg") 0 4px / 48px 14px, var(--paper-grain), var(--stub-foil, linear-gradient(transparent, transparent)), var(--stub-paper);
   mask:
     radial-gradient(circle var(--corner) at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat,
     radial-gradient(circle var(--corner) at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat;

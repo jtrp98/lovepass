@@ -1,7 +1,9 @@
 using LovePass.Application.Common.Abstractions;
+using LovePass.Application.Common.Exceptions;
 using LovePass.Application.Common.Interfaces;
 using LovePass.Domain.Entities;
 using LovePass.Domain.Enums;
+using LovePass.Domain.Rules;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +23,8 @@ public sealed record MyCouponDto(
     DateTime ExpiresAt,
     bool ExpiringSoon,
     int SenderId,
-    string Category = "OTHER");
+    string Category = "OTHER",
+    string Effect = "NONE");
 
 public sealed record GetMyCouponsQuery(string? Rarity = null) : IQuery<List<MyCouponDto>>;
 
@@ -70,7 +73,70 @@ public sealed class GetMyCouponsQueryHandler(IApplicationDbContext db, ICurrentU
             c.ExpiresAt,
             c.ExpiresAt - now <= ExpiringSoonWindow,
             c.SenderId,
-            s.Category);
+            s.Category,
+            s.Effect);
+    }
+}
+
+/// <summary>เป้าหมายที่คูปองพลังพิเศษใช้ได้ — IssuedCouponId สำหรับคูปองที่มีอยู่ หรือ CouponTemplateId สำหรับ WILDCARD</summary>
+public sealed record MetaTargetDto(
+    int? IssuedCouponId,
+    int? CouponTemplateId,
+    string Name,
+    string Rarity,
+    string Category,
+    string Terms,
+    DateTime? ExpiresAt,
+    int UsedCount);
+
+public sealed record GetMetaTargetsQuery(int IssuedCouponId) : IQuery<List<MetaTargetDto>>;
+
+public sealed class GetMetaTargetsQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser)
+    : IRequestHandler<GetMetaTargetsQuery, List<MetaTargetDto>>
+{
+    public async Task<List<MetaTargetDto>> Handle(GetMetaTargetsQuery request, CancellationToken cancellationToken)
+    {
+        var userId = currentUser.RequiredUserId();
+        var meta = await db.IssuedCoupons.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == request.IssuedCouponId, cancellationToken)
+            ?? throw new NotFoundException(nameof(IssuedCoupon), request.IssuedCouponId);
+
+        if (meta.ReceiverId != userId)
+            throw new ForbiddenAccessException();
+
+        var effect = MetaCouponRules.EffectOf(meta.ReadSnapshot());
+        if (effect == CouponEffect.None)
+            throw new ConflictException("คูปองนี้ไม่ใช่คูปองพลังพิเศษ");
+
+        if (effect == CouponEffect.Wildcard)
+        {
+            // rarity เก็บเป็น string ใน DB จึงเทียบระดับในหน่วยความจำ ไม่เทียบใน SQL
+            var templates = await db.CouponTemplates.AsNoTracking()
+                .Where(t => t.IsActive && t.Effect == CouponEffect.None && !t.MetaLocked && t.Category != CouponCategory.Gift)
+                .ToListAsync(cancellationToken);
+            return [.. templates
+                .Where(t => MetaCouponRules.CheckTemplateTarget(effect, t) is null)
+                .OrderBy(t => t.Rarity).ThenBy(t => t.Name)
+                .Select(t => new MetaTargetDto(null, t.Id, t.Name,
+                t.Rarity.ToString().ToUpperInvariant(), t.Category.ToString().ToUpperInvariant(), t.Terms, null, 0))];
+        }
+
+        var candidates = await db.IssuedCoupons.AsNoTracking()
+            .Where(c => c.SenderId == meta.SenderId && c.ReceiverId == userId && c.Id != meta.Id)
+            .OrderBy(c => c.ExpiresAt)
+            .Take(500)
+            .ToListAsync(cancellationToken);
+
+        var eligible = candidates.Where(c => MetaCouponRules.CheckCouponTarget(effect, meta, c) is null);
+        // REPLAY: คูปองแบบเดียวกันหลายแถวรวมเป็นตัวเลือกเดียว ใช้แถวล่าสุดเป็นตัวแทน
+        if (effect is CouponEffect.Replay or CouponEffect.ReplayGold)
+            eligible = eligible.GroupBy(c => c.TemplateSnapshot).Select(g => g.OrderByDescending(c => c.Id).First());
+
+        return [.. eligible.Select(c =>
+        {
+            var s = c.ReadSnapshot();
+            return new MetaTargetDto(c.Id, null, s.Name, s.Rarity, s.Category, s.Terms, c.ExpiresAt, c.ConfirmedUses);
+        })];
     }
 }
 

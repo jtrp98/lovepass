@@ -18,8 +18,9 @@ import {
 } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
-import type { AdminCouponTemplate, Rarity } from "@/types";
+import type { AdminCouponTemplate, CouponEffect, Rarity } from "@/types";
 import { couponCategories, resolveCategory, type CouponCategory } from "@/lib/coupon-categories";
+import { couponEffects } from "@/lib/coupon-effects";
 import { TicketIllustration } from "@/components/ticket-illustration";
 
 interface TemplateForm {
@@ -28,6 +29,8 @@ interface TemplateForm {
   terms: string;
   rarity: Rarity;
   category: CouponCategory;
+  effect: CouponEffect;
+  metaLocked: boolean;
   emoji: string;
   imageUrl: string;
   isActive: boolean;
@@ -39,6 +42,8 @@ const emptyForm: TemplateForm = {
   terms: "",
   rarity: "COMMON",
   category: "OTHER",
+  effect: "NONE",
+  metaLocked: false,
   emoji: "🎟️",
   imageUrl: "",
   isActive: true,
@@ -93,6 +98,8 @@ export default function AdminCouponsPage() {
       terms: template.terms,
       rarity: template.rarity,
       category: resolveCategory(template.category),
+      effect: template.effect ?? "NONE",
+      metaLocked: template.metaLocked ?? false,
       emoji: template.emoji ?? "",
       imageUrl: template.imageUrl ?? "",
       isActive: template.isActive,
@@ -115,6 +122,8 @@ export default function AdminCouponsPage() {
       terms: form.terms,
       rarity: form.rarity,
       category: form.category,
+      effect: form.effect,
+      metaLocked: form.metaLocked,
       emoji: form.emoji || null,
       imageUrl: form.imageUrl || null,
       isActive: form.isActive,
@@ -194,6 +203,12 @@ export default function AdminCouponsPage() {
                 <option value="RARE">พิเศษ · RARE</option>
                 <option value="EPIC">สุดพิเศษ · EPIC</option>
                 <option value="LEGENDARY">ล้ำค่า · LEGENDARY</option>
+                <option value="MYTHIC">ในฝัน · MYTHIC</option>
+              </Select>
+            </Field>
+            <Field label="พลังพิเศษ" hint="คูปองพลังพิเศษควรอยู่หมวดพลังพิเศษ ระบบตรวจกติกาตาม effect" error={fieldErrors.effect?.[0]}>
+              <Select value={form.effect} onChange={(e) => setForm({ ...form, effect: e.target.value as CouponEffect })}>
+                {Object.entries(couponEffects).map(([value, effect]) => <option key={value} value={value}>{effect.label}</option>)}
               </Select>
             </Field>
             <Field label="หมวดหมู่คูปอง" hint="ไอคอนใช้ตามหมวด ส่วนสีใช้ตามระดับความพิเศษ" error={fieldErrors.category?.[0]}>
@@ -246,6 +261,15 @@ export default function AdminCouponsPage() {
                 className="size-4 accent-purple-600"
               />
               เปิดให้เลือกในคลังคูปอง
+            </label>
+            <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={form.metaLocked}
+                onChange={(e) => setForm({ ...form, metaLocked: e.target.checked })}
+                className="size-4 accent-love"
+              />
+              กันไม่ให้พลังพิเศษใช้กับใบนี้ (ยกเว้นต่อเวลา) — ใช้กับเงิน ของขวัญ และ MYTHIC
             </label>
             <div className="flex justify-end gap-2 sm:col-span-2">
               <Button

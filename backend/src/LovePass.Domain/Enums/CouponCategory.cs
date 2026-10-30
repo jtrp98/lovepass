@@ -8,5 +8,7 @@ public enum CouponCategory
     Food,
     Care,
     Wish,
-    Adventure
+    Adventure,
+    Gift,
+    Power
 }

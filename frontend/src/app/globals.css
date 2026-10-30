@@ -40,6 +40,8 @@
   --color-rarity-epic-ink: var(--color-lavender-ink);
   --color-rarity-legendary-paper: var(--color-butter-soft);
   --color-rarity-legendary-ink: var(--color-butter-ink);
+  --color-rarity-mythic-paper: var(--color-mint-soft);
+  --color-rarity-mythic-ink: var(--color-ink);
   --radius-paper: .5rem;
   --radius-control: .5rem;
   --shadow-paper: 0 1px 2px #59424c08, 0 8px 24px -14px #59424c40;
@@ -58,6 +60,8 @@
     --space-paper: 1.5rem;
     /* Authored SVG materials (public/materials, see scripts/materials.mjs). */
     --paper-grain: url("/materials/paper/paper-fiber.svg");
+    /* MYTHIC holographic foil: a pastel rainbow built only from the existing palette. */
+    --rarity-mythic-foil: linear-gradient(115deg, var(--color-love-soft), var(--color-butter-soft) 25%, var(--color-mint-soft) 50%, var(--color-sky-soft) 75%, var(--color-lavender-soft));
     --shadow-ticket: drop-shadow(0 0 .6px #59424c59) drop-shadow(0 2px 2px #59424c14) drop-shadow(0 10px 12px #59424c1c);
     --shadow-ticket-lifted: drop-shadow(0 0 .6px #59424c59) drop-shadow(0 4px 3px #59424c17) drop-shadow(0 18px 18px #59424c24);
   }
@@ -261,6 +265,8 @@
 .mini-ticket[data-rarity="RARE"] { --accent: var(--color-rarity-rare-paper); --ink: var(--color-rarity-rare-ink); }
 .mini-ticket[data-rarity="EPIC"] { --accent: var(--color-rarity-epic-paper); --ink: var(--color-rarity-epic-ink); }
 .mini-ticket[data-rarity="LEGENDARY"] { --accent: var(--color-rarity-legendary-paper); --ink: var(--color-rarity-legendary-ink); }
+.mini-ticket[data-rarity="MYTHIC"] { --accent: var(--color-rarity-mythic-paper); --ink: var(--color-rarity-mythic-ink); background: var(--paper-grain), var(--rarity-mythic-foil); }
+.rarity-foil { background: var(--rarity-mythic-foil); }
 .mini-ticket-name { font-weight: 600; }
 .mini-ticket-status { padding-left: 12px; border-left: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent); font-size: 12px; white-space: nowrap; }
 .mini-ticket[data-state="pending"] .mini-ticket-status { color: var(--color-pending-ink); }

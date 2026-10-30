@@ -12,11 +12,13 @@ import {
 import { couponGroupKey } from "@/lib/flow";
 import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
+import { MetaTargetPicker } from "@/components/meta-target-picker";
 import { ApiError, api } from "@/lib/api";
+import { metaEffect } from "@/lib/coupon-effects";
 import { useEffect, useRef, useState } from "react";
-import type { MyCoupon, Rarity } from "@/types";
+import type { MetaTarget, MyCoupon, Rarity } from "@/types";
 
-const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"];
+const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
 
 /** รวมคูปองชนิดเดียวกัน + วันหมดอายุเดียวกันเป็นการ์ดเดียว (แสดง ×N) — คนละวันหมดอายุแยกการ์ด */
 interface GroupedCoupon {
@@ -26,6 +28,7 @@ interface GroupedCoupon {
   terms: string;
   rarity: Rarity;
   category: MyCoupon["category"];
+  effect: MyCoupon["effect"];
   emoji: string | null;
   totalAvailable: number;
   totalReserved: number;
@@ -49,6 +52,7 @@ function groupCoupons(coupons: MyCoupon[]): GroupedCoupon[] {
       terms: items[0].terms,
       rarity: items[0].rarity,
       category: items[0].category,
+      effect: items[0].effect,
       emoji: items[0].emoji,
       totalReserved: items.reduce((sum, c) => sum + Math.max(0, c.remaining - c.available), 0),
       totalAvailable: items.reduce((sum, c) => sum + c.available, 0),
@@ -80,6 +84,7 @@ export default function MyCouponsPage() {
   const [filter, setFilter] = useState<Rarity | "ALL">("ALL");
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<{ group: GroupedCoupon } | null>(null);
+  const [target, setTarget] = useState<MetaTarget | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -112,13 +117,19 @@ export default function MyCouponsPage() {
   async function submitRequest(message: string): Promise<boolean> {
     const coupon = selected?.group.coupons.find((item) => item.available > 0);
     if (!selected || !coupon || submitLock.current) return false;
+    if (metaEffect(coupon.effect) && !target) return false;
     submitLock.current = true;
     setRequestError(null);
     setNotice(null);
     setBusy(true);
     try {
-      await api.redemptions.request(coupon.id, message || undefined);
-      setNotice(`ส่งคำขอใช้ "${coupon.name}" เรียบร้อย รอแฟนยืนยันนะ`);
+      await api.redemptions.request(coupon.id, message || undefined, target ? {
+        targetIssuedCouponId: target.issuedCouponId ?? undefined,
+        targetTemplateId: target.couponTemplateId ?? undefined,
+      } : undefined);
+      setNotice(target
+        ? `ส่งคำขอใช้ "${coupon.name}" กับ "${target.name}" เรียบร้อย รอแฟนยืนยันนะ`
+        : `ส่งคำขอใช้ "${coupon.name}" เรียบร้อย รอแฟนยืนยันนะ`);
       return true;
     } catch (err) {
       setRequestError(err instanceof ApiError ? err.displayMessage : "ส่งคำขอไม่สำเร็จ");
@@ -197,12 +208,19 @@ export default function MyCouponsPage() {
         <div key={`${task}-${filter}`} className="pocket-collection">
           {groups.map((group) => {
             const ticket = toTicket(group);
+            const power = metaEffect(group.effect);
             return (
               <LoveTicket key={group.key} ticket={ticket} open={selected?.group.key === group.key} onClose={() => !busy && setSelected(null)} onOpen={() => {
                 setRequestError(null);
+                setTarget(null);
                 setSelected({ group });
               }}>
-                {ticket.state === "available" ? <TicketRequest name={group.name} busy={busy} error={requestError} onTear={submitRequest} onDone={finishRequest} /> : <>
+                {ticket.state === "available" ? <>
+                  {power && selected?.group.key === group.key && <MetaTargetPicker couponId={group.coupons.find((item) => item.available > 0)!.id} effect={power} value={target} onChange={setTarget} />}
+                  {!power || target
+                    ? <TicketRequest name={target ? `${group.name} กับ ${target.name}` : group.name} busy={busy} error={requestError} onTear={submitRequest} onDone={finishRequest} />
+                    : <p className="pocket-terms">เลือกคูปองที่จะใช้พลังนี้ก่อน แล้วค่อยฉีกหางตั๋วส่งคำขอนะ</p>}
+                </> : <>
                   <p className="pocket-terms">{ticket.state === "expired" ? "ใบนี้หมดอายุแล้ว เก็บคำสัญญาดี ๆ ไว้ได้นะ" : "คูปองนี้อยู่ระหว่างรอแฟนยืนยัน ยังขอใช้เพิ่มไม่ได้"}</p>
                   <Button disabled>{ticket.state === "expired" ? "หมดอายุแล้ว" : "รอแฟนยืนยัน"}</Button>
                 </>}

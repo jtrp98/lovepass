@@ -135,6 +135,10 @@ export const rarityStyles: Record<Rarity, { label: string; badge: string }> = {
     label: "ล้ำค่า · LEGENDARY",
     badge: "bg-rarity-legendary-paper text-rarity-legendary-ink",
   },
+  MYTHIC: {
+    label: "ในฝัน · MYTHIC",
+    badge: "rarity-foil text-rarity-mythic-ink",
+  },
 };
 export function RarityBadge({ rarity }: { rarity: Rarity | string }) {
   const style = rarityStyles[rarity as Rarity] ?? rarityStyles.COMMON;

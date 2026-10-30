@@ -6,6 +6,8 @@ using LovePass.Application.Common.Models;
 using LovePass.Application.Common.Services;
 using LovePass.Domain.Entities;
 using LovePass.Domain.Enums;
+using LovePass.Domain.Rules;
+using LovePass.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,9 +29,16 @@ public sealed record RedemptionDto(
     string Status,
     DateTime RequestedAt,
     DateTime? ResolvedAt,
-    DateTime CouponExpiresAt);
+    DateTime CouponExpiresAt,
+    string Category = "OTHER",
+    string Effect = "NONE",
+    string? TargetName = null,
+    string? TargetRarity = null,
+    string? TargetCategory = null);
 
-public sealed record RequestRedemptionCommand(int IssuedCouponId, string? Message) : ICommand<RedemptionDto>;
+/// <summary>คูปองพลังพิเศษส่งเป้าหมายมาด้วย: TargetIssuedCouponId (ต่อเวลา, FAST PASS, UPGRADE, REPLAY) หรือ TargetTemplateId (WILDCARD)</summary>
+public sealed record RequestRedemptionCommand(int IssuedCouponId, string? Message, int? TargetIssuedCouponId = null, int? TargetTemplateId = null)
+    : ICommand<RedemptionDto>;
 
 public sealed class RequestRedemptionCommandValidator : AbstractValidator<RequestRedemptionCommand>
 {
@@ -37,6 +46,10 @@ public sealed class RequestRedemptionCommandValidator : AbstractValidator<Reques
     {
         RuleFor(x => x.IssuedCouponId).NotEmpty();
         RuleFor(x => x.Message).MaximumLength(500);
+        RuleFor(x => x.TargetIssuedCouponId).GreaterThan(0).When(x => x.TargetIssuedCouponId is not null);
+        RuleFor(x => x.TargetTemplateId).GreaterThan(0).When(x => x.TargetTemplateId is not null);
+        RuleFor(x => x).Must(x => x.TargetIssuedCouponId is null || x.TargetTemplateId is null)
+            .WithMessage("เลือกเป้าหมายได้อย่างเดียว คูปองที่มีอยู่หรือคูปองจากคลัง");
     }
 }
 
@@ -75,6 +88,8 @@ public sealed class RequestRedemptionCommandHandler(
             RequestedAt = DateTime.UtcNow
         };
 
+        await AttachTargetAsync(coupon, request, redemption, cancellationToken);
+
         db.Redemptions.Add(redemption);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -90,9 +105,10 @@ public sealed class RequestRedemptionCommandHandler(
             var requester = await identity.GetUserAsync(redemption.RequesterId, cancellationToken);
             var approver = await identity.GetUserAsync(coupon.SenderId, cancellationToken);
             var snapshot = coupon.ReadSnapshot();
+            var targetName = redemption.TargetSnapshot is null ? null : CouponTemplateSnapshot.FromJson(redemption.TargetSnapshot).Name;
             var (subject, html) = EmailTemplates.RedemptionRequested(
                 approver.DisplayName, requester.DisplayName, snapshot.Name, snapshot.Rarity,
-                redemption.Message, coupon.Id, appOptions.Value);
+                redemption.Message, coupon.Id, appOptions.Value, targetName);
             await emailSender.SendEmailAsync(approver.Email, subject, html, cancellationToken);
         }
         catch (Exception ex)
@@ -101,9 +117,47 @@ public sealed class RequestRedemptionCommandHandler(
         }
     }
 
+    /// <summary>คูปองพลังพิเศษต้องมีเป้าหมายที่ผ่านกติกา คูปองปกติต้องไม่ส่งเป้าหมายมา</summary>
+    private async Task AttachTargetAsync(IssuedCoupon coupon, RequestRedemptionCommand request, Redemption redemption, CancellationToken cancellationToken)
+    {
+        var effect = MetaCouponRules.EffectOf(coupon.ReadSnapshot());
+        if (effect == CouponEffect.None)
+        {
+            if (request.TargetIssuedCouponId is not null || request.TargetTemplateId is not null)
+                throw new ConflictException("คูปองนี้ไม่ต้องเลือกคูปองเป้าหมาย");
+            return;
+        }
+
+        if (effect == CouponEffect.Wildcard)
+        {
+            var templateId = request.TargetTemplateId ?? throw new ConflictException("เลือกคูปองจากคลังที่อยากให้ WILDCARD กลายเป็นก่อนนะ");
+            var template = await db.CouponTemplates.FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken)
+                ?? throw new NotFoundException(nameof(CouponTemplate), templateId);
+            ThrowIfBroken(MetaCouponRules.CheckTemplateTarget(effect, template));
+            redemption.TargetTemplateId = template.Id;
+            redemption.TargetSnapshot = CouponTemplateSnapshot.Of(template).ToJson();
+            return;
+        }
+
+        var targetId = request.TargetIssuedCouponId ?? throw new ConflictException("เลือกคูปองที่จะใช้พลังนี้ก่อนนะ");
+        var target = await db.IssuedCoupons.FirstOrDefaultAsync(c => c.Id == targetId, cancellationToken)
+            ?? throw new NotFoundException(nameof(IssuedCoupon), targetId);
+        ThrowIfBroken(MetaCouponRules.CheckCouponTarget(effect, coupon, target));
+        if (MetaCouponRules.ReservesTarget(effect) && !target.TryReserve())
+            throw new ConflictException("คูปองที่เลือกมีคำขอค้างอยู่เต็มจำนวนแล้ว");
+        redemption.TargetIssuedCouponId = target.Id;
+        redemption.TargetSnapshot = target.TemplateSnapshot;
+    }
+
+    private static void ThrowIfBroken(string? rule)
+    {
+        if (rule is not null) throw new ConflictException(rule);
+    }
+
     internal static RedemptionDto Map(Redemption r, IssuedCoupon coupon, string requesterName, string? approverName = null)
     {
         var s = coupon.ReadSnapshot();
+        var target = r.TargetSnapshot is null ? null : CouponTemplateSnapshot.FromJson(r.TargetSnapshot);
         return new RedemptionDto(
             r.Id,
             coupon.Id,
@@ -118,7 +172,12 @@ public sealed class RequestRedemptionCommandHandler(
             r.Status.ToString().ToUpperInvariant(),
             r.RequestedAt,
             r.ResolvedAt,
-            coupon.ExpiresAt);
+            coupon.ExpiresAt,
+            s.Category,
+            s.Effect,
+            target?.Name,
+            target?.Rarity,
+            target?.Category);
     }
 }
 
@@ -141,6 +200,8 @@ public sealed class ApproveRedemptionCommandHandler(
 
         if (coupon.IsExpired)
             throw new ConflictException("คูปองหมดอายุแล้ว ไม่สามารถอนุมัติได้");
+
+        await MetaTargetEffects.ApplyOnApproveAsync(db, redemption, coupon, cancellationToken);
 
         if (!coupon.TryConfirmRedemption())
             throw new ConflictException("สิทธิ์คูปองไม่พอให้อนุมัติ");
@@ -209,6 +270,7 @@ public sealed class RejectRedemptionCommandHandler(
 
         if (!coupon.TryReleaseReservation())
             throw new ConflictException("ไม่พบสิทธิ์ที่กันไว้สำหรับคำขอนี้");
+        await MetaTargetEffects.ReleaseAsync(db, redemption, coupon, cancellationToken);
 
         redemption.Status = RedemptionStatus.Rejected;
         redemption.ApproverId = userId;
@@ -256,6 +318,7 @@ public sealed class CancelRedemptionCommandHandler(IApplicationDbContext db, ICu
 
         if (!redemption.IssuedCoupon!.TryReleaseReservation())
             throw new ConflictException("ไม่พบสิทธิ์ที่กันไว้สำหรับคำขอนี้");
+        await MetaTargetEffects.ReleaseAsync(db, redemption, redemption.IssuedCoupon, cancellationToken);
 
         redemption.Status = RedemptionStatus.Cancelled;
         redemption.ResolvedAt = DateTime.UtcNow;
@@ -263,6 +326,46 @@ public sealed class CancelRedemptionCommandHandler(IApplicationDbContext db, ICu
 
         var requesterName = await identity.GetDisplayNameOrIdAsync(redemption.RequesterId, cancellationToken);
         return RequestRedemptionCommandHandler.Map(redemption, redemption.IssuedCoupon, requesterName);
+    }
+}
+
+/// <summary>ผลของคูปองพลังพิเศษกับคูปองเป้าหมายที่ถูกกันสิทธิ์ไว้ — ทำใน transaction เดียวกับคำสั่งหลัก</summary>
+file static class MetaTargetEffects
+{
+    public static async Task ApplyOnApproveAsync(IApplicationDbContext db, Redemption redemption, IssuedCoupon meta, CancellationToken cancellationToken)
+    {
+        var effect = MetaCouponRules.EffectOf(meta.ReadSnapshot());
+        if (!MetaCouponRules.ReservesTarget(effect)) return;
+
+        var target = await LoadTargetAsync(db, redemption, cancellationToken);
+        if (effect == CouponEffect.Extend)
+        {
+            if (!target.TryExtendReservedUnit(MetaCouponRules.ExtendBy, out var split))
+                throw new ConflictException("ไม่พบสิทธิ์ที่กันไว้ของคูปองที่จะต่อเวลา");
+            if (split is not null) db.IssuedCoupons.Add(split);
+            return;
+        }
+
+        if (target.IsExpired)
+            throw new ConflictException("คูปองที่ใช้คู่กันหมดอายุแล้ว ปฏิเสธคำขอนี้เพื่อคืนสิทธิ์ทั้งสองใบได้");
+        if (!target.TryConfirmRedemption())
+            throw new ConflictException("สิทธิ์ของคูปองที่ใช้คู่กันไม่พอให้ยืนยัน");
+    }
+
+    public static async Task ReleaseAsync(IApplicationDbContext db, Redemption redemption, IssuedCoupon meta, CancellationToken cancellationToken)
+    {
+        if (!MetaCouponRules.ReservesTarget(MetaCouponRules.EffectOf(meta.ReadSnapshot()))) return;
+        var target = await LoadTargetAsync(db, redemption, cancellationToken);
+        if (!target.TryReleaseReservation())
+            throw new ConflictException("ไม่พบสิทธิ์ที่กันไว้ของคูปองที่ใช้คู่กัน");
+    }
+
+    private static async Task<IssuedCoupon> LoadTargetAsync(IApplicationDbContext db, Redemption redemption, CancellationToken cancellationToken)
+    {
+        var targetId = redemption.TargetIssuedCouponId
+            ?? throw new ConflictException("คำขอนี้ไม่มีคูปองเป้าหมาย");
+        return await db.IssuedCoupons.FirstOrDefaultAsync(c => c.Id == targetId, cancellationToken)
+            ?? throw new NotFoundException(nameof(IssuedCoupon), targetId);
     }
 }
 

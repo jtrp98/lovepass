@@ -12,6 +12,9 @@ const statuses = {
   CANCELLED: { label: "ยกเลิกแล้ว", symbol: "—" },
 };
 
+/** Powers that hold the target coupon too while the request waits (see MetaCouponRules.ReservesTarget). */
+const holdsTarget = new Set(["EXTEND", "FASTPASS", "UPGRADE"]);
+
 export function CouponRequestCard({ item, direction, children, animateStamp = false }: {
   item: Redemption;
   direction: "received" | "sent";
@@ -32,6 +35,7 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
             <p className="pocket-category">{couponCategories[resolveCategory(item.category)].label} · {rarityStyles[item.rarity].label.split(" · ")[0]}</p>
             <h2 id={heading}>{item.couponName}</h2>
             <p className="request-person">{direction === "received" ? `${item.requesterName} ขอใช้ใบนี้` : "คำขอที่ส่งให้แฟน"}</p>
+            {item.targetName && <p className="request-person">ใช้กับ <strong>{item.targetName}</strong>{item.targetRarity && ` · ${rarityStyles[item.targetRarity]?.label.split(" · ")[0] ?? item.targetRarity}`}</p>}
           </div>
           <div className="pocket-emblem">
             <TicketIllustration category={item.category} />
@@ -47,7 +51,7 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
       <div className="pocket-perforation" aria-hidden="true" />
       <div className="pocket-stub request-stub">
         <div className="pocket-stub-copy">
-          <span className="pocket-from">{item.status === "PENDING" ? "คำขอนี้กันคูปองไว้ 1 ใบ" : item.status === "APPROVED" ? "อีกหนึ่งความทรงจำของเรา" : "คืนสิทธิ์คูปองแล้ว"}</span>
+          <span className="pocket-from">{item.status === "PENDING" ? `คำขอนี้กันคูปองไว้ ${item.effect && holdsTarget.has(item.effect) ? 2 : 1} ใบ` : item.status === "APPROVED" ? "อีกหนึ่งความทรงจำของเรา" : "คืนสิทธิ์คูปองแล้ว"}</span>
           <span className="pocket-quantity-note">ใช้ได้ถึง <time dateTime={item.couponExpiresAt}>{formatDate(item.couponExpiresAt)}</time></span>
         </div>
         {children && <div className="request-actions">{children}</div>}

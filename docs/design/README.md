@@ -22,7 +22,7 @@
 | หมึก | `--color-ink`, `--color-muted`, `--color-line` | หมึกอ่าน, หมึกรอง, เส้นพิมพ์ |
 | ความรัก | `--color-love`, `--color-love-hover`, `--color-love-soft`, `--color-stamp`, `--color-tape` | action หลัก, พื้นชมพู, หมึกตรายาง, เทป |
 | สถานะ | `--color-success-*`, `--color-pending-*`, `--color-danger*` | ใช้ได้, รอยืนยัน, ผิดพลาด |
-| ความพิเศษ | `--color-rarity-{common,rare,epic,legendary}-{paper,ink}` | สีกระดาษ/หมึกตาม rarity (ชมพู, ฟ้า, ม่วง, ทอง) |
+| ความพิเศษ | `--color-rarity-{common,rare,epic,legendary,mythic}-{paper,ink}` | สีกระดาษ/หมึกตาม rarity (ชมพู, ฟ้า, ม่วง, ทอง, รุ้ง) — MYTHIC พิมพ์บนฟอยล์โฮโลแกรม: `--rarity-mythic-foil` ไล่สีพาสเทลจาก token ที่มีอยู่ 5 สี ใช้กับแถบหัวตั๋ว หางตั๋ว และป้าย (`.rarity-foil`) ส่วนหมึกใช้ `--color-ink` สีเดียวให้อ่านง่าย ไม่ใช่ palette ใหม่ |
 | รูปทรง/เงา | `--radius-paper`, `--radius-control`, `--shadow-paper`, `--shadow-ticket`, `--shadow-ticket-lifted` | มุมกระดาษ, มุม control, เงากระดาษ, เงาที่ตามรอยตัดของตั๋ว |
 | การเคลื่อนไหว | `--motion-press`, `--motion-soft`, `--ease-paper` | กด, hover/เปลี่ยนสถานะ, เส้นโค้งแบบกระดาษ |
 
@@ -47,7 +47,7 @@
 | `illustrations/wax-seal.svg` | เขียนเอง | `Card variant="letter"`, `WaxSeal`, ฝาซอง |
 | `tickets/guilloche.svg`, `tickets/corner-*.svg` | [`scripts/materials.mjs`](../../frontend/scripts/materials.mjs) | ลายพิมพ์กันปลอมบน stub, มุมกรอบตั๋ว |
 | `stamps/postage-heart.svg`, `stamps/postmark-waves.svg` | `scripts/materials.mjs` | โปสการ์ดของขวัญที่ส่ง |
-| `illustrations/coupons/*.svg` | เขียนเอง | ภาพประจำหมวดคูปอง (`TicketIllustration`) |
+| `illustrations/coupons/*.svg` | เขียนเอง | ภาพประจำหมวดคูปอง (`TicketIllustration`) รวม `gift.svg` กล่องผูกโบ และ `power.svg` ตั๋วรอยปรุกับลูกศรเล่นซ้ำ ที่เพิ่มพร้อมหมวด GIFT / POWER |
 
 Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs.tsx`](../../frontend/src/components/material-defs.tsx) (render ครั้งเดียวที่ root layout): `lp-stamp-ink` หมึกตรายาง, `lp-print` หมึกพิมพ์, `lp-torn` ขอบกระดาษฉีก
 

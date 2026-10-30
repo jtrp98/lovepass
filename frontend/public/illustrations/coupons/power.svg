@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 110" fill="none">
+  <g id="drawing" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 33h86v15a8 8 0 0 0 0 16v15H17V64a8 8 0 0 0 0-16Z" fill="var(--pocket-accent, #e5eee4)"/>
+    <path d="M81 37v38" stroke-dasharray="3 4"/>
+    <path d="M57 45a12 12 0 1 1-12 9m-2-8 2 8 8-2"/>
+    <path d="m92 50 1.6 4 4.4.5-3.3 2.8 1 4.3-3.7-2.4-3.7 2.4 1-4.3-3.3-2.8 4.4-.5Z"/>
+    <path d="M14 96q46 6 92 0M16 14v8m-4-4h8m84 70 4 4m0-4-4 4"/>
+  </g>
+</svg>
