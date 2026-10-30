@@ -128,6 +128,24 @@ assert.equal((await ok(receiver.token, "POST", `/gift-packs/${batch.id}/draws`, 
 assert.equal((await ok(receiver.token, "POST", `/gift-packs/${batch.id}/draws`, chosenBatch)).draws.length, 5);
 pass("tier opening is separate from greeting card; multi-card random/choice batches are atomic and replay-safe");
 
+const autoPool = await ok(sender.token, "POST", "/gift-packs", payload({ options: [], quotas: [{ rarity: "COMMON", quantity: 3 }] }));
+const commonTemplates = templates.filter(t => t.rarity === "COMMON");
+assert.deepEqual(autoPool.options.map(o => o.couponTemplateId).sort((a, b) => a - b), commonTemplates.map(t => t.id).sort((a, b) => a - b));
+assert.ok(autoPool.options.every(o => o.limit === 3 && o.coupon.terms === commonTemplates.find(t => t.id === o.couponTemplateId).terms));
+await ok(receiver.token, "POST", `/gift-packs/${autoPool.id}/open`);
+await ok(receiver.token, "POST", `/gift-packs/${autoPool.id}/tiers/COMMON/open`);
+assert.equal((await call(sender.token, "POST", `/gift-packs/${autoPool.id}/draws`, { requestId: crypto.randomUUID(), rarity: "COMMON" })).status, 403);
+const repeated = await ok(receiver.token, "POST", `/gift-packs/${autoPool.id}/draws`, { requestId: crypto.randomUUID(), rarity: "COMMON", quantity: 3, couponTemplateId: house.id });
+assert.equal(repeated.draws.length, 3);
+assert.ok(repeated.draws.every(d => d.couponTemplateId === house.id));
+const autoRandom = await ok(sender.token, "POST", "/gift-packs", payload({ options: [], quotas: [{ rarity: "COMMON", quantity: 2 }] }));
+await ok(receiver.token, "POST", `/gift-packs/${autoRandom.id}/open`);
+await ok(receiver.token, "POST", `/gift-packs/${autoRandom.id}/tiers/COMMON/open`);
+const randomFromPool = await ok(receiver.token, "POST", `/gift-packs/${autoRandom.id}/draws`, { requestId: crypto.randomUUID(), rarity: "COMMON", quantity: 2 });
+assert.equal(randomFromPool.draws.length, 2);
+assert.ok(randomFromPool.draws.every(d => d.random && commonTemplates.some(t => t.id === d.couponTemplateId)));
+pass("quota-only CHOICE snapshots every active template in the tier; only receiver selects and can repeat one type up to quota");
+
 const uiPack = await ok(sender.token, "POST", "/gift-packs", payload({ name: "ซองเปิดทดสอบสำหรับคนพิเศษ เก็บไว้ยิ้มด้วยกันทั้งปี", options: [{ couponTemplateId: house.id, limit: 8 }, { couponTemplateId: hug.id, limit: 8 }, { couponTemplateId: gift.id, limit: 1 }, { couponTemplateId: visit.id, limit: 10 }], quotas: [{ rarity: "COMMON", quantity: 8 }, { rarity: "RARE", quantity: 1 }, { rarity: "EPIC", quantity: 10 }] }));
 const browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {}) });
 const context = await browser.newContext({ locale: "th-TH", timezoneId: "Asia/Bangkok", viewport: { width: 390, height: 844 } });
@@ -231,14 +249,17 @@ try {
   await page.goto(BASE + "/packs/new");
   await page.getByRole("button", { name: "เลือกซองตาม tier" }).waitFor();
   await page.getByLabel("COMMON", { exact: true }).fill("3");
-  await page.getByLabel("หาคูปอง", { exact: true }).fill("งานบ้านนี้เราทำ");
-  await page.getByRole("button", { name: "เปิดดูใบนี้ งานบ้านนี้เราทำ", exact: true }).click();
-  await page.getByLabel("เลือกซ้ำได้สูงสุด (ใบ)", { exact: true }).fill("8");
+  assert.equal(await page.getByLabel("หาคูปอง", { exact: true }).count(), 0);
+  assert.equal(await page.locator(".pack-ticket-grid").count(), 0);
+  await page.setViewportSize({ width: 1280, height: 1000 }); await reflow(); await shot("choice-composer-1280", true);
   await page.setViewportSize({ width: 390, height: 844 }); await reflow(); await shot("choice-composer-390", true);
   await page.getByRole("button", { name: "ตรวจซองก่อนส่ง" }).click();
   await page.getByRole("button", { name: "ปิดผนึก ส่งให้แฟน" }).click();
   await page.getByText("ส่งซองให้แฟนแล้ว").waitFor();
-  pass("custom tier quota and eight-repeat housework option → review → real choice envelope");
+  const sentAuto = (await ok(sender.token, "GET", "/gift-packs")).find(p => p.total === 3 && p.id !== autoPool.id);
+  assert.ok(sentAuto);
+  assert.equal(sentAuto.options.length, commonTemplates.length);
+  pass("sender sets only tier quantities → review → real choice envelope with all tier options for the receiver");
   assert.deepEqual(evidence.consoleErrors, []);
 } catch (error) {
   await shot("failure", true);

@@ -29,6 +29,8 @@
 
 ## archive — ประวัติ
 
+- [Release notes 1.2.1](archive/releases/1.2.1.md) — คำขอที่รอยืนยันแสดงข้อมูลที่ส่งจริง และผู้ส่งซองกำหนดเฉพาะจำนวนสิทธิ์แต่ละระดับ
+
 - [Release notes 1.2.0](archive/releases/1.2.0.md) — ชุดของขวัญ ซองตาม tier เลือก/สุ่มหลายใบ ชุดวันเกิด และแก้ตัวกรองคลังคูปอง
 
 - [Gift packs verification](archive/gift-packs/verification.md) — ผลตรวจชุดของขวัญ ซองสีตาม tier และเลือก/สุ่มหลายใบ พร้อมภาพหน้าจอ

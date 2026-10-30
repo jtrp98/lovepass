@@ -157,6 +157,7 @@ const put = <T>(path: string, body?: unknown) =>
 export const api = {
   packs: {
     list: () => get<GiftPack[]>("/api/v1/gift-packs"),
+    // CHOICE uses empty options: the server snapshots the full pool for each quota tier.
     create: (input: CreateGiftPackInput) => post<GiftPack>("/api/v1/gift-packs", input),
     open: (id: number) => post<GiftPack>(`/api/v1/gift-packs/${id}/open`),
     openTier: (id: number, rarity: Rarity) => post<GiftPack>(`/api/v1/gift-packs/${id}/tiers/${rarity}/open`),
