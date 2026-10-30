@@ -241,6 +241,13 @@ export interface AdminUser {
   createdAt: string;
 }
 
+export interface AdminCouple {
+  id: number;
+  status: "ACTIVE" | "DISSOLVED";
+  createdAt: string;
+  members: { userId: number; displayName: string; email: string }[];
+}
+
 export interface AdminStats {
   totalUsers: number;
   totalCouples: number;

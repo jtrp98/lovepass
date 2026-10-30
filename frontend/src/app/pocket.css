@@ -465,8 +465,8 @@
 .pack-composer-summary { position: sticky; bottom: calc(var(--nav-height) + .5rem); z-index: 10; }
 .pack-review-list { display: grid; gap: .5rem; }
 .pack-review-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; padding: .75rem 0; border-bottom: 1px dashed var(--color-line); }
-.pack-cover { overflow: hidden; }
-.pack-cover .envelope { width: min(20rem, 90%); margin-top: 5.5rem; margin-bottom: 1.5rem; }
+/* No overflow clip: the letter's wax seal sits on the card edge. The open flap needs ~0.62 × envelope height above the envelope, so margin-top leaves room for it below the title. */
+.pack-cover .envelope { width: min(20rem, 90%); margin-top: clamp(6rem, 40%, 9rem); margin-bottom: 1.5rem; }
 .pack-cover .envelope[data-closed] { margin-top: 1.5rem; }
 .envelope[data-closed] .envelope-flap { animation: none; transform: none; z-index: 3; }
 .envelope[data-closed] .envelope-letter { animation: none; transform: none; }

@@ -72,11 +72,29 @@ public sealed class AdminUsersController(ISender mediator) : ControllerBase
     public async Task<IActionResult> List(CancellationToken cancellationToken)
         => Ok(await mediator.Send(new GetAdminUsersQuery(), cancellationToken));
 
-    /// <summary>Soft delete user — ล็อกอินไม่ได้ทันที ยุติคู่ ยกเลิกคำขอค้าง แต่คงประวัติทั้งหมด</summary>
+    /// <summary>Soft delete user — ล็อกอินไม่ได้ทันที ลบได้เฉพาะคนที่ไม่เคยจับคู่ (409 ถ้าเคย)</summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         await mediator.Send(new DeleteUserCommand(id), cancellationToken);
+        return NoContent();
+    }
+}
+
+[ApiController]
+[Route("api/v1/admin/couples")]
+[Authorize(Roles = "Admin")]
+public sealed class AdminCouplesController(ISender mediator) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new GetAdminCouplesQuery(), cancellationToken));
+
+    /// <summary>ยกเลิกคู่ — ไม่ลบข้อมูล ประวัติและความทรงจำคงเดิม</summary>
+    [HttpPost("{id:int}/dissolve")]
+    public async Task<IActionResult> Dissolve(int id, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new DissolveCoupleCommand(id), cancellationToken);
         return NoContent();
     }
 }

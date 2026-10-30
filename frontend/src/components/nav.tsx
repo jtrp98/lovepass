@@ -127,13 +127,14 @@ export function AdminNav() {
   return (
     <nav
       aria-label="จัดการระบบ"
-      className="grid grid-cols-2 gap-2 rounded-2xl bg-lavender-soft p-2 md:grid-cols-5"
+      className="grid grid-cols-2 gap-2 rounded-2xl bg-lavender-soft p-2 md:grid-cols-6"
     >
       {[
         { href: "/admin/dashboard", label: "ภาพรวม" },
         { href: "/admin/coupons", label: "ต้นแบบคูปอง" },
         { href: "/admin/sets", label: "ชุดคูปอง" },
         { href: "/admin/users", label: "ผู้ใช้" },
+        { href: "/admin/couples", label: "คู่รัก" },
         { href: "/admin/overview", label: "กิจกรรม" },
       ].map((link) => (
         <Link

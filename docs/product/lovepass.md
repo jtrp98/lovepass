@@ -795,7 +795,7 @@ REST API เวอร์ชันใน path: `/api/v1/...` · JSON camelCase ·
 | POST | `/api/v1/couples/invitations` | สร้างคำเชิญจับคู่ | User |
 | POST | `/api/v1/couples/invitations/accept` | ยอมรับคำเชิญ | User |
 | GET | `/api/v1/couples/me` | ข้อมูลคู่ของฉัน | User |
-| GET | `/api/v1/coupon-templates?rarity=` | Catalog (Active เท่านั้น) | User |
+| GET | `/api/v1/coupon-templates?rarity=&category=` | Catalog (Active เท่านั้น) | User |
 | GET | `/api/v1/coupon-templates/{id}` | รายละเอียดคูปอง | User |
 | GET | `/api/v1/coupon-sets` | Set สำเร็จรูป | User |
 | POST | `/api/v1/gifts` | มอบคูปอง (single / setId / custom items) | User |
@@ -812,7 +812,9 @@ REST API เวอร์ชันใน path: `/api/v1/...` · JSON camelCase ·
 | GET/POST | `/api/v1/admin/coupon-sets` | จัดการ set | Admin |
 | GET/PUT/DELETE | `/api/v1/admin/coupon-sets/{id}` | แก้ไข / soft delete | Admin |
 | GET | `/api/v1/admin/users` | รายการผู้ใช้ | Admin |
-| DELETE | `/api/v1/admin/users/{id}` | soft delete user (ยุติคู่ ยกเลิกคำขอค้าง คงประวัติ) | Admin |
+| DELETE | `/api/v1/admin/users/{id}` | soft delete user — ลบได้เฉพาะคนที่ไม่เคยจับคู่ (เคยจับคู่ = 409 ให้ยกเลิกคู่แทน) | Admin |
+| GET | `/api/v1/admin/couples` | รายการคู่ทั้งหมด (ACTIVE / DISSOLVED) | Admin |
+| POST | `/api/v1/admin/couples/{id}/dissolve` | ยกเลิกคู่ — เปลี่ยนสถานะเป็น DISSOLVED ไม่ลบข้อมูล ยกเลิกคำขอที่ค้างระหว่างคู่และคืนสิทธิ์ หลังยกเลิกดูได้เฉพาะประวัติ: มอบของขวัญใหม่และขอใช้คูปองเดิมไม่ได้ (409) | Admin |
 | GET | `/api/v1/admin/dashboard/stats` | ตัวเลขภาพรวม | Admin |
 | GET | `/api/v1/admin/gifts` | ประวัติการมอบทั้งระบบ | Admin |
 | GET | `/api/v1/admin/redemptions` | ประวัติ redemption ทั้งระบบ | Admin |

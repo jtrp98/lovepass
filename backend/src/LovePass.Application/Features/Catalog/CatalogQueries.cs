@@ -17,7 +17,7 @@ public sealed record CouponSetDto(int Id, string Name, string Description, List<
     public int TotalCoupons => Items.Sum(i => i.Quantity);
 }
 
-public sealed record GetCouponTemplatesQuery(string? Rarity = null) : IQuery<List<CouponTemplateDto>>;
+public sealed record GetCouponTemplatesQuery(string? Rarity = null, string? Category = null) : IQuery<List<CouponTemplateDto>>;
 
 public sealed class GetCouponTemplatesQueryHandler(IApplicationDbContext db)
     : IRequestHandler<GetCouponTemplatesQuery, List<CouponTemplateDto>>
@@ -28,6 +28,9 @@ public sealed class GetCouponTemplatesQueryHandler(IApplicationDbContext db)
 
         if (!string.IsNullOrWhiteSpace(request.Rarity) && Enum.TryParse<Rarity>(request.Rarity, ignoreCase: true, out var rarity))
             query = query.Where(t => t.Rarity == rarity);
+
+        if (!string.IsNullOrWhiteSpace(request.Category) && Enum.TryParse<CouponCategory>(request.Category, ignoreCase: true, out var category))
+            query = query.Where(t => t.Category == category);
 
         return await query
             .OrderBy(t => t.Name)

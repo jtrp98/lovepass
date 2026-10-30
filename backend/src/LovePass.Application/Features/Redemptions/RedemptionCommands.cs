@@ -76,6 +76,13 @@ public sealed class RequestRedemptionCommandHandler(
         if (coupon.IsExpired)
             throw new ConflictException("คูปองนี้หมดอายุแล้ว");
 
+        // คู่ที่ยกเลิกไปแล้วดูได้เฉพาะประวัติ ขอใช้คูปองต่อไม่ได้
+        var stillCoupled = await db.CoupleMembers.AnyAsync(m => m.UserId == userId
+            && m.Couple!.Status == CoupleStatus.Active
+            && m.Couple.Members.Any(o => o.UserId == coupon.SenderId), cancellationToken);
+        if (!stillCoupled)
+            throw new ConflictException("คุณสองคนไม่ได้จับคู่กันแล้ว คูปองใบนี้เก็บไว้ดูเป็นความทรงจำได้อย่างเดียว");
+
         if (!coupon.TryReserve())
             throw new ConflictException("จำนวนคูปองคงเหลือไม่พอ หรือมีคำขอที่รออยู่เต็มจำนวนแล้ว");
 
