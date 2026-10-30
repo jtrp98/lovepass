@@ -28,7 +28,9 @@
   --notch: 10px; --corner: 13px; --frame: 11px;
   --rule: color-mix(in srgb, var(--pocket-print) 34%, transparent);
   --rule-soft: color-mix(in srgb, var(--pocket-print) 16%, transparent);
-  --stub-paper: color-mix(in srgb, var(--pocket-accent) 34%, var(--pocket-paper));
+  /* The paper takes a light wash of its rarity colour; the stub is printed in it. */
+  --pocket-paper: color-mix(in srgb, var(--pocket-accent) 22%, var(--color-surface));
+  --stub-paper: color-mix(in srgb, var(--pocket-accent) 55%, var(--pocket-paper));
   position: relative; isolation: isolate; min-width: 0;
   filter: var(--shadow-ticket);
   transition: transform var(--motion-soft) var(--ease-paper), filter var(--motion-soft);
@@ -37,6 +39,7 @@
   position: relative; isolation: isolate; overflow: hidden;
   padding: calc(var(--frame) + 14px) calc(var(--frame) + 16px) calc(var(--frame) + 10px);
   background:
+    linear-gradient(color-mix(in srgb, var(--pocket-accent) 70%, transparent) 0 0) 0 0 / 100% calc(var(--frame) + 38px) no-repeat,
     radial-gradient(140% 110% at 50% 10%, transparent 70%, color-mix(in srgb, var(--color-paper-edge) 40%, transparent)),
     var(--paper-grain), var(--pocket-paper);
   mask:
@@ -155,6 +158,83 @@
 .pocket-ticket[data-state="expired"] .pocket-emblem { filter: grayscale(.7); opacity: .75; }
 .paper-clip { position: absolute; z-index: 2; top: -16px; right: 40px; width: 15px; transform: rotate(5deg); filter: drop-shadow(1px 2px 1px color-mix(in srgb, var(--color-ink) 22%, transparent)); }
 
+/* ── Unfolded ticket ───────────────────────────────────────────────────────
+   Opening a ticket unfolds it in place: fine print on the face, actions on the stub. */
+.pocket-collection > .pocket-ticket[data-open] { grid-column: 1 / -1; justify-self: center; width: min(100%, 46rem); }
+.pocket-ticket[data-open] { z-index: 2; filter: var(--shadow-ticket-lifted); animation: ticket-unfold 380ms var(--ease-paper) both; }
+.pocket-ticket[data-open] .paper-clip { right: auto; left: 40px; }
+.pocket-ticket[data-open] .pocket-validity { margin-top: 14px; }
+.pocket-fineprint {
+  padding: 12px 16px 14px; border: 1px dashed var(--rule); border-radius: 4px;
+  background: color-mix(in srgb, var(--pocket-paper) 55%, var(--color-surface));
+  animation: unfold-in 340ms var(--ease-paper) 80ms both;
+}
+.pocket-fineprint > .pocket-mono { margin-bottom: 8px; color: var(--pocket-muted); text-align: center; font-size: 9px; }
+.pocket-fineprint dl { display: grid; gap: 4px; font-size: 14px; }
+.pocket-fineprint dl > div { display: flex; align-items: baseline; gap: 8px; }
+.pocket-fineprint dt { display: flex; flex: 1; gap: 8px; min-width: 0; color: var(--pocket-muted); }
+.pocket-fineprint dt::after { content: ""; flex: 1; min-width: 12px; border-bottom: 1px dotted var(--rule); transform: translateY(-4px); }
+.pocket-fineprint dd { max-width: 60%; text-align: right; font-weight: 600; color: var(--pocket-print); overflow-wrap: anywhere; }
+.pocket-fineprint .pocket-terms { margin-top: 10px; font-size: 13px; }
+.pocket-fineprint .pocket-clarification { margin-top: 8px; font-size: 13px; }
+.love-ticket[data-open] > .pocket-stub { display: block; padding: 14px 24px 22px; }
+.pocket-stub-open { display: grid; gap: 12px; animation: unfold-in 340ms var(--ease-paper) 140ms both; }
+.pocket-stub-open > .pocket-terms { margin-top: 0; }
+.pocket-ticket[data-open] h2:focus { outline: none; }
+.ticket-fold {
+  justify-self: start; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px;
+  color: var(--pocket-muted); font-size: 14px; text-decoration: underline; text-underline-offset: 4px;
+}
+.ticket-fold:hover { color: var(--pocket-print); }
+@keyframes ticket-unfold { from { transform: translateY(8px) scale(.985); } }
+@keyframes unfold-in { from { opacity: 0; transform: translateY(-6px); } }
+
+/* ── Tear to request ────────────────────────────────────────────────────────
+   --tear (0–1) is written by ticket-request.tsx; the stub peels down from the left,
+   hinged at its right end, and only falls away once the request has succeeded. */
+.love-ticket[data-open] > .pocket-stub {
+  transform-origin: 100% 0;
+  transform: translateY(calc(var(--tear, 0) * 12px)) rotate(calc(var(--tear, 0) * -4deg));
+  transition: transform 380ms var(--ease-paper);
+}
+.pocket-ticket[data-tear="dragging"] > .pocket-stub { transition: none; }
+.pocket-ticket[data-tear="torn"] > .pocket-stub { animation: stub-fall 480ms cubic-bezier(.5, 0, .8, .4) forwards; }
+@keyframes stub-fall { to { transform: translate(-4%, 160px) rotate(-16deg); opacity: 0; } }
+.tear-request { display: grid; gap: 14px; }
+.tear-track {
+  --tab: 84px;
+  position: relative; display: flex; align-items: center; min-height: 48px;
+  background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 11px) 0 50% / 100% 1px no-repeat;
+}
+.tear-tab {
+  position: absolute; z-index: 1; left: calc(var(--tear, 0) * (100% - var(--tab))); top: 2px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: var(--tab); min-height: 44px;
+  border: 1px solid var(--color-love-hover); border-radius: 4px 22px 22px 4px;
+  background: var(--color-love); color: var(--color-on-action); font-size: 14px; font-weight: 600;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent), 0 2px 0 var(--color-love-hover);
+  cursor: grab; touch-action: none; user-select: none;
+  transition: left 380ms var(--ease-paper), background-color 160ms ease;
+}
+.tear-tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.tear-tab:active { cursor: grabbing; }
+.tear-tab:disabled { background: var(--color-disabled); color: var(--color-disabled-ink); border-color: var(--color-line); box-shadow: none; }
+.tear-request[data-phase="dragging"] .tear-tab { transition: none; }
+.tear-guide { padding-left: calc(var(--tab) + 12px); color: var(--pocket-muted); font-size: 13px; line-height: 1.5; }
+.tear-request:not([data-phase="idle"]) .tear-guide { opacity: 0; }
+.tear-request[data-phase="sending"] .tear-guide { opacity: 1; padding-left: 0; }
+.tear-guide[data-nudged] { color: var(--color-love); font-weight: 600; }
+/* The note is written on the stub: handwriting on faint ruled lines. */
+.tear-request .tear-note {
+  font-family: var(--font-mali), sans-serif; line-height: 2rem; padding-block: .25rem;
+  background: repeating-linear-gradient(transparent 0 calc(2rem - 1px), color-mix(in srgb, var(--color-sky-ink) 22%, transparent) calc(2rem - 1px) 2rem) 0 .25rem / 100% 100% local, var(--color-surface);
+}
+@media (hover: hover) and (pointer: fine) {
+  .tear-tab:not(:disabled):hover { background: var(--color-love-hover); }
+}
+@media (min-width: 480px) {
+  .pocket-stub-open > .ui-button, .pocket-stub-open > a.ui-button { justify-self: end; }
+}
+
 /* ── Rubber stamp ─────────────────────────────────────────────────────────
    Vector postmark rendered through the shared ink filter (material-defs.tsx). */
 .rubber-stamp {
@@ -173,7 +253,7 @@
 .stamp-tool { position: absolute; left: 4%; bottom: 40%; width: 92%; opacity: 0; color: var(--color-stamp); transform-origin: 50% 100%; filter: drop-shadow(0 6px 6px color-mix(in srgb, var(--color-ink) 25%, transparent)); }
 .rubber-stamp[data-animate="true"] .stamp-impression { animation: stamp-ink 1150ms var(--ease-paper) both; }
 .rubber-stamp[data-animate="true"] .stamp-tool { animation: stamp-tool 1150ms cubic-bezier(.3,.6,.3,1) both; }
-.pocket-ticket:has(.rubber-stamp[data-animate="true"]), .memory-receipt-wrap:has(.rubber-stamp[data-animate="true"]) { animation: stamp-impact 1150ms ease both; }
+.pocket-ticket:has(.rubber-stamp[data-animate="true"]) { animation: stamp-impact 1150ms ease both; }
 @keyframes stamp-tool {
   0% { opacity: 0; transform: rotate(11deg) translateY(-70%) scale(1.14); }
   28% { opacity: 1; transform: rotate(11deg) translateY(-26%) scale(1.06); }
@@ -192,19 +272,8 @@
 .app-dialog::-webkit-scrollbar { display: none; }
 .ticket-dialog { border: 1px solid var(--pocket-line); border-radius: 8px; background: var(--pocket-paper); color: var(--pocket-ink); padding: 24px; max-width: 480px; }
 .ticket-dialog > h2 { font-family: var(--font-sarabun), sans-serif; font-size: 24px; font-weight: 600; line-height: 1.6; padding-right: 24px; }
-.pocket-detail-note { display: grid; justify-items: center; padding: 20px 16px; margin-bottom: 20px; text-align: center; border-block: 1px dashed var(--pocket-line); background: color-mix(in srgb, var(--pocket-accent) 30%, transparent); }
-.pocket-detail-note .pocket-drawing { width: 88px; }
-.pocket-detail-note .pocket-note { margin: 8px 0 16px; font-size: 16px; }
-.pocket-facts { display: grid; gap: 8px; font-size: 14px; }
-.pocket-facts > div { display: grid; grid-template-columns: 100px 1fr; gap: 12px; }
-.pocket-facts dt { color: var(--pocket-muted); }
-.pocket-facts dd { text-align: right; overflow-wrap: anywhere; }
 .pocket-terms, .pocket-clarification { font-size: 14px; margin-top: 16px; color: var(--pocket-muted); }
 .pocket-clarification { padding: 12px; background: var(--pocket-accent); border-radius: 4px; }
-.pocket-request { margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--pocket-line); color: var(--pocket-ink); }
-.pocket-request h3 { margin-bottom: 8px; font-size: 20px; font-weight: 600; }
-.pocket-request p { font-size: 14px; }
-.pocket-message { padding: 12px; margin-block: 12px; background: var(--pocket-mint); }
 .pocket-dialog-actions { position: sticky; bottom: -24px; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding-block: 12px; background: var(--pocket-paper); box-shadow: 0 -8px 8px var(--pocket-paper); }
 .pocket-dialog-actions > * { flex: 1 1 120px; }
 .pocket-book { color: var(--pocket-ink); }
@@ -236,7 +305,6 @@
 .memory-receipt > .pocket-drawing { width: 48px; margin: 12px auto 8px; }
 .memory-receipt h3 { font-family: var(--font-sarabun), sans-serif; font-size: 20px; font-weight: 600; }
 .memory-receipt-status { font-size: 13px; margin-top: 4px; }
-.memory-receipt > .rubber-stamp { margin: 1rem auto .25rem; }
 .memory-receipt-item { border-block: 1px dashed var(--pocket-line); margin-block: 16px; padding-block: 16px; }
 .memory-receipt-name { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .memory-receipt-item .pocket-note { font-size: 13px; margin-top: 8px; }

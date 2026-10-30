@@ -2,7 +2,6 @@
 
 import {
   Button,
-  Dialog,
   LinkButton,
   Skeleton,
   ErrorState,
@@ -11,7 +10,7 @@ import {
   RarityBadge,
 } from "@/components/ui";
 import { couponGroupKey } from "@/lib/flow";
-import { LoveTicket, TicketDetail, type LoveTicketData } from "@/components/love-ticket";
+import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
@@ -110,24 +109,30 @@ export default function MyCouponsPage() {
     await load(rarity === "ALL" ? undefined : rarity);
   }
 
-  async function submitRequest(message: string) {
+  async function submitRequest(message: string): Promise<boolean> {
     const coupon = selected?.group.coupons.find((item) => item.available > 0);
-    if (!selected || !coupon || submitLock.current) return;
+    if (!selected || !coupon || submitLock.current) return false;
     submitLock.current = true;
     setRequestError(null);
     setNotice(null);
     setBusy(true);
     try {
       await api.redemptions.request(coupon.id, message || undefined);
-      setNotice(`ส่งคำขอใช้ "${coupon.name}" เรียบร้อย — รอแฟนยืนยัน 💌`);
-      setSelected(null);
-      await load(filter === "ALL" ? undefined : filter);
+      setNotice(`ส่งคำขอใช้ "${coupon.name}" เรียบร้อย รอแฟนยืนยันนะ`);
+      return true;
     } catch (err) {
       setRequestError(err instanceof ApiError ? err.displayMessage : "ส่งคำขอไม่สำเร็จ");
+      return false;
     } finally {
       submitLock.current = false;
       setBusy(false);
     }
+  }
+
+  /** After the torn stub has fallen away: fold the ticket and show the reserved sheet. */
+  function finishRequest() {
+    setSelected(null);
+    void load(filter === "ALL" ? undefined : filter);
   }
 
   const groups = coupons
@@ -190,27 +195,25 @@ export default function MyCouponsPage() {
         />
       ) : (
         <div key={`${task}-${filter}`} className="pocket-collection">
-          {groups.map((group) => (
-            <LoveTicket key={group.key} ticket={toTicket(group)} onOpen={() => {
-              setRequestError(null);
-              setSelected({ group });
-            }} />
-          ))}
+          {groups.map((group) => {
+            const ticket = toTicket(group);
+            return (
+              <LoveTicket key={group.key} ticket={ticket} open={selected?.group.key === group.key} onClose={() => !busy && setSelected(null)} onOpen={() => {
+                setRequestError(null);
+                setSelected({ group });
+              }}>
+                {ticket.state === "available" ? <TicketRequest name={group.name} busy={busy} error={requestError} onTear={submitRequest} onDone={finishRequest} /> : <>
+                  <p className="pocket-terms">{ticket.state === "expired" ? "ใบนี้หมดอายุแล้ว เก็บคำสัญญาดี ๆ ไว้ได้นะ" : "คูปองนี้อยู่ระหว่างรอแฟนยืนยัน ยังขอใช้เพิ่มไม่ได้"}</p>
+                  <Button disabled>{ticket.state === "expired" ? "หมดอายุแล้ว" : "รอแฟนยืนยัน"}</Button>
+                </>}
+              </LoveTicket>
+            );
+          })}
         </div>
       )}
 
       <footer className="pocket-book-footer"><span>แต่ละใบ คือเวลาที่อยากให้กัน</span><LinkButton href="/catalog" variant="ghost">เลือกตั๋วให้แฟนบ้าง <span aria-hidden="true">↗</span></LinkButton></footer>
 
-      {selected ? (
-        <Dialog title={selected.group.name} busy={busy} className="ticket-dialog" onClose={() => setSelected(null)}>
-          <TicketDetail ticket={toTicket(selected.group)}>
-            {toTicket(selected.group).state === "available" ? <TicketRequest name={selected.group.name} busy={busy} error={requestError} onConfirm={submitRequest} onClose={() => setSelected(null)} /> : <>
-              <p className="pocket-terms">{toTicket(selected.group).state === "expired" ? "ใบนี้หมดอายุแล้ว เก็บคำสัญญาดี ๆ ไว้ได้นะ" : "คูปองนี้อยู่ระหว่างรอแฟนยืนยัน ยังขอใช้เพิ่มไม่ได้"}</p>
-              <div className="pocket-dialog-actions"><Button variant="secondary" onClick={() => setSelected(null)}>ปิด</Button><Button disabled>{toTicket(selected.group).state === "expired" ? "หมดอายุแล้ว" : "รอแฟนยืนยัน"}</Button></div>
-            </>}
-          </TicketDetail>
-        </Dialog>
-      ) : null}
     </div>
   );
 }

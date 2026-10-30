@@ -1,11 +1,10 @@
 import { useId } from "react";
 import type { LoveTicketData } from "./love-ticket";
 import { TicketIllustration } from "./ticket-illustration";
-import { RubberStamp } from "./rubber-stamp";
 import { formatDateTime } from "./ui";
 
-/** A keepsake of one confirmed coupon; no invented purchase amounts or timestamps. */
-export function RedemptionReceipt({ ticket, animateStamp = false }: { ticket: LoveTicketData; animateStamp?: boolean }) {
+/** A keepsake slip for one confirmed coupon (the ticket itself carries the stamp); no invented amounts or timestamps. */
+export function RedemptionReceipt({ ticket }: { ticket: LoveTicketData }) {
   const heading = useId();
   return (
     <div className="memory-receipt-wrap">
@@ -14,7 +13,6 @@ export function RedemptionReceipt({ ticket, animateStamp = false }: { ticket: Lo
         <TicketIllustration category={ticket.category} />
         <h3 id={heading}>ใบรับความทรงจำ</h3>
         <p className="memory-receipt-status"><span aria-hidden="true">✓</span> แฟนยืนยันแล้ว</p>
-        <RubberStamp date={ticket.redeemedAt} animate={animateStamp} />
         <div className="memory-receipt-item">
           <p className="pocket-mono">ONE LITTLE PROMISE, KEPT.</p>
           <p className="memory-receipt-name">{ticket.name}</p>

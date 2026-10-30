@@ -192,6 +192,99 @@
   .scrapbook-entry:has(.rubber-stamp) { padding-right: 8rem; }
   .scrapbook-entry .rubber-stamp { position: absolute; right: 1.25rem; top: 50%; margin: -44px 0 0; }
 }
+/* Landing: a playable ticket and the three states of a real one. */
+.ticket-demo { display: grid; gap: 14px; }
+.ticket-demo-label { color: var(--color-muted); }
+.demo-steps { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--color-muted); }
+.demo-steps li { display: inline-flex; align-items: center; gap: 6px; }
+.demo-steps li > span, .landing-showcase-caption > span {
+  display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid var(--color-line); border-radius: 50%;
+  background: var(--color-surface); font: 600 11px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.demo-steps li[aria-current="step"] { color: var(--color-love); font-weight: 600; }
+.demo-steps li[aria-current="step"] > span { border-color: var(--color-love); background: var(--color-love); color: var(--color-on-action); }
+.demo-steps li[data-done] > span { border-color: transparent; background: var(--color-success-paper); color: var(--color-success-ink); }
+.demo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.landing-showcase { display: grid; gap: 6px; }
+.landing-showcase-list { display: grid; gap: 28px; margin-top: 18px; }
+.landing-showcase-caption { display: flex; align-items: center; gap: 8px; margin-bottom: 22px; color: var(--color-muted); font-size: 14px; }
+@media (min-width: 960px) {
+  .landing-showcase-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story { grid-template-columns: minmax(0, 1fr) 76px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story h2 { font-size: 22px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .rubber-stamp { --stamp-size: 92px; }
+  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-stub-serial { display: none; }
+  .landing-showcase-list > li:has(> .pocket-ticket[data-open]) { grid-column: 1 / -1; justify-self: center; width: min(100%, 46rem); }
+}
+/* Landing: a static picture of the signed-in home ("บ้านของเรา"). */
+.landing-home { display: grid; align-items: center; gap: 32px; }
+.landing-home-copy { display: grid; justify-items: start; gap: 14px; }
+.landing-home-copy ul { display: grid; gap: 10px; }
+.landing-home-copy li { display: flex; align-items: center; gap: 10px; }
+.landing-home-copy .stationery-icon { flex-shrink: 0; width: 1.75rem; height: 1.75rem; color: var(--color-love); }
+.dashboard-preview { position: relative; margin: 0; }
+.dashboard-preview-page {
+  display: grid; gap: 14px; padding: 18px 18px 12px;
+  border: 1px solid var(--color-line); border-radius: 14px;
+  background: var(--paper-grain), var(--color-canvas);
+  box-shadow: var(--shadow-paper), 0 28px 40px -28px color-mix(in srgb, var(--color-ink) 35%, transparent);
+  rotate: .8deg; user-select: none;
+}
+.dashboard-preview-tag {
+  position: absolute; z-index: 2; top: -.8rem; left: 1.5rem; padding: .15rem 1.1rem;
+  background: url("/materials/paper/washi-tape.svg") center / 100% 100% no-repeat;
+  font-size: 12px; font-weight: 600; rotate: -4deg;
+}
+.dashboard-preview figcaption { margin-top: 14px; color: var(--color-muted); font-size: 13px; text-align: center; }
+.dashboard-preview-header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--color-line); }
+.dashboard-preview-header .brand-heart { width: 2rem; height: 2rem; margin: 0; font-size: 1.35rem; }
+.dashboard-preview-title { font-family: var(--font-mali), sans-serif; font-size: 18px; font-weight: 600; line-height: 1.3; }
+.dashboard-preview-subtitle { color: var(--color-muted); font-size: 12px; }
+.dashboard-preview-welcome { padding: 14px 6.5rem 22px 2rem; font-size: 13px; }
+.dashboard-preview-welcome > .love-doodle { top: .9rem; right: .75rem; width: 5rem; }
+.dashboard-preview-heading { font-family: var(--font-mali), sans-serif; font-size: 16px; font-weight: 600; }
+.dashboard-preview-button { display: inline-flex; margin-top: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+.dashboard-preview-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 1px solid var(--color-line); }
+.dashboard-preview-stats dt { color: var(--color-muted); font-size: 11px; line-height: 1.4; }
+.dashboard-preview-stats dd { color: var(--color-love); font-size: 18px; font-weight: 600; }
+.dashboard-preview-tickets { display: grid; gap: 8px; filter: var(--shadow-ticket); }
+/* Mini ticket: notched edge, printed stub and rarity colour, sized for previews. */
+.mini-ticket {
+  --accent: var(--color-rarity-common-paper); --ink: var(--color-rarity-common-ink);
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 14px 9px 18px; color: var(--ink); font-size: 13px;
+  background: var(--paper-grain), color-mix(in srgb, var(--accent) 45%, var(--color-surface));
+  mask:
+    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+}
+.mini-ticket[data-rarity="RARE"] { --accent: var(--color-rarity-rare-paper); --ink: var(--color-rarity-rare-ink); }
+.mini-ticket[data-rarity="EPIC"] { --accent: var(--color-rarity-epic-paper); --ink: var(--color-rarity-epic-ink); }
+.mini-ticket[data-rarity="LEGENDARY"] { --accent: var(--color-rarity-legendary-paper); --ink: var(--color-rarity-legendary-ink); }
+.mini-ticket-name { font-weight: 600; }
+.mini-ticket-status { padding-left: 12px; border-left: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent); font-size: 12px; white-space: nowrap; }
+.mini-ticket[data-state="pending"] .mini-ticket-status { color: var(--color-pending-ink); }
+.mini-ticket[data-state="used"] .mini-ticket-status { color: var(--color-stamp); }
+.mini-ticket[data-state="used"]::after {
+  content: "USED ♡"; position: absolute; top: 50%; right: 38%; translate: 0 -50%; rotate: -9deg; padding: 0 6px;
+  border: 1.5px solid currentColor; border-radius: 4px; color: var(--color-stamp);
+  font: 700 10px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .1em;
+  filter: url(#lp-stamp-ink); mix-blend-mode: multiply; opacity: .8;
+}
+.dashboard-preview-nav { display: flex; justify-content: space-around; padding-top: 10px; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: 11px; }
+.dashboard-preview-nav span { display: grid; justify-items: center; gap: 2px; }
+.dashboard-preview-nav .stationery-icon { width: 1.4rem; height: 1.4rem; }
+.dashboard-preview-nav [data-current] { color: var(--color-love); font-weight: 600; }
+@media (min-width: 768px) {
+  .landing-home { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+}
+@media (max-width: 479px) {
+  .dashboard-preview-page { rotate: none; padding: 14px 12px 10px; }
+  .dashboard-preview-welcome { padding-right: 1.25rem; }
+  .dashboard-preview-welcome > .love-doodle { position: static; width: 4rem; margin-left: auto; }
+  .dashboard-preview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mini-ticket[data-state="used"]::after { right: 46%; }
+}
 .couple-story { max-width: 36rem; margin-inline: auto; padding-block: 2rem; }
 .couple-story .love-doodle { width: 9rem; margin-inline: auto; }
 .gift-success { animation: gift-arrive 350ms var(--ease-paper) both; }

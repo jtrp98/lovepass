@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import type { Rarity } from "@/types";
 import { formatDate, rarityStyles } from "./ui";
 import { TicketIllustration } from "./ticket-illustration";
@@ -52,15 +52,32 @@ function StatusMark({ state }: { state: TicketState }) {
   );
 }
 
-export function LoveTicket({ ticket, onOpen, catalog = false }: {
+export function LoveTicket({ ticket, onOpen, catalog = false, open = false, onClose, animateStamp = false, children }: {
   ticket: LoveTicketData;
   onOpen: () => void;
   catalog?: boolean;
+  /** Unfolded in place: fine print on the face, `children` become the stub. */
+  open?: boolean;
+  onClose?: () => void;
+  animateStamp?: boolean;
+  children?: ReactNode;
 }) {
   const heading = useId();
+  const root = useRef<HTMLElement>(null);
+  const wasOpen = useRef(open);
   const action = catalog ? "เปิดดูใบนี้" : ticket.state === "available" ? "เปิดใช้สิทธิ์" : "เปิดดูความทรงจำ";
+  useEffect(() => {
+    const article = root.current;
+    if (!article || open === wasOpen.current) return;
+    wasOpen.current = open;
+    if (open) {
+      article.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+      article.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    } else article.querySelector<HTMLElement>(".pocket-action")?.focus();
+  }, [open]);
   return (
-    <article className="pocket-ticket love-ticket" data-rarity={ticket.rarity} data-state={ticket.state} aria-labelledby={heading}>
+    <article ref={root} className="pocket-ticket love-ticket" data-rarity={ticket.rarity} data-state={ticket.state} data-open={open || undefined} aria-labelledby={heading}
+      onKeyDown={open ? (event) => { if (event.key === "Escape") { event.stopPropagation(); onClose?.(); } } : undefined}>
       {ticket.state === "pending" && <PaperClip />}
       <div className="pocket-face">
         <div className="pocket-topline">
@@ -70,14 +87,15 @@ export function LoveTicket({ ticket, onOpen, catalog = false }: {
         <div className="pocket-story">
           <div>
             <p className="pocket-category">{couponCategories[resolveCategory(ticket.category)].label} <span aria-hidden="true">·</span> <RarityPips rarity={ticket.rarity} /> {rarityStyles[ticket.rarity].label.split(" · ")[0]}</p>
-            <h2 id={heading}>{ticket.name}</h2>
+            <h2 id={heading} tabIndex={open ? -1 : undefined}>{ticket.name}</h2>
             <p className="pocket-note">{ticket.note}</p>
           </div>
           <div className="pocket-emblem">
             <TicketIllustration category={ticket.category} />
-            {ticket.state === "used" && <RubberStamp date={ticket.redeemedAt} />}
+            {ticket.state === "used" && <RubberStamp date={ticket.redeemedAt} animate={animateStamp} />}
           </div>
         </div>
+        {open && <TicketFinePrint ticket={ticket} catalog={catalog} />}
         <div className="pocket-validity">
           {ticket.expiresAt ? <time dateTime={ticket.expiresAt}>{ticket.state === "expired" ? "หมดอายุ" : "ใช้ได้ถึง"} {formatDate(ticket.expiresAt)}</time> : <span>คำสัญญาเล็ก ๆ สำหรับเราสองคน</span>}
           <span className="pocket-status"><StatusMark state={ticket.state} /> {catalog ? "แด่คนพิเศษ" : statuses[ticket.state]}</span>
@@ -85,18 +103,21 @@ export function LoveTicket({ ticket, onOpen, catalog = false }: {
       </div>
       <div className="pocket-perforation" aria-hidden="true" />
       <div className="pocket-stub">
-        <div className="pocket-stub-copy">
+        {open ? <div className="pocket-stub-open">
+          {children}
+          <button type="button" className="ticket-fold" onClick={onClose}>พับเก็บ <span aria-hidden="true">↑</span></button>
+        </div> : <div className="pocket-stub-copy">
           <span className="pocket-mono pocket-stub-serial" aria-hidden="true">STUB · NO. {ticket.id}</span>
           {catalog ? <><span className="pocket-from">เขียนให้เธอ ด้วยความรัก</span><span className="pocket-quantity-note">เปิดอ่านรายละเอียดก่อนเลือกให้แฟน</span></> : <>
             <span className="pocket-from">จาก {ticket.from ?? "คนที่รักเธอ"}</span>
             <span className="pocket-quantity-note">{ticket.state === "available" ? `คูปองพร้อมใช้ ${ticket.quantity ?? 1} ใบ` : ticket.state === "pending" ? `คูปองรอยืนยัน ${ticket.reserved ?? 1} ใบ` : "เก็บใบนี้ไว้ เป็นความทรงจำ"}{ticket.state === "available" && !!ticket.reserved && ` · รอยืนยัน ${ticket.reserved} ใบ`}</span>
           </>}
-        </div>
+        </div>}
       </div>
       {/* Outside the masked stub so its ::after can make the whole ticket tappable. */}
-      <button type="button" className="pocket-action" onClick={onOpen} aria-label={`${action} ${ticket.name}`}>
+      {!open && <button type="button" className="pocket-action" onClick={onOpen} aria-label={`${action} ${ticket.name}`}>
         {action} <span aria-hidden="true">↗</span>
-      </button>
+      </button>}
     </article>
   );
 }
@@ -111,25 +132,21 @@ export function PaperClip() {
   );
 }
 
-export function TicketDetail({ ticket, children }: { ticket: LoveTicketData; children?: ReactNode }) {
+/** The ticket's small print, shown on the face when it is unfolded. */
+export function TicketFinePrint({ ticket, catalog = false }: { ticket: LoveTicketData; catalog?: boolean }) {
   return (
-    <div className="pocket-detail" data-rarity={ticket.rarity} data-state={ticket.state}>
-      <div className="pocket-detail-note">
-        <TicketIllustration category={ticket.category} />
-        <p className="pocket-note">{ticket.note}</p>
-        <span className="pocket-mono">LOVE PASS / {ticket.id}</span>
-      </div>
-      <dl className="pocket-facts">
+    <div className="pocket-fineprint">
+      <p className="pocket-mono" aria-hidden="true">— TERMS OF THIS LITTLE PROMISE —</p>
+      <dl>
         <div><dt>หมวดหมู่</dt><dd>{couponCategories[resolveCategory(ticket.category)].label}</dd></div>
-        <div><dt>จาก</dt><dd>{ticket.from ?? "คนที่รักเธอ"}</dd></div>
+        {!catalog && <div><dt>จาก</dt><dd>{ticket.from ?? "คนที่รักเธอ"}</dd></div>}
         {ticket.to && <div><dt>ถึง</dt><dd>{ticket.to}</dd></div>}
-        <div><dt>สถานะ</dt><dd>{statuses[ticket.state]}</dd></div>
+        {!catalog && <div><dt>สถานะ</dt><dd>{statuses[ticket.state]}</dd></div>}
         {ticket.quantity !== undefined && <div><dt>จำนวนคูปอง</dt><dd>{ticket.quantity} ใบพร้อมใช้{ticket.reserved ? ` · ${ticket.reserved} ใบรอยืนยัน` : ""}</dd></div>}
         {ticket.expiresAt && <div><dt>วันหมดอายุ</dt><dd><time dateTime={ticket.expiresAt}>{formatDate(ticket.expiresAt)}</time></dd></div>}
       </dl>
       {ticket.terms && <p className="pocket-terms">เงื่อนไข: {ticket.terms}</p>}
       {/กอด/.test(ticket.name) && <p className="pocket-clarification">จำนวนใบคือจำนวนคูปองที่ได้รับ ส่วนกอดได้แค่ไหน ให้ยึดตามคำสัญญาและเงื่อนไขบนใบนี้นะ</p>}
-      {children}
     </div>
   );
 }

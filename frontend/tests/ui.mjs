@@ -374,28 +374,31 @@ async function run() {
   await page.locator(".pocket-ticket").first().click({
     position: { x: 24, y: 30 },
   });
-  await page.getByRole("dialog").getByText(template.description, { exact: true }).waitFor();
-  await page.getByRole("dialog").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
+  await page.locator(".pocket-ticket[data-open]").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
   assert.equal(requestCalls(), beforeViewing, "viewing details must not request a coupon");
   await page.keyboard.press("Escape");
-  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.locator(".pocket-ticket[data-open]").waitFor({ state: "detached" });
   assert.equal(requestCalls(), beforeViewing);
   await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().click();
-  await page.getByLabel("ฝากข้อความถึงแฟน").fill("เก็บข้อความไว้เมื่อ retry");
+  await page.locator(".pocket-ticket[data-open]").getByLabel("เขียนโน้ตบนหางตั๋ว").fill("เก็บข้อความไว้เมื่อ retry");
   state.failRequest = true;
-  await page.getByRole("button", { name: "ขอใช้ใบนี้", exact: false }).click();
-  await page.getByRole("button", { name: "ยืนยันส่งคำขอ", exact: true }).click();
-  await page.getByRole("dialog").getByRole("alert").waitFor();
-  assert.ok(await page.getByRole("dialog").getByText("เก็บข้อความไว้เมื่อ retry", { exact: true }).isVisible());
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^ฉีกหางตั๋วเพื่อส่งคำขอใช้/ }).focus();
+  await page.keyboard.press("Enter");
+  await page.locator(".pocket-ticket[data-open]").getByRole("alert").waitFor();
+  assert.equal(await page.locator(".pocket-ticket[data-open]").getByLabel("เขียนโน้ตบนหางตั๋ว").inputValue(), "เก็บข้อความไว้เมื่อ retry");
   await screenshot(page, "request-error-mobile");
   await page.setViewportSize({ width: 1280, height: 900 });
   await screenshot(page, "request-error-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
   state.failRequest = false;
-  await page.getByRole("button", { name: "ยืนยันส่งคำขอ", exact: true }).dblclick();
-  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  const postsBeforeRetry = requestCalls();
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^ฉีกหางตั๋วเพื่อส่งคำขอใช้/ }).focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.locator(".pocket-ticket[data-open]").waitFor({ state: "detached" });
+  assert.equal(requestCalls(), postsBeforeRetry + 1, "a repeated tear must not send twice");
   assert.equal(state.payloads.at(-1).message, "เก็บข้อความไว้เมื่อ retry");
-  pass("snapshot grouping separates terms/rarity; dialog error visible; retry preserves message");
+  pass("snapshot grouping separates terms/rarity; unfolded ticket shows errors; retry preserves note and sends once");
   await page.evaluate(
     (t) =>
       localStorage.setItem(
@@ -426,9 +429,8 @@ async function run() {
   assert.equal(await page.locator("article").getByText(template.description, { exact: true }).count(), 2);
   const cartBeforeViewing = await page.evaluate(() => localStorage.getItem("lovepass.giftCart"));
   await page.getByRole("button", { name: "เปิดดูใบนี้", exact: false }).first().click();
-  await page.getByRole("dialog").getByText(template.description, { exact: true }).waitFor();
-  await page.getByRole("dialog").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
-  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
+  await page.locator(".pocket-ticket[data-open]").getByText("เงื่อนไข: " + template.terms, { exact: true }).waitFor();
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^พับเก็บ/ }).click();
   assert.equal(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")), cartBeforeViewing);
   pass("ticket faces show notes; full details open without requesting or adding to cart");
   await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
@@ -447,7 +449,7 @@ async function run() {
   await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).click();
   await page.getByText("เงื่อนไข: เงื่อนไขอีกแบบ", { exact: true }).waitFor();
   await page.keyboard.press("Escape");
-  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.locator(".pocket-ticket[data-open]").waitFor({ state: "detached" });
   pass("my-coupons slow filter preserves newer result");
   await go("/requests");
   await page.getByRole("button", { name: "คำขอที่ฉันส่ง", exact: true }).click();
@@ -538,11 +540,11 @@ async function run() {
   await go("/catalog");
   await page.getByRole("button", { name: "เปิดดูใบนี้", exact: false }).first().click();
   const selectedQuantity = JSON.parse(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")))[0].quantity;
-  await page.getByRole("dialog").getByRole("button", { name: "เพิ่มลงของขวัญ" }).click();
-  await page.getByRole("dialog").getByRole("status").waitFor();
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: "เพิ่มลงของขวัญ" }).click();
+  await page.locator(".pocket-ticket[data-open]").getByRole("status").waitFor();
   assert.equal(JSON.parse(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")))[0].quantity, Math.min(100, selectedQuantity + 1));
   await screenshot(page, "catalog-details-mobile");
-  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^พับเก็บ/ }).click();
   const bars = await page.evaluate(() => ({
     nav: document.querySelector(".bottom-nav").getBoundingClientRect().toJSON(),
     cart: document.querySelector(".cart-bar").getBoundingClientRect().toJSON(),
@@ -605,22 +607,22 @@ async function run() {
   }
   await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("dialog").waitFor();
-  assert.equal(await page.getByRole("dialog").evaluate((e) => getComputedStyle(e).animationName), "content-arrive");
+  await page.locator(".pocket-ticket[data-open]").waitFor();
+  assert.equal(await page.locator(".pocket-ticket[data-open]").evaluate((e) => getComputedStyle(e).animationName), "ticket-unfold");
   await page.keyboard.press("Escape");
-  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.locator(".pocket-ticket[data-open]").waitFor({ state: "detached" });
   const beforePendingView = requestCalls();
   await page.getByRole("button", { name: "เปิดดูความทรงจำ", exact: false }).click();
-  await page.getByRole("dialog").getByText("เงื่อนไข: ใช้ได้ 1 วัน ภายในวันที่กำหนด", { exact: true }).waitFor();
-  assert.equal(await page.getByRole("dialog").getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).isDisabled(), true);
-  assert.equal(await page.getByRole("dialog").getByRole("textbox").count(), 0);
-  await page.getByRole("dialog").getByRole("button", { name: "ปิด", exact: true }).click();
+  await page.locator(".pocket-ticket[data-open]").getByText("เงื่อนไข: ใช้ได้ 1 วัน ภายในวันที่กำหนด", { exact: true }).waitFor();
+  assert.equal(await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).isDisabled(), true);
+  assert.equal(await page.locator(".pocket-ticket[data-open]").getByRole("textbox").count(), 0);
+  await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^พับเก็บ/ }).click();
   assert.equal(requestCalls(), beforePendingView);
   pass("pending-only coupon details remain readable without allowing another request");
   await page.getByRole("group", { name: "สถานะคูปอง" }).getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).click();
   assert.equal(await page.locator("article").count(), 2);
   state.coupons = originalCoupons;
-  pass("coupon refresh at 320/768/1024/1440: reflow, hover, entry/dialog motion, reduced motion, keyboard and pending filter");
+  pass("coupon refresh at 320/768/1024/1440: reflow, hover, entry/unfold motion, reduced motion, keyboard and pending filter");
   // Font network sizes are Resource Timing values, not gzip estimates.
   evidence.fonts = await page.evaluate(() =>
     performance

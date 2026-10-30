@@ -61,6 +61,7 @@ LOVE PASS คือแพลตฟอร์มคูปองของขวั�
 - ทุก animation ต้องมี resting state เป็นผลลัพธ์สุดท้าย และเคารพ `prefers-reduced-motion`
 - พื้นที่กดอย่างน้อย 44px, มี focus ที่มองเห็นได้, ใช้คีย์บอร์ดได้, dialog คืน focus เมื่อปิด, สถานะมีข้อความให้ screen reader
 - ไม่มี horizontal scroll ที่ 320–1440px ข้อความไทยยาวต้องตัดบรรทัดได้
+- คูปองเปิดดูด้วยการกางตั๋วในที่ (`LoveTicket open`) ไม่ใช้ modal และขอใช้ด้วยการฉีกหางตั๋ว (`TicketRequest`) ที่ต้องมีทางเลือกสำหรับ keyboard เสมอ
 - ปุ่มของ `LoveTicket` ต้องอยู่นอก stub ที่ถูก mask เพื่อให้แตะได้ทั้งใบ (ดูคอมเมนต์ใน `love-ticket.tsx`)
 
 ### ตรวจก่อนส่งงาน (ใน `frontend/`)

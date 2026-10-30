@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LoveTicket, TicketDetail, type LoveTicketData, type TicketState } from "@/components/love-ticket";
+import { LoveTicket, type LoveTicketData, type TicketState } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
-import { Button, Dialog, Field, Select, rarityStyles } from "@/components/ui";
+import { Button, Field, Select, rarityStyles } from "@/components/ui";
 import { couponCategories } from "@/lib/coupon-categories";
 import { TicketIllustration } from "@/components/ticket-illustration";
 import { RedemptionReceipt } from "@/components/redemption-receipt";
@@ -18,7 +18,16 @@ const wish: LoveTicketData = {
   category: "WISH",
   id: "LP-0015", name: "ตั๋วขอพร 1 ข้อ", note: "ขอมาได้หนึ่งอย่าง เราจะตั้งใจฟังเลย", terms: "คูปอง 1 ใบ ขอพรได้ 1 ข้อ ตกลงสิ่งที่เราทั้งคู่สบายใจก่อนใช้", rarity: "EPIC", state: "available", quantity: 2, expiresAt: "2026-11-29T16:59:59Z", from: "เจ", to: "เธอคนโปรด",
 };
-const initial: LoveTicketData[] = [hug, wish,
+// Waiting for the partner's answer: one sheet of each is reserved, none left to request.
+const dinner: LoveTicketData = {
+  category: "FOOD",
+  id: "LP-0011", name: "มื้อพิเศษสำหรับสองเรา", note: "ร้านไหนก็ได้ที่เธออยากไป เราเลี้ยงเอง", terms: "เลือกร้านและวันที่สะดวกด้วยกัน 1 มื้อ", rarity: "RARE", state: "pending", quantity: 0, reserved: 1, expiresAt: "2026-12-14T16:59:59Z", from: "เจ", to: "เธอคนโปรด",
+};
+const trip: LoveTicketData = {
+  category: "ADVENTURE",
+  id: "LP-0012", name: "ทริปเล็ก ๆ วันหยุด", note: "ขับรถไปทะเลด้วยกันสักวันนะ", terms: "ทริปไปกลับภายในวันเดียว วางแผนเส้นทางด้วยกัน", rarity: "LEGENDARY", state: "pending", quantity: 0, reserved: 1, expiresAt: "2027-01-31T16:59:59Z", from: "เจ", to: "เธอคนโปรด",
+};
+const initial: LoveTicketData[] = [hug, wish, dinner, trip,
   { ...hug, id: "LP-0008", state: "used", quantity: 0, redeemedAt: "2026-10-28T12:00:00Z" },
   { ...wish, id: "LP-0009", state: "used", quantity: 0, redeemedAt: "2026-10-29T12:00:00Z" },
   { ...hug, id: "LP-0002", state: "expired", quantity: 0, expiresAt: "2026-09-29T16:59:59Z" },
@@ -28,24 +37,27 @@ const initial: LoveTicketData[] = [hug, wish,
 export default function LovePassDesign() {
   const [tickets, setTickets] = useState(initial);
   const [view, setView] = useState<TicketState>("available");
-  const [selected, setSelected] = useState<LoveTicketData | null>(null);
-  const [justUsed, setJustUsed] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [justUsed, setJustUsed] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [iconTier, setIconTier] = useState<Rarity>("EPIC");
-  function open(ticket: LoveTicketData) { setSelected(ticket); setJustUsed(false); }
-  function request() {
-    if (!selected || selected.state !== "available") return;
-    const pending = { ...selected, id: `${selected.id}-R`, state: "pending" as const, quantity: 0, reserved: 1 };
-    setTickets((items) => items.flatMap((item) => item.id !== selected.id ? [item] : (item.quantity ?? 0) > 1 ? [{ ...item, quantity: item.quantity! - 1 }, pending] : [pending]));
-    setSelected(pending);
+  function open(ticket: LoveTicketData) { setSelected(ticket.id); setJustUsed(null); }
+  /** The demo "request" succeeds after a short pause, like a real round trip. */
+  async function request(): Promise<boolean> {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    return true;
+  }
+  function requested(ticket: LoveTicketData) {
+    const pending = { ...ticket, id: `${ticket.id}-R`, state: "pending" as const, quantity: 0, reserved: 1 };
+    setTickets((items) => items.flatMap((item) => item.id !== ticket.id ? [item] : (item.quantity ?? 0) > 1 ? [{ ...item, quantity: item.quantity! - 1 }, pending] : [pending]));
+    setView("pending");
+    setSelected(pending.id);
     setAnnouncement("ส่งคำขอตัวอย่างแล้ว รอแฟนยืนยัน");
   }
-  function approve() {
-    if (!selected || selected.state !== "pending") return;
-    const used = { ...selected, state: "used" as const, reserved: 0, redeemedAt: new Date().toISOString() };
-    setTickets((items) => items.map((item) => item.id === used.id ? used : item));
-    setSelected(used);
-    setJustUsed(true);
+  function approve(ticket: LoveTicketData) {
+    setTickets((items) => items.map((item) => item.id === ticket.id ? { ...item, state: "used" as const, reserved: 0, redeemedAt: new Date().toISOString() } : item));
+    setView("used");
+    setJustUsed(ticket.id);
     setAnnouncement("แฟนยืนยันแล้ว เก็บตั๋วใบนี้ไว้ในความทรงจำ");
   }
   const visible = tickets.filter((ticket) => ticket.state === view);
@@ -68,16 +80,25 @@ export default function LovePassDesign() {
         <p className="pocket-demo-note">สมุดตัวอย่าง · ลองเปิดและขอใช้ได้ โดยไม่ส่งคำขอจริง</p>
         <section id="collection" aria-label="สมุดตั๋วตัวอย่าง">
           <div className="status-tabs" role="group" aria-label="สถานะตั๋วตัวอย่าง">
-            {([{ id: "available", label: "พร้อมใช้" }, { id: "pending", label: "รอยืนยัน" }, { id: "used", label: "ใช้แล้ว เก็บไว้" }, { id: "expired", label: "หมดอายุ" }] as const).map((tab) => <button key={tab.id} className="status-tab" aria-pressed={view === tab.id} onClick={() => setView(tab.id)}>{tab.label} <span className="pocket-mono">{String(tickets.filter((item) => item.state === tab.id).length).padStart(2, "0")}</span></button>)}
+            {([{ id: "available", label: "พร้อมใช้" }, { id: "pending", label: "รอยืนยัน" }, { id: "used", label: "ใช้แล้ว เก็บไว้" }, { id: "expired", label: "หมดอายุ" }] as const).map((tab) => <button key={tab.id} className="status-tab" aria-pressed={view === tab.id} onClick={() => { setView(tab.id); setSelected(null); }}>{tab.label} <span className="pocket-mono">{String(tickets.filter((item) => item.state === tab.id).length).padStart(2, "0")}</span></button>)}
           </div>
           <div className="pocket-collection-caption"><p>{view === "available" ? "จาก เจ · ถึง เธอคนโปรด" : view === "pending" ? "รออีกคนตอบรับคำสัญญา" : "บางใบใช้ไปแล้ว แต่ความรู้สึกยังอยู่"}</p><span className="pocket-mono">FOR TWO, ALWAYS.</span></div>
           <div className="pocket-collection" style={{ marginTop: 16 }}>
-            {visible.map((ticket) => <LoveTicket key={ticket.id} ticket={ticket} onOpen={() => open(ticket)} />)}
+            {visible.map((ticket) => <LoveTicket key={ticket.id} ticket={ticket} open={selected === ticket.id} animateStamp={justUsed === ticket.id} onOpen={() => open(ticket)} onClose={() => setSelected(null)}>
+              {ticket.state === "available" ? <TicketRequest name={ticket.name} busy={false} onTear={request} onDone={() => requested(ticket)} />
+                : ticket.state === "pending" ? <>
+                  <p className="pocket-terms">ส่งคำขอตัวอย่างแล้ว ในแอปจริงต้องรออีกคนยืนยัน</p>
+                  <Button onClick={() => approve(ticket)}>จำลองแฟนยืนยัน</Button>
+                </> : ticket.state === "used" ? <>
+                  <RedemptionReceipt ticket={ticket} />
+                  <Button onClick={() => setSelected(null)}>{justUsed === ticket.id ? "เก็บเข้าความทรงจำ" : "เก็บใบเสร็จไว้"}</Button>
+                </> : <p className="pocket-terms">เลยวันที่สัญญาไว้แล้ว แต่ความรู้สึกดี ๆ ยังเก็บไว้ได้นะ</p>}
+            </LoveTicket>)}
           </div>
           {!visible.length && <p className="pocket-demo-note">ยังไม่มีตั๋วในหน้านี้ ลองเปิดใบที่พร้อมใช้ก่อนได้นะ</p>}
           <p className="sr-only" role="status">{announcement}</p>
         </section>
-        <footer className="pocket-book-footer"><span>ความรักเป็นสิ่งเล็ก ๆ ที่เราตั้งใจให้กัน</span><button type="button" className="status-tab" onClick={() => { setTickets(initial); setView("available"); setAnnouncement("เริ่มสมุดตัวอย่างใหม่แล้ว"); }}>เริ่มลองใหม่ <span aria-hidden="true">↺</span></button></footer>
+        <footer className="pocket-book-footer"><span>ความรักเป็นสิ่งเล็ก ๆ ที่เราตั้งใจให้กัน</span><button type="button" className="status-tab" onClick={() => { setTickets(initial); setView("available"); setSelected(null); setJustUsed(null); setAnnouncement("เริ่มสมุดตัวอย่างใหม่แล้ว"); }}>เริ่มลองใหม่ <span aria-hidden="true">↺</span></button></footer>
         <section className="pocket-exploration" id="categories" aria-labelledby="categories-title">
           <p className="pocket-mono">ONE CATEGORY, ONE LITTLE DRAWING</p>
           <h2 id="categories-title">รูปเล็ก ๆ แทนคำสัญญาแต่ละแบบ</h2>
@@ -109,18 +130,6 @@ export default function LovePassDesign() {
           </div>
         </section>
       </main>
-      {selected && <Dialog title={selected.name} className="ticket-dialog" onClose={() => setSelected(null)}>
-        {selected.state === "used" ? <div className="pocket-success">
-          <RedemptionReceipt ticket={selected} animateStamp={justUsed} />
-          <p className="pocket-demo-note">นี่คือการจำลองในสมุดตัวอย่าง</p>
-          <div className="pocket-dialog-actions"><Button onClick={() => { setSelected(null); if (justUsed) setView("used"); }}>{justUsed ? "เก็บเข้าความทรงจำ" : "เก็บใบเสร็จไว้"}</Button></div>
-        </div> : <TicketDetail ticket={selected}>
-          {selected.state === "available" ? <TicketRequest name={selected.name} busy={false} onConfirm={request} onClose={() => setSelected(null)} /> : selected.state === "pending" ? <>
-            <p className="pocket-terms">ส่งคำขอตัวอย่างแล้ว ในแอปจริงต้องรออีกคนยืนยัน</p>
-            <div className="pocket-dialog-actions"><Button variant="secondary" onClick={() => setSelected(null)}>ปิด</Button><Button onClick={approve}>จำลองแฟนยืนยัน</Button></div>
-          </> : <><p className="pocket-terms">{selected.state === "expired" ? "เลยวันที่สัญญาไว้แล้ว แต่ความรู้สึกดี ๆ ยังเก็บไว้ได้นะ" : "ใช้สิทธิ์ใบนี้แล้ว ขอบคุณเวลาที่เราได้ให้กัน"}</p><div className="pocket-dialog-actions"><Button variant="secondary" onClick={() => setSelected(null)}>ปิด</Button><Button disabled>{selected.state === "expired" ? "หมดอายุแล้ว" : "ใช้แล้ว"}</Button></div></>}
-        </TicketDetail>}
-      </Dialog>}
     </div>
   );
 }

@@ -58,11 +58,14 @@ Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs
 | `Button`, `LinkButton`, `Field`, `Input`, `Select`, `Textarea`, `PasswordInput` | `ui.tsx` | control ทุกตัว — ห้าม override สี/hover ของปุ่มจากหน้า |
 | `Card` (`paper`, `letter`, `booklet`, `journal`) | `ui.tsx` | พื้นกระดาษ: ทั่วไป/admin, จดหมาย+ตราครั่ง, สมุดเย็บสัน, สมุดบันทึก+ริบบิ้น |
 | `Dialog`, `PageTitle`, `EmptyState`, `ErrorState`, `ErrorText`, `Notice`, `Skeleton`, `RarityBadge`, `StatusBadge` | `ui.tsx` | โครงหน้าและสถานะ |
-| `LoveTicket`, `TicketDetail`, `RarityPips`, `PaperClip` | `love-ticket.tsx` | คูปองทุกใบใน catalog / my-coupons / ตัวอย่าง |
-| `CouponRequestCard`, `TicketRequest` | `coupon-request-card.tsx`, `ticket-request.tsx` | ใบคำขอใช้ และขั้นตอนขอใช้ใน dialog |
+| `LoveTicket`, `TicketFinePrint`, `RarityPips`, `PaperClip` | `love-ticket.tsx` | คูปองทุกใบใน catalog / my-coupons / ตัวอย่าง — แตะแล้วกางออกในที่ (`open`) แทน modal |
+| `CouponRequestCard` | `coupon-request-card.tsx` | ใบคำขอใช้ |
+| `TicketRequest` | `ticket-request.tsx` | ฉีกหางตั๋วตามรอยปรุเพื่อส่งคำขอ พร้อมโน้ตบนหางตั๋ว |
 | `RubberStamp` | `rubber-stamp.tsx` | ตราประทับ "ใช้แล้ว" |
 | `RedemptionReceipt` | `redemption-receipt.tsx` | ใบรับความทรงจำหลังยืนยัน |
 | `SentGiftCard` | `sent-gift-card.tsx` | โปสการ์ดของขวัญที่ส่ง |
+| `DashboardPreview` | `dashboard-preview.tsx` | ภาพนิ่งของหน้าบ้านของเราหลังเข้าสู่ระบบ ติดป้าย "ตัวอย่าง" ไม่มีข้อมูลจริงหรือปุ่มที่กดได้ (ใช้ `.mini-ticket`) |
+| `TicketDemo` | `ticket-demo.tsx` | ตั๋วตัวอย่างให้ผู้เยี่ยมชมลองทั้งวงจรบนหน้าแรก ไม่ส่งข้อมูลจริง |
 | `Envelope`, `WaxSeal`, `StationeryIcon` | `stationery.tsx` | ซองเปิดหลังส่งสำเร็จ, ตราครั่ง, ไอคอนลายเส้น (แทน emoji) |
 | `TicketIllustration`, `LoveDoodle` | `ticket-illustration.tsx`, `love-doodle.tsx` | ภาพประจำหมวด, ภาพคู่รักใน journal |
 
@@ -77,10 +80,14 @@ Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs
 | `/history` | สมุดภาพ (scrapbook) ติดเทป |
 | `/sets` | สมุดคูปองเย็บสัน (booklet) |
 | `/gifts/new` | เตรียมของขวัญ → ซองจดหมายเปิดเมื่อส่งสำเร็จ |
+| `/` | ตั๋วที่ลองเล่นได้ (`TicketDemo` — ฉีก, ยืนยันแทนแฟน, ประทับตรา โดยไม่ยิง API), ภาพตัวอย่างบ้านของเรา (`DashboardPreview`) และตั๋วจริง 3 สถานะ |
 | auth, `/couple/accept` | จดหมาย (letter) |
 
 ## สถานะและการเคลื่อนไหว
 
+- **เปิดตั๋ว = กางออกในที่ ไม่ใช่ modal** — ด้านหน้าแสดง fine print บนตั๋ว หางตั๋วกลายเป็นพื้นที่ action Escape หรือ "พับเก็บ" พับกลับและคืน focus
+- **ขอใช้ = ฉีกหางตั๋ว** — ลากแถบ "ฉีก" ตามรอยปรุเกิน 70% แล้วปล่อย การแตะเฉย ๆ หรือลากสั้นจะแค่บอกวิธี keyboard/screen reader กดแถบครั้งเดียวคือฉีก หางตั๋วหลุดออกเมื่อ API สำเร็จเท่านั้น ถ้าล้มเหลวจะเด้งกลับพร้อมโน้ตเดิม
+- สีของตั๋วมาจาก rarity: กระดาษถูกย้อมอ่อน ๆ แถบหัวตั๋วและหางตั๋วพิมพ์ด้วยสีนั้น
 - ตั๋วมี 4 สถานะ: `available` (สะอาด, hover ยก), `pending` (คลิปหนีบ + ป้ายเส้นประ), `used` (ตราประทับทับภาพ), `expired` (กระดาษเก่า หมึกจาง ไม่มีตรา)
 - **ห้ามแสดงผลสำเร็จก่อน API สำเร็จ** — `RubberStamp animate` และ `Envelope` ใช้หลัง response สำเร็จเท่านั้น ข้อมูลที่โหลดมาว่าใช้แล้วแสดงตราสุดท้ายโดยไม่เล่น animation
 - ทุก animation ต้องมี resting state เป็นผลลัพธ์สุดท้าย เพราะ `prefers-reduced-motion` ปิด animation ทั้งหมด
