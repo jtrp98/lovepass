@@ -1,5 +1,7 @@
 # LOVE PASS
 
+Version **1.0.0** · [Release workflow](docs/release-workflow.md)
+
 ระบบคูปองของขวัญสำหรับคู่รัก (Couple Coupon Platform) — คู่รักสร้างและมอบคูปองของขวัญให้กัน แลกใช้จริงพร้อมบันทึกประวัติ
 
 | ส่วน | Stack |
@@ -19,3 +21,4 @@ lovepass/
 
 - เอกสารฉบับเต็ม (requirements + architecture): [docs/lovepass.md](docs/lovepass.md)
 - วิธีรัน local, tests และ deployment: [docs/setup-and-deploy.md](docs/setup-and-deploy.md)
+- ส่งการแจ้งเตือนด้วย Gmail โดยไม่ต้องมีโดเมน: [docs/gmail-setup.md](docs/gmail-setup.md)

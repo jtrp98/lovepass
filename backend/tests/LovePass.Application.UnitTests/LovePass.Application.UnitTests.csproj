@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LovePass.Application\LovePass.Application.csproj" />
+    <ProjectReference Include="..\..\src\LovePass.Infrastructure\LovePass.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -68,6 +68,7 @@ const coupon = {
   senderId: 2,
 };
 const redemption = {
+  category: "AFFECTION",
   id: 1,
   issuedCouponId: 10,
   couponName: template.name,
@@ -200,7 +201,7 @@ async function run() {
         await wait(400);
         const id = Number(p.split("/").at(-2));
         state.requests = state.requests.map((r) =>
-          r.id === id ? { ...r, status: p.endsWith("/approve") ? "APPROVED" : "REJECTED" } : r,
+          r.id === id ? { ...r, status: p.endsWith("/approve") ? "APPROVED" : p.endsWith("/cancel") ? "CANCELLED" : "REJECTED" } : r,
         );
         body = state.requests.find((r) => r.id === id);
       } else if (p === "/api/v1/gifts" && req.method() === "POST") {
@@ -253,7 +254,9 @@ async function run() {
     return { context, page, state, go };
   }
   async function screenshot(page, name) {
-    await page.screenshot({ path: path.join(OUT, "screenshots", name + ".png"), fullPage: true });
+    const devTools = await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
+    await page.screenshot({ path: path.join(OUT, "screenshots", name + ".png"), fullPage: true, animations: "disabled" });
+    await devTools.evaluate((element) => element.remove());
     evidence.screenshots.push(name + ".png");
   }
   // Anonymous invitation survives both auth pages and returns after successful login/register.
@@ -284,6 +287,13 @@ async function run() {
   const { context, page, state, go } = s;
   await go("/requests");
   await page.getByRole("button", { name: "อนุมัติ", exact: false }).first().waitFor();
+  assert.equal(await page.locator(".request-ticket").count(), 2);
+  assert.match(await page.locator(".request-ticket use").first().getAttribute("href"), /affection\.svg/);
+  await page.evaluate(() => document.fonts.ready);
+  await screenshot(page, "requests-paper-390");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await screenshot(page, "requests-paper-1440");
+  await page.setViewportSize({ width: 390, height: 844 });
   const approveCalls = () => state.calls.filter((c) => c.path.endsWith("/approve")).length;
   const opener = page.getByRole("button", { name: "อนุมัติ", exact: false }).first();
   await opener.click();
@@ -311,6 +321,16 @@ async function run() {
   await page.waitForFunction(() => document.activeElement?.tagName === "H1");
   await page.getByText("ใช้แล้ว", { exact: true }).waitFor();
   pass("review/Escape/cancel do not approve; confirm double click creates one request; focus returns");
+  await page.getByRole("button", { name: "ปฏิเสธ", exact: true }).click();
+  await page.getByText("ปฏิเสธแล้ว", { exact: true }).waitFor();
+  assert.equal(state.calls.filter((c) => c.path.endsWith("/reject")).length, 1);
+  state.requests.push({ ...redemption, id: 3 });
+  await go("/requests");
+  await page.getByRole("button", { name: "คำขอที่ฉันส่ง", exact: true }).click();
+  await page.getByRole("button", { name: "ยกเลิกคำขอ", exact: true }).click();
+  await page.getByText("ยกเลิกแล้ว", { exact: true }).waitFor();
+  assert.equal(state.calls.filter((c) => c.path.endsWith("/cancel")).length, 1);
+  pass("paper request cards use category SVGs; reject and sent-request cancel retain their API actions");
   await go("/my-coupons");
   await page.getByRole("button", { name: "เปิดใช้สิทธิ์", exact: false }).first().waitFor();
   assert.equal(await page.locator("article:visible").count(), 2);

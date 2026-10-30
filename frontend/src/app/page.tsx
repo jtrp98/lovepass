@@ -1,6 +1,7 @@
 "use client";
-import { CouponCard, LinkButton, Skeleton } from "@/components/ui";
+import { CouponCard, LinkButton } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 export default function LandingPage() {
@@ -9,12 +10,6 @@ export default function LandingPage() {
   useEffect(() => {
     if (ready && user) router.replace("/dashboard");
   }, [ready, user, router]);
-  if (!ready || user)
-    return (
-      <main className="mx-auto w-full max-w-md p-6">
-        <Skeleton />
-      </main>
-    );
   return (
     <main className="mx-auto grid w-full max-w-5xl items-center gap-10 px-5 py-12 md:grid-cols-2 md:py-20">
       <div className="space-y-6">
@@ -27,6 +22,7 @@ export default function LandingPage() {
         <p className="text-lg text-muted">
           เปลี่ยนคำว่า “เดี๋ยวทำให้” เป็นคูปองให้แฟนเก็บไว้ขอใช้ เมื่อพร้อมก็ยืนยันให้กัน
         </p>
+        <p className="text-muted">รับอีเมลแจ้งเตือนเมื่อได้รับคูปอง มีคำขอใช้คูปอง หรือได้รับผลการยืนยัน</p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <LinkButton href="/register">เริ่มสมุดตั๋วของเรา</LinkButton>
           <LinkButton href="/login" variant="secondary">
@@ -52,6 +48,14 @@ export default function LandingPage() {
           </li>
         ))}
       </ol>
+      <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-control pt-4 text-sm text-muted md:col-span-2">
+        <Link href="/privacy" className="inline-flex min-h-12 items-center text-love underline underline-offset-4">
+          นโยบายความเป็นส่วนตัว
+        </Link>
+        <a href="mailto:jaturapat.code@gmail.com" className="inline-flex min-h-12 items-center underline underline-offset-4">
+          ติดต่อผู้ดูแล LOVE PASS
+        </a>
+      </footer>
     </main>
   );
 }

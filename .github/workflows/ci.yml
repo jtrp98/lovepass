@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/**', 'dev/**', codex/lovepass-online]
   pull_request:
 
 jobs:
@@ -29,6 +29,9 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity minimal
 
+      - name: Gmail setup tests
+        run: node --test ../scripts/setup-gmail.test.mjs
+
   frontend:
     name: Frontend — lint & build (Next.js)
     runs-on: ubuntu-latest
@@ -46,10 +49,16 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint (0 errors เท่านั้น — warning ผ่านได้)
         run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Build
         run: npm run build

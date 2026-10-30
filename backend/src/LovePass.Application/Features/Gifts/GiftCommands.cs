@@ -164,7 +164,7 @@ public sealed class CreateGiftCommandHandler(
     }
 }
 
-public sealed record SentGiftCouponDto(string Name, string? Emoji, string Rarity, int Quantity, int Remaining, DateTime ExpiresAt);
+public sealed record SentGiftCouponDto(string Name, string? Emoji, string Rarity, int Quantity, int Remaining, DateTime ExpiresAt, string Category = "OTHER");
 
 public sealed record SentGiftDto(int Id, string? Message, DateTime CreatedAt, List<SentGiftCouponDto> Coupons);
 
@@ -191,7 +191,7 @@ public sealed class GetSentGiftsQueryHandler(IApplicationDbContext db, ICurrentU
             [.. b.Coupons.OrderBy(c => c.ExpiresAt).Select(c =>
             {
                 var s = c.ReadSnapshot();
-                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt);
+                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
             })])).ToList();
     }
 }

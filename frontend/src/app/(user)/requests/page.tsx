@@ -2,22 +2,19 @@
 
 import {
   Button,
-  Card,
   Dialog,
-  StatusBadge,
   Notice,
   Skeleton,
   ErrorState,
   LinkButton,
   EmptyState,
   ErrorText,
-  PageTitle,
-  RarityBadge,
-  formatDateTime,
 } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import type { Redemption } from "@/types";
+import { CouponRequestCard } from "@/components/coupon-request-card";
+import { TicketIllustration } from "@/components/ticket-illustration";
 
 export default function RequestsPage() {
   const [direction, setDirection] = useState<"received" | "sent">("received");
@@ -61,7 +58,7 @@ export default function RequestsPage() {
       if (action === "cancel") await api.redemptions.cancel(id);
       setNotice(
         action === "approve"
-          ? "อนุมัติคำขอเรียบร้อย ✅"
+          ? "อนุมัติคำขอแล้ว ขอให้เป็นช่วงเวลาดี ๆ ของเรานะ"
           : action === "reject"
             ? "ปฏิเสธคำขอแล้ว คืนสิทธิ์ให้แฟน"
             : "ยกเลิกคำขอแล้ว ได้สิทธิ์คืน",
@@ -79,21 +76,24 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageTitle title="คำขอใช้คูปอง 💌" subtitle="อนุมัติ/ปฏิเสธคำขอของแฟน หรือดูคำขอที่ฉันส่งไป" />
+    <div className="pocket-book requests-page space-y-6">
+      <header className="pocket-intro">
+        <div>
+          <p className="pocket-mono"><span className="pocket-foil" aria-hidden="true" />A LITTLE NOTE BETWEEN US</p>
+          <h1 tabIndex={-1}>คำขอใช้คูปอง</h1>
+          <p>จดหมายใบเล็ก ๆ ก่อนใช้เวลาดี ๆ ด้วยกัน</p>
+        </div>
+        <div className="pocket-seal" aria-hidden="true"><small>A NOTE</small><span>for us</span><small>WITH LOVE</small></div>
+      </header>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="status-tabs flex flex-wrap gap-2" role="group" aria-label="รายการคำขอ">
         {(["received", "sent"] as const).map((dir) => (
           <button
             key={dir}
             disabled={busyId !== null || review !== null}
             aria-pressed={direction === dir}
             onClick={() => setDirection(dir)}
-            className={`min-h-12 rounded-full border px-4 py-2 text-sm transition ${
-              direction === dir
-                ? "border-control bg-love-soft font-semibold text-love"
-                : "border-control text-muted hover:bg-canvas"
-            }`}
+            className="status-tab disabled:opacity-60"
           >
             {dir === "received" ? "คำขอที่ต้องพิจารณา" : "คำขอที่ฉันส่ง"}
           </button>
@@ -117,28 +117,11 @@ export default function RequestsPage() {
           hint={direction === "received" ? "เมื่อแฟนขอใช้ รายการจะขึ้นที่นี่" : "ไปที่คูปองของฉันแล้วกดขอใช้"}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="pocket-collection">
           {items.map((item) => (
-            <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xl">{item.emoji ?? "🎟️"}</span>
-                  <p className="font-semibold">{item.couponName}</p>
-                  <RarityBadge rarity={item.rarity} />
-                  <StatusBadge status={item.status} />
-                </div>
-                <p className="text-sm text-muted">
-                  {direction === "received" ? `${item.requesterName} ขอใช้` : `ขอใช้จากแฟน`} ·{" "}
-                  {formatDateTime(item.requestedAt)}
-                  {item.resolvedAt ? ` · ตัดสิน ${formatDateTime(item.resolvedAt)}` : ""}
-                </p>
-                {item.message ? (
-                  <p className="rounded-lg bg-love-soft px-3 py-1.5 text-sm">“{item.message}”</p>
-                ) : null}
-              </div>
-
+            <CouponRequestCard key={item.id} item={item} direction={direction}>
               {item.status === "PENDING" ? (
-                <div className="flex gap-2">
+                <>
                   {direction === "received" ? (
                     <>
                       <Button
@@ -149,7 +132,7 @@ export default function RequestsPage() {
                         }}
                         disabled={busyId !== null}
                       >
-                        อนุมัติ ✅
+                        อนุมัติ <span aria-hidden="true">↗</span>
                       </Button>
                       <Button
                         size="sm"
@@ -170,20 +153,22 @@ export default function RequestsPage() {
                       ยกเลิกคำขอ
                     </Button>
                   )}
-                </div>
+                </>
               ) : null}
-            </Card>
+            </CouponRequestCard>
           ))}
         </div>
       )}
       {review && (
-        <Dialog title="ทบทวนก่อนให้ใช้คูปอง" busy={busyId !== null} onClose={() => setReview(null)}>
-          <p>
-            <strong>{review.requesterName}</strong> ขอใช้ “{review.couponName}”
-          </p>
+        <Dialog title="ทบทวนก่อนให้ใช้คูปอง" className="ticket-dialog" busy={busyId !== null} onClose={() => setReview(null)}>
+          <div className="request-review pocket-detail" data-rarity={review.rarity}>
+            <TicketIllustration category={review.category} />
+            <p><strong>{review.requesterName}</strong> ขอใช้<br /><span>{review.couponName}</span></p>
+            {review.message && <blockquote className="request-note"><p>{review.message}</p></blockquote>}
+          </div>
           <p>เมื่อยืนยันจะใช้สิทธิ์ 1 ใบ การอนุมัติย้อนกลับไม่ได้</p>
           <ErrorText message={actionError} />
-          <div className="flex flex-wrap gap-3">
+          <div className="pocket-dialog-actions">
             <Button variant="secondary" disabled={busyId !== null} onClick={() => setReview(null)}>
               ยกเลิก
             </Button>

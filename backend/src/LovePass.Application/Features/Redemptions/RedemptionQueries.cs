@@ -23,7 +23,8 @@ public sealed record RedemptionListDto(
     string Status,
     DateTime RequestedAt,
     DateTime? ResolvedAt,
-    DateTime CouponExpiresAt);
+    DateTime CouponExpiresAt,
+    string Category = "OTHER");
 
 public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetRedemptionsQuery, List<RedemptionListDto>>
@@ -66,7 +67,8 @@ public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurren
                 r.Status.ToString().ToUpperInvariant(),
                 r.RequestedAt,
                 r.ResolvedAt,
-                r.IssuedCoupon.ExpiresAt);
+                r.IssuedCoupon.ExpiresAt,
+                s.Category);
         }).ToList();
     }
 }

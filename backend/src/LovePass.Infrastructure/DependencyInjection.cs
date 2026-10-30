@@ -43,11 +43,26 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<DataSeeder>();
 
-        services.AddHttpClient<IEmailSender, ResendEmailSender>(client =>
+        var emailProvider = configuration["Email:Provider"] ?? "Resend";
+        if (emailProvider.Equals("Gmail", StringComparison.OrdinalIgnoreCase))
         {
-            client.BaseAddress = new Uri("https://api.resend.com");
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
+            services.AddOptions<GmailOptions>().BindConfiguration(GmailOptions.SectionName)
+                .ValidateDataAnnotations().ValidateOnStart();
+            services.AddHttpClient<IEmailSender, GmailApiEmailSender>(client =>
+                client.Timeout = TimeSpan.FromSeconds(20));
+        }
+        else if (emailProvider.Equals("Resend", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IEmailSender, ResendEmailSender>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.resend.com");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
+        }
+        else
+        {
+            throw new InvalidOperationException("Email:Provider must be Gmail or Resend.");
+        }
 
         return services;
     }

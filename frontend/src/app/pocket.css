@@ -156,6 +156,43 @@
 .category-icon-preview .pocket-drawing { width: 64px; flex-shrink: 0; }
 .category-icon-preview p { font-size: 14px; }
 .category-icon-preview span { display: block; font-size: 12px; color: var(--pocket-muted); }
+.request-ticket .pocket-story h2 { font-size: 24px; }
+.request-story { padding-block: 20px 12px; }
+.request-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.request-ticket[data-status="REJECTED"] .request-status { color: var(--pocket-rose); }
+.request-ticket[data-status="CANCELLED"] .request-status { color: var(--pocket-muted); }
+.request-person { font-size: 14px; color: var(--pocket-muted); margin-top: 8px; }
+.request-note { border-left: 2px solid var(--pocket-accent); padding: 12px 16px; background: color-mix(in srgb, var(--pocket-accent) 25%, transparent); color: var(--pocket-print); font-family: var(--font-mali), sans-serif; font-size: 14px; line-height: 1.9; }
+.request-note p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.request-dates { display: grid; gap: 4px; margin-top: 16px; font-size: 12px; color: var(--pocket-muted); }
+.request-stub { gap: 16px; }
+.request-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.request-actions .ui-button, .requests-page > div .ui-button { border-radius: 5px; }
+.requests-page .ui-button.bg-love { color: var(--pocket-paper); background: var(--pocket-print, var(--pocket-ink)); }
+.requests-page .ui-button.bg-love:hover { background: color-mix(in srgb, var(--pocket-print, var(--pocket-ink)) 88%, black); }
+.request-actions .ui-button.bg-danger { border: 1px solid color-mix(in srgb, var(--pocket-rose) 55%, var(--pocket-paper)); color: var(--pocket-rose); background: transparent; }
+.request-actions .ui-button.bg-danger:hover { background: color-mix(in srgb, var(--pocket-rose) 7%, var(--pocket-paper)); }
+.requests-page .ui-button.bg-love-soft { border-color: var(--pocket-line); color: var(--pocket-print, var(--pocket-ink)); background: var(--pocket-paper); }
+.request-review { text-align: center; padding: 16px; border-block: 1px dashed var(--pocket-line); }
+.request-review > .pocket-drawing { width: 72px; margin: 0 auto 12px; }
+.request-review > p { font-size: 16px; }
+.request-review > p > span { display: inline-block; margin-top: 4px; font-weight: 600; }
+.request-review .request-note { text-align: left; margin-top: 16px; }
+.sent-gift-book { display: grid; align-items: start; gap: 24px; }
+.sent-gift-header h2 { font-family: var(--font-sarabun), sans-serif; font-size: 24px; font-weight: 600; margin-top: 16px; line-height: 1.6; }
+.sent-gift-sent { font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
+.sent-gift-date { color: var(--pocket-muted); font-size: 12px; margin-top: 4px; }
+.sent-gift-note { padding-top: 16px; color: var(--pocket-ink); font-family: var(--font-mali), sans-serif; font-size: 14px; line-height: 1.9; }
+.sent-gift-note p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.sent-gift-coupons { padding: 0 24px; }
+.sent-gift-coupon { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 16px; padding-block: 20px; }
+.sent-gift-coupon + .sent-gift-coupon { border-top: 1px dashed var(--pocket-line); }
+.sent-gift-coupon h3 { font-size: 20px; font-weight: 600; line-height: 1.6; }
+.sent-gift-count { color: var(--pocket-ink); font-size: 14px; margin-top: 8px; }
+.sent-gift-expiry { color: var(--pocket-muted); font-size: 12px; margin-top: 4px; }
+.sent-gift-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-inline: 24px; border-top: 1px solid var(--pocket-line); padding-block: 16px; font-size: 12px; color: var(--pocket-muted); }
+.sent-gifts-page .ui-button { border-radius: 5px; }
+.sent-gifts-page .ui-button.bg-love { color: var(--pocket-paper); background: var(--pocket-ink); }
 @keyframes receipt-arrive { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @media (hover: hover) and (pointer: fine) {
   .pocket-ticket:hover { transform: translateY(-3px); box-shadow: 0 8px 18px -10px #30473f45; }
@@ -163,6 +200,7 @@
 @media (min-width: 768px) {
   .pocket-collection { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pocket-concepts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sent-gift-book { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 479px) {
   .pocket-studio-main { padding: 24px 16px; }
@@ -183,6 +221,9 @@
   .pocket-seal span { font-size: 24px; }
   .pocket-seal small { font-size: 8px; }
   .ticket-dialog { padding: 20px; }
+  .sent-gift-coupons { padding-inline: 20px; }
+  .sent-gift-coupon { grid-template-columns: 40px minmax(0, 1fr); gap: 12px; }
+  .sent-gift-footer { margin-inline: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .pocket-ticket:hover, .pocket-action:active { transform: none; }

@@ -6,6 +6,7 @@ backend/.env
 frontend/.env.local
 *.pfx
 appsettings.*.local.json
+client_secret_*.json
 
 # .NET
 bin/
@@ -21,6 +22,7 @@ node_modules/
 .next/
 out/
 .turbo/
+.vercel/
 *.tsbuildinfo
 next-env.d.ts
 

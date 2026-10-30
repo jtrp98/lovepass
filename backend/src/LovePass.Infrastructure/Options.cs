@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LovePass.Infrastructure;
 
 public sealed class JwtOptions
@@ -17,6 +19,23 @@ public sealed class ResendOptions
 
     public string ApiKey { get; set; } = string.Empty;
     public string FromEmail { get; set; } = "LOVE PASS <onboarding@resend.dev>";
+}
+
+public sealed class GmailOptions
+{
+    public const string SectionName = "Gmail";
+
+    [Required, EmailAddress]
+    public string SenderEmail { get; set; } = string.Empty;
+
+    [Required]
+    public string ClientId { get; set; } = string.Empty;
+
+    [Required]
+    public string ClientSecret { get; set; } = string.Empty;
+
+    [Required]
+    public string RefreshToken { get; set; } = string.Empty;
 }
 
 public sealed class SeedOptions
