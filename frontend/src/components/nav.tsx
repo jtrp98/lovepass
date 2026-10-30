@@ -69,7 +69,7 @@ export function Navbar() {
         {links.map((link) => {
           const active =
             link.href === "/catalog"
-              ? ["/catalog", "/sets", "/gifts/new"].includes(pathname)
+              ? ["/catalog", "/sets", "/gifts/new", "/packs", "/packs/new"].includes(pathname)
               : link.href === "/more"
                 ? ["/more", "/history", "/couple", "/couple/accept", "/sent-gifts"].includes(pathname)
                 : pathname === link.href;
@@ -108,6 +108,7 @@ export function GiftViews() {
       {[
         { href: "/catalog", label: "เลือกเอง" },
         { href: "/sets", label: "เลือกเป็นชุด" },
+        { href: "/packs", label: "จัดเป็นชุดของขวัญ" },
       ].map((link) => (
         <Link
           key={link.href}

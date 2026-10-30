@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Rarity } from "@/types";
 
 /** Pressed wax seal (public/materials/illustrations/wax-seal.svg). Decorative. */
 export function WaxSeal({ className = "" }: { className?: string }) {
@@ -9,9 +10,9 @@ export function WaxSeal({ className = "" }: { className?: string }) {
  * Folded envelope that opens once to show a letter card. Decorative: the page states
  * the outcome in text. Its resting state is open, so reduced motion shows the result.
  */
-export function Envelope({ children }: { children?: ReactNode }) {
+export function Envelope({ children, open = true, animate = true, rarity }: { children?: ReactNode; open?: boolean; animate?: boolean; rarity?: Rarity }) {
   return (
-    <div className="envelope" aria-hidden="true">
+    <div className="envelope" data-closed={!open || undefined} data-still={!animate || undefined} data-rarity={rarity} aria-hidden="true">
       <svg className="envelope-back" viewBox="0 0 200 130" focusable="false">
         <rect x=".5" y=".5" width="199" height="129" rx="5" fill="#f3d6df" stroke="#d9aebb" />
         <path d="M6 6 100 60 194 6" fill="none" stroke="#e6bfcb" />

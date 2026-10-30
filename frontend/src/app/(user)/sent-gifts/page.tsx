@@ -24,6 +24,7 @@ export default function SentGiftsPage() {
         </div>
         <div className="pocket-seal" aria-hidden="true"><small>GIVEN</small><span>with love</span><small>JUST FOR YOU</small></div>
       </header>
+      <LinkButton href="/packs" variant="secondary">ดูซองคูปองที่ส่งและได้รับ</LinkButton>
 
       {resource.error ? (
         <ErrorState message={resource.error} retry={resource.retry} />

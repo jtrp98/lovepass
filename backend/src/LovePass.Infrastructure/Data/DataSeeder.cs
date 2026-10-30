@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace LovePass.Infrastructure.Data;
 
-/// <summary>Seed ข้อมูลเริ่มต้นตอนรันครั้งแรกเมื่อ DB ว่าง: บัญชี Admin + Coupon Templates ตัวอย่าง + Romantic Set</summary>
+/// <summary>Seed บัญชี Admin และ Coupon Templates ตัวอย่างเมื่อ DB ว่าง</summary>
 public sealed class DataSeeder(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole<int>> roleManager,
@@ -77,21 +77,6 @@ public sealed class DataSeeder(
         db.CouponTemplates.AddRange(templates);
         await db.SaveChangesAsync(cancellationToken); // ต้อง save ก่อนเพื่อให้ได้ Id จริง
 
-        db.CouponSets.Add(new CouponSet
-        {
-            Name = "Romantic Set",
-            Description = "ชุดคูปองโรแมนติกสำหรับโอกาสพิเศษ",
-            IsActive = true,
-            Items =
-            [
-                new CouponSetItem { CouponTemplateId = hug.Id, Quantity = 5 },
-                new CouponSetItem { CouponTemplateId = meal.Id, Quantity = 3 },
-                new CouponSetItem { CouponTemplateId = invite.Id, Quantity = 2 },
-                new CouponSetItem { CouponTemplateId = freedom.Id, Quantity = 1 }
-            ]
-        });
-
-        await db.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Seeded {Count} demo coupon templates + Romantic Set", templates.Length);
+        logger.LogInformation("Seeded {Count} demo coupon templates", templates.Length);
     }
 }

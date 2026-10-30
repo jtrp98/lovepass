@@ -15,6 +15,8 @@ import {
 } from "../src/lib/flow.ts";
 
 test("returnTo preserves invite query and rejects origin escapes and unapproved routes", () => {
+  assert.equal(safeReturnTo("/packs"), "/packs");
+  assert.equal(safeReturnTo("/packs/new"), "/packs/new");
   const destination = "/couple/accept?token=ABCD&from=partner";
   assert.equal(safeReturnTo(destination), destination);
   assert.equal(

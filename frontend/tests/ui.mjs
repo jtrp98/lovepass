@@ -434,12 +434,44 @@ async function run() {
   assert.equal(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")), cartBeforeViewing);
   pass("ticket faces show notes; full details open without requesting or adding to cart");
   await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
-  await wait(50);
   await page.getByRole("button", { name: "พิเศษ · RARE", exact: true }).click();
-  await wait(900);
   assert.equal(await page.locator("article:visible").count(), 1);
   await page.getByText("มื้อพิเศษสำหรับสองเรา", { exact: true }).waitFor();
-  pass("slow old filter response cannot overwrite newer selection");
+  pass("catalog tier switches immediately to the latest selection");
+
+  // An API that ignores the query must not make other tiers leak into the selected view.
+  const catalogViewport = page.viewportSize();
+  const tierFixtures = ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"].map((rarity, index) => ({
+    ...template, id: 100 + index, rarity, name: `คูปองทดสอบ ${rarity}`,
+  }));
+  let catalogReads = 0;
+  const catalogRoute = async (route) => {
+    catalogReads++;
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(tierFixtures) });
+  };
+  await page.route("**/api/v1/coupon-templates*", catalogRoute);
+  await go("/catalog");
+  await page.getByRole("heading", { name: "คูปองทดสอบ COMMON", exact: true }).waitFor();
+  const catalogCart = await page.evaluate(() => localStorage.getItem("lovepass.giftCart"));
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    const filters = page.getByRole("group", { name: "ประเภทคูปอง", exact: true });
+    await filters.getByRole("button", { name: "ทุกประเภท", exact: true }).click();
+    assert.equal(await page.locator(".pocket-collection article").count(), 5);
+    for (const rarity of ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"]) {
+      const filter = filters.getByRole("button", { name: new RegExp(` · ${rarity}$`) });
+      await filter.click();
+      await page.getByRole("heading", { name: `คูปองทดสอบ ${rarity}`, exact: true }).waitFor();
+      assert.equal(await page.locator(".pocket-collection article").count(), 1, `${width}px ${rarity} must hide all other tiers`);
+      assert.equal(await filter.getAttribute("aria-pressed"), "true");
+    }
+    await screenshot(page, `catalog-mythic-filter-${width}`);
+  }
+  assert.equal(catalogReads, 1, "switching local tiers must not refetch the catalog");
+  assert.equal(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")), catalogCart);
+  await page.unroute("**/api/v1/coupon-templates*", catalogRoute);
+  await page.setViewportSize(catalogViewport);
+  pass("all five catalog tiers filter at 390/1280 even when API returns every tier; cart survives and catalog loads once");
   await go("/my-coupons");
   await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
   await wait(50);

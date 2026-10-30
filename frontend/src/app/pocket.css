@@ -439,3 +439,54 @@
   .pocket-ticket, .pocket-action { transition: none; }
   .memory-receipt { animation: none; }
 }
+/* Gift packs: a sealed letter, a finite shuffle, and a printed ticket reveal. */
+.pack-ticket-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+.pack-mode-grid { display: grid; gap: 1rem; }
+.tier-envelope-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.tier-envelope { min-width: 0; --pack-paper: var(--color-rarity-common-paper); --pack-ink: var(--color-rarity-common-ink); }
+.tier-envelope[data-rarity="COMMON"], .envelope[data-rarity="COMMON"] { --pack-paper: var(--color-rarity-common-paper); --pack-ink: var(--color-rarity-common-ink); }
+.tier-envelope[data-rarity="RARE"], .envelope[data-rarity="RARE"] { --pack-paper: var(--color-rarity-rare-paper); --pack-ink: var(--color-rarity-rare-ink); }
+.tier-envelope[data-rarity="EPIC"], .envelope[data-rarity="EPIC"] { --pack-paper: var(--color-rarity-epic-paper); --pack-ink: var(--color-rarity-epic-ink); }
+.tier-envelope[data-rarity="LEGENDARY"], .envelope[data-rarity="LEGENDARY"] { --pack-paper: var(--color-rarity-legendary-paper); --pack-ink: var(--color-rarity-legendary-ink); }
+.tier-envelope[data-rarity="MYTHIC"], .envelope[data-rarity="MYTHIC"] { --pack-paper: var(--color-rarity-mythic-paper); --pack-ink: var(--color-rarity-mythic-ink); }
+.tier-envelope > .paper-card { height: 100%; border-color: var(--pack-ink); }
+.tier-envelope[data-active] > .paper-card { outline: 2px solid var(--pack-ink); outline-offset: 2px; }
+.tier-envelope .envelope { width: min(12rem, 90%); margin: 4rem auto 1.5rem; }
+.tier-envelope .envelope[data-closed] { margin-top: 1.5rem; }
+.envelope[data-rarity] .envelope-back rect, .envelope[data-rarity] .envelope-front path:first-child, .envelope[data-rarity] .envelope-flap path:first-child { fill: var(--pack-paper); stroke: var(--pack-ink); }
+.envelope[data-rarity] .envelope-back path, .envelope[data-rarity] .envelope-front path:not(:first-child), .envelope[data-rarity] .envelope-flap path:not(:first-child) { stroke: var(--pack-ink); opacity: .4; }
+.tier-envelope[data-rarity="MYTHIC"] > .paper-card { background-image: var(--paper-grain), var(--rarity-mythic-foil); }
+@media (min-width: 640px) { .tier-envelope-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .tier-envelope-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pack-pool-item { min-width: 0; }
+.pack-selection-label { display: flex; align-items: center; gap: .5rem; min-height: 2rem; margin: 0 0 .5rem; font-size: .875rem; color: var(--color-love); }
+.pack-selection-label .stationery-icon { width: 1.25rem; height: 1.25rem; }
+.pack-pool-item[data-selected] .pack-selection-label { font-weight: 600; }
+.pack-composer-summary { position: sticky; bottom: calc(var(--nav-height) + .5rem); z-index: 10; }
+.pack-review-list { display: grid; gap: .5rem; }
+.pack-review-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; padding: .75rem 0; border-bottom: 1px dashed var(--color-line); }
+.pack-cover { overflow: hidden; }
+.pack-cover .envelope { width: min(20rem, 90%); margin-top: 5.5rem; margin-bottom: 1.5rem; }
+.pack-cover .envelope[data-closed] { margin-top: 1.5rem; }
+.envelope[data-closed] .envelope-flap { animation: none; transform: none; z-index: 3; }
+.envelope[data-closed] .envelope-letter { animation: none; transform: none; }
+.envelope[data-still] .envelope-flap, .envelope[data-still] .envelope-letter { animation: none; }
+.pack-letter-note { max-width: 34rem; margin-inline: auto; font-family: var(--font-mali), sans-serif; line-height: 1.9; overflow-wrap: anywhere; }
+.pack-draw-tray { display: flex; align-items: center; flex-wrap: wrap; gap: 1.5rem; padding: 1.5rem; border: 1px dashed var(--color-control); background: var(--paper-grain), var(--color-canvas); }
+.pack-card-stack { position: relative; width: 8rem; height: 6rem; flex: 0 0 8rem; perspective: 600px; }
+.pack-card-stack > span { position: absolute; inset: .5rem 0; display: grid; place-items: center; border: 1px solid var(--color-control); border-radius: var(--radius-paper); background: var(--paper-grain), var(--color-love-soft); transform: rotate(-9deg); }
+.pack-card-stack > span:nth-child(2) { transform: rotate(8deg); background-color: var(--color-surface); }
+.pack-card-stack > span:last-child { transform: none; border-style: dashed; background-color: var(--color-rarity-common-paper); }
+.pack-card-stack .stationery-icon { width: 2.5rem; height: 2.5rem; color: var(--color-love); }
+.pack-draw-tray[data-shuffling] .pack-card-stack > span { animation: pack-shuffle 480ms var(--ease-paper) 3; }
+.pack-draw-tray[data-shuffling] .pack-card-stack > span:nth-child(2) { animation-delay: 90ms; }
+.pack-draw-tray[data-shuffling] .pack-card-stack > span:last-child { animation-delay: 180ms; }
+.pack-result { padding: 1.5rem 0; border-block: 1px dashed var(--color-control); }
+.pack-result-ticket { transform-origin: center; animation: pack-reveal 650ms var(--ease-paper) both; }
+.pack-page h1, .pack-receiver h2, .pack-review-list, .pack-composer-summary { overflow-wrap: anywhere; }
+@keyframes pack-shuffle { 0%, 100% { translate: 0; } 40% { translate: 1.25rem -.5rem; rotate: 8deg; } 75% { translate: -.75rem .25rem; rotate: -5deg; } }
+@keyframes pack-reveal { from { opacity: 0; transform: perspective(800px) rotateY(-65deg) translateY(.75rem); } to { opacity: 1; transform: none; } }
+@media (min-width: 768px) { .pack-ticket-grid, .pack-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) {
+  .pack-card-stack > span, .pack-result-ticket, .pack-receiver .envelope-flap, .pack-receiver .envelope-letter { animation: none !important; }
+}

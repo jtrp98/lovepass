@@ -13,7 +13,7 @@ import { GiftViews } from "@/components/nav";
 import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { useResource } from "@/lib/use-resource";
 import { api, giftCart, type CartItem } from "@/lib/api";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CouponTemplate, Rarity } from "@/types";
 
 const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
@@ -31,10 +31,8 @@ export default function CatalogPage() {
     setCart(giftCart.read());
   }, []);
 
-  const resource = useResource(
-    useCallback(() => api.catalog.templates(filter === "ALL" ? undefined : filter), [filter]),
-  );
-  const templates = resource.data;
+  const resource = useResource(api.catalog.templates);
+  const templates = resource.data?.filter((template) => filter === "ALL" || template.rarity === filter);
   const [feedback, setFeedback] = useState<{ id: number; text: string } | null>(null);
 
   function addToCart(template: CouponTemplate, quantity: number) {

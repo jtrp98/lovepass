@@ -1,6 +1,7 @@
 using LovePass.Application.Common.Abstractions;
 using LovePass.Application.Common.Interfaces;
 using LovePass.Domain.Enums;
+using LovePass.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,10 +33,12 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
 
         foreach (var gift in gifts)
         {
-            var detail = string.Join(", ", gift.Coupons.Select(c => $"{c.ReadSnapshot().Name} ×{c.Quantity}"));
+            var pack = gift.PackPlan is null ? null : GiftPackPlan.FromJson(gift.PackPlan);
+            var detail = pack is null ? string.Join(", ", gift.Coupons.Select(c => $"{c.ReadSnapshot().Name} ×{c.Quantity}"))
+                : $"{pack.Name} · รับเข้ากระเป๋าแล้ว {pack.Draws.Count}/{pack.Total} ใบ";
             entries.Add(new HistoryEntryDto(
                 "GIFT",
-                $"มอบคูปองให้ {gift.Receiver?.DisplayName ?? "แฟน"}",
+                $"มอบ{(pack is null ? "คูปอง" : "ซองคูปอง")}ให้ {gift.Receiver?.DisplayName ?? "แฟน"}",
                 string.IsNullOrWhiteSpace(gift.Message) ? detail : $"{detail} — \"{gift.Message}\"",
                 gift.CreatedAt));
         }

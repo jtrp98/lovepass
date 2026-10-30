@@ -64,6 +64,18 @@ cd backend && dotnet test        # unit tests (domain logic)
 node scripts/api-smoke.mjs       # E2E ผ่าน API จริง (API ต้องรันอยู่ + DB พร้อม)
 ```
 
+ทดสอบซองคูปองผ่าน browser และ API/DB จริง ใช้ฐานข้อมูลทดสอบแยกเท่านั้น เพราะสคริปต์สร้างบัญชี คู่รัก และซองทดสอบ:
+
+```powershell
+cd frontend
+$env:PLAYWRIGHT_MODULE = '<path ของ package playwright ที่ติดตั้งไว้>'
+$env:UI_TEST_URL = 'http://127.0.0.1:3010'  # production frontend ที่เปิดไว้
+$env:PACK_API_URL = 'http://127.0.0.1:5091' # API ที่เชื่อมฐานข้อมูลทดสอบแยก
+npm run test:packs
+```
+
+สคริปต์รับเฉพาะ localhost ตรวจสิทธิ์ เลือก/สุ่ม การชนกันของคำขอ retry เมื่อผลตอบกลับขาดหาย และหน้าจอ 390/1280 px หลักฐานลง `frontend/test-results/packs/`
+
 ## Deployment (Vercel + Render + Supabase)
 
 ### 1) Supabase — Database
