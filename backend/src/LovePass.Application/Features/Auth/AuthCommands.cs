@@ -12,6 +12,17 @@ namespace LovePass.Application.Features.Auth;
 
 // ---------------- Register ----------------
 
+internal static class PasswordRules
+{
+    // ต้องตรงกับ options.Password ใน Infrastructure/DependencyInjection.cs
+    public static IRuleBuilderOptions<T, string> StrongPassword<T>(this IRuleBuilder<T, string> rule) => rule
+        .NotEmpty().WithMessage("กรุณากรอกรหัสผ่าน")
+        .MinimumLength(8).WithMessage("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร")
+        .MaximumLength(128).WithMessage("รหัสผ่านยาวเกินไป (ไม่เกิน 128 ตัวอักษร)")
+        .Matches("[a-z]").WithMessage("รหัสผ่านต้องมีตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว")
+        .Matches("[0-9]").WithMessage("รหัสผ่านต้องมีตัวเลข (0-9) อย่างน้อย 1 ตัว");
+}
+
 public sealed record RegisterCommand(string Email, string Password, string DisplayName) : ICommand<TokenPair>;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
@@ -19,7 +30,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
     public RegisterCommandValidator()
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(256);
-        RuleFor(x => x.Password).NotEmpty().MinimumLength(8).MaximumLength(128);
+        RuleFor(x => x.Password).StrongPassword();
         RuleFor(x => x.DisplayName).NotEmpty().MaximumLength(50);
     }
 }
@@ -120,7 +131,7 @@ public sealed class ResetPasswordCommandValidator : AbstractValidator<ResetPassw
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Token).NotEmpty();
-        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(8).MaximumLength(128);
+        RuleFor(x => x.NewPassword).StrongPassword();
     }
 }
 
