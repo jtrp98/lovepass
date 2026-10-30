@@ -41,7 +41,7 @@ export function TicketDemo() {
   }
   return (
     <section className="ticket-demo" aria-labelledby="ticket-demo-title">
-      <p className="pocket-mono ticket-demo-label">TRY IT · ลองเล่นได้เลย ไม่มีการส่งจริง</p>
+      <p className="pocket-mono ticket-demo-label">ลองใช้ตั๋วตัวอย่าง · ไม่มีการส่งจริง</p>
       <h2 id="ticket-demo-title" className="sr-only">ลองใช้ตั๋วตัวอย่าง</h2>
       <ol className="demo-steps">
         {steps.map((label, index) => (
