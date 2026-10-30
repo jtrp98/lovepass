@@ -177,9 +177,10 @@ public sealed class GetSentGiftsQueryHandler(IApplicationDbContext db, ICurrentU
     {
         var userId = currentUser.RequiredUserId();
 
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
         var batches = await db.GiftBatches.AsNoTracking()
             .Include(b => b.Coupons)
-            .Where(b => b.SenderId == userId && b.PackPlan == null)
+            .Where(b => b.SenderId == userId && b.PackPlan == null && partnerIds.Contains(b.ReceiverId))
             .OrderByDescending(b => b.CreatedAt)
             .Take(200)
             .ToListAsync(cancellationToken);

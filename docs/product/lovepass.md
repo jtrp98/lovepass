@@ -814,7 +814,7 @@ REST API เวอร์ชันใน path: `/api/v1/...` · JSON camelCase ·
 | GET | `/api/v1/admin/users` | รายการผู้ใช้ | Admin |
 | DELETE | `/api/v1/admin/users/{id}` | soft delete user — ลบได้เฉพาะคนที่ไม่เคยจับคู่ (เคยจับคู่ = 409 ให้ยกเลิกคู่แทน) | Admin |
 | GET | `/api/v1/admin/couples` | รายการคู่ทั้งหมด (ACTIVE / DISSOLVED) | Admin |
-| POST | `/api/v1/admin/couples/{id}/dissolve` | ยกเลิกคู่ — เปลี่ยนสถานะเป็น DISSOLVED ไม่ลบข้อมูล ยกเลิกคำขอที่ค้างระหว่างคู่และคืนสิทธิ์ หลังยกเลิกดูได้เฉพาะประวัติ: มอบของขวัญใหม่และขอใช้คูปองเดิมไม่ได้ (409) | Admin |
+| POST | `/api/v1/admin/couples/{id}/dissolve` | ยกเลิกคู่ — เปลี่ยนสถานะเป็น DISSOLVED ไม่ลบข้อมูล ยกเลิกคำขอที่ค้างระหว่างคู่และคืนสิทธิ์ หลังยกเลิก backend ซ่อนคูปอง ซอง คำขอ และของขวัญที่ส่งของอีกฝ่ายจากผู้ใช้ทั้งคู่ (ข้อมูลไม่ถูกลบ จับคู่ใหม่กับคนเดิมแล้วกลับมาเห็น) มอบของขวัญใหม่/เปิดซอง/ขอใช้คูปองเดิมไม่ได้ (409) Admin ยังเห็นทั้งหมด | Admin |
 | GET | `/api/v1/admin/dashboard/stats` | ตัวเลขภาพรวม | Admin |
 | GET | `/api/v1/admin/gifts` | ประวัติการมอบทั้งระบบ | Admin |
 | GET | `/api/v1/admin/redemptions` | ประวัติ redemption ทั้งระบบ | Admin |

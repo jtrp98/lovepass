@@ -45,9 +45,11 @@ public sealed class GetRedemptionsQueryHandler(IApplicationDbContext db, ICurren
             .Include(r => r.Approver)
             .AsQueryable();
 
+        // เลิกกันแล้วไม่แสดงคำขอของอีกฝ่าย (จับคู่ใหม่กับคนเดิมแล้วกลับมาเห็น)
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
         query = received
-            ? query.Where(r => r.IssuedCoupon!.SenderId == userId)
-            : query.Where(r => r.RequesterId == userId);
+            ? query.Where(r => r.IssuedCoupon!.SenderId == userId && partnerIds.Contains(r.RequesterId))
+            : query.Where(r => r.RequesterId == userId && partnerIds.Contains(r.IssuedCoupon!.SenderId));
 
         var rows = await query
             .OrderByDescending(r => r.Status == RedemptionStatus.Pending)

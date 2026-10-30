@@ -110,7 +110,10 @@ public sealed class GetGiftPacksQueryHandler(IApplicationDbContext db, ICurrentU
     public async Task<List<GiftPackDto>> Handle(GetGiftPacksQuery request, CancellationToken ct)
     {
         var id = currentUser.RequiredUserId();
-        var batches = await db.GiftBatches.AsNoTracking().Where(b => b.PackPlan != null && (b.ReceiverId == id || b.SenderId == id))
+        // ซองผูกกับผู้ให้ — เลิกกันแล้วไม่แสดงซองของอีกฝ่าย (จับคู่ใหม่กับคนเดิมแล้วกลับมาเห็น)
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, id, ct);
+        var batches = await db.GiftBatches.AsNoTracking().Where(b => b.PackPlan != null
+                && ((b.ReceiverId == id && partnerIds.Contains(b.SenderId)) || (b.SenderId == id && partnerIds.Contains(b.ReceiverId))))
             .OrderByDescending(b => b.CreatedAt).Take(200).ToListAsync(ct);
         return batches.Select(b => GiftPackMapping.Map(b, id)).ToList();
     }
@@ -242,6 +245,8 @@ internal static class GiftPackMapping
         var batch = await db.GiftBatches.FirstOrDefaultAsync(b => b.Id == id && b.PackPlan != null, ct)
             ?? throw new NotFoundException("GiftPack", id);
         if (batch.ReceiverId != userId) throw new ForbiddenAccessException();
+        if (!(await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, ct)).Contains(batch.SenderId))
+            throw new ConflictException("คุณสองคนไม่ได้จับคู่กันแล้ว ซองนี้เปิดหรือเลือกเพิ่มไม่ได้");
         return batch;
     }
 

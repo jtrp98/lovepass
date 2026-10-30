@@ -22,11 +22,14 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
 
         var entries = new List<HistoryEntryDto>();
 
+        // เลิกกันแล้วไม่แสดงสิ่งที่เกี่ยวกับอีกฝ่าย (จับคู่ใหม่กับคนเดิมแล้วกลับมาเห็น)
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
+
         // ประวัติการมอบคูปอง (ฉันเป็นผู้มอบ)
         var gifts = await db.GiftBatches.AsNoTracking()
             .Include(b => b.Coupons)
             .Include(b => b.Receiver)
-            .Where(b => b.SenderId == userId)
+            .Where(b => b.SenderId == userId && partnerIds.Contains(b.ReceiverId))
             .OrderByDescending(b => b.CreatedAt)
             .Take(100)
             .ToListAsync(cancellationToken);
@@ -47,7 +50,7 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
         var used = await db.Redemptions.AsNoTracking()
             .Include(r => r.IssuedCoupon)
             .Include(r => r.Approver)
-            .Where(r => r.RequesterId == userId && r.Status == RedemptionStatus.Approved)
+            .Where(r => r.RequesterId == userId && partnerIds.Contains(r.IssuedCoupon!.SenderId) && r.Status == RedemptionStatus.Approved)
             .OrderByDescending(r => r.ResolvedAt)
             .Take(100)
             .ToListAsync(cancellationToken);
@@ -64,7 +67,7 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
 
         // คูปองที่หมดอายุ (ฉันเป็นผู้รับ)
         var expired = await db.IssuedCoupons.AsNoTracking()
-            .Where(c => c.ReceiverId == userId && c.ExpiresAt <= now)
+            .Where(c => c.ReceiverId == userId && partnerIds.Contains(c.SenderId) && c.ExpiresAt <= now)
             .OrderByDescending(c => c.ExpiresAt)
             .Take(100)
             .ToListAsync(cancellationToken);
@@ -82,7 +85,7 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
         var redeemedOut = await db.Redemptions.AsNoTracking()
             .Include(r => r.IssuedCoupon)
             .Include(r => r.Requester)
-            .Where(r => r.IssuedCoupon!.SenderId == userId && r.Status == RedemptionStatus.Approved)
+            .Where(r => r.IssuedCoupon!.SenderId == userId && partnerIds.Contains(r.RequesterId) && r.Status == RedemptionStatus.Approved)
             .OrderByDescending(r => r.ResolvedAt)
             .Take(100)
             .ToListAsync(cancellationToken);
