@@ -1,4 +1,4 @@
-import { ApiError } from "../src/lib/api.ts";
+import { ApiError, api, tokenStore } from "../src/lib/api.ts";
 import { couponCategories, resolveCategory } from "../src/lib/coupon-categories.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -115,6 +115,27 @@ test("categories use local reusable SVGs and safely handle legacy or unknown val
     assert.equal(resolveCategory(value), "OTHER");
 });
 
+test("catalog category filter safely matches categories and resolves legacy values", () => {
+  const templates = [
+    { id: 1, name: "กอด", category: "AFFECTION" as const, rarity: "COMMON" as const },
+    { id: 2, name: "มื้อค่ำ", category: "FOOD" as const, rarity: "RARE" as const },
+    { id: 3, name: "ไม่มีหมวด", category: undefined, rarity: "COMMON" as const },
+  ];
+  const filterBy = (cat: string, rarity: string) =>
+    templates.filter(
+      (t) =>
+        (rarity === "ALL" || t.rarity === rarity) &&
+        (cat === "ALL" || resolveCategory(t.category) === cat),
+    );
+  assert.equal(filterBy("ALL", "ALL").length, 3);
+  assert.equal(filterBy("FOOD", "ALL").length, 1);
+  assert.equal(filterBy("FOOD", "ALL")[0].id, 2);
+  assert.equal(filterBy("OTHER", "ALL").length, 1);
+  assert.equal(filterBy("OTHER", "ALL")[0].id, 3);
+  assert.equal(filterBy("FOOD", "COMMON").length, 0);
+  assert.equal(filterBy("FOOD", "RARE").length, 1);
+});
+
 test("invitation parsing accepts only existing contract and trusted app links", () => {
   const token = "A".repeat(32),
     origin = "https://love.test";
@@ -144,4 +165,61 @@ test("user errors stay Thai and never expose a missing invitation identifier", (
   });
   assert.equal(error.fieldMessages.password[0], "รหัสผ่านสั้นเกินไป");
   assert.match(error.fieldMessages.email[0], /ข้อมูลในช่องนี้/);
+});
+
+test("rejected login never refreshes or expires an existing session; protected requests still do", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const values = new Map<string, string>();
+  let expired = 0;
+  const calls: string[] = [];
+  Object.defineProperty(globalThis, "window", { configurable: true, value: {
+    localStorage: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    },
+    dispatchEvent: () => { expired++; },
+  } });
+  try {
+    tokenStore.set("old-access", "old-refresh");
+    globalThis.fetch = async (input, init) => {
+      calls.push(String(input));
+      assert.equal(new Headers(init?.headers).has("Authorization"), false);
+      return Response.json({ title: "Unauthorized." }, { status: 401 });
+    };
+    await assert.rejects(api.auth.login("admin@example.invalid", "wrong"), (error: unknown) => {
+      assert.ok(error instanceof ApiError);
+      assert.equal(error.status, 401);
+      assert.equal(error.sessionExpired, false);
+      assert.match(error.displayMessage, /อีเมลหรือรหัสผ่านไม่ถูกต้อง/);
+      return true;
+    });
+    assert.equal(calls.length, 1);
+    assert.equal(expired, 0);
+    assert.equal(tokenStore.access, "old-access");
+    assert.equal(tokenStore.refresh, "old-refresh");
+
+    globalThis.fetch = async (input, init) => {
+      calls.push(String(input));
+      if (!String(input).endsWith("/refresh"))
+        assert.equal(new Headers(init?.headers).get("Authorization"), "Bearer old-access");
+      return Response.json({ title: "Unauthorized." }, { status: 401 });
+    };
+    await assert.rejects(api.auth.me(), (error: unknown) => {
+      assert.ok(error instanceof ApiError);
+      assert.equal(error.sessionExpired, true);
+      assert.match(error.displayMessage, /เซสชันหมดอายุ/);
+      return true;
+    });
+    assert.equal(calls.length, 3);
+    assert.ok(calls[2].endsWith("/api/v1/auth/refresh"));
+    assert.equal(expired, 1);
+    assert.equal(tokenStore.access, null);
+    assert.equal(tokenStore.refresh, null);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
+    else Reflect.deleteProperty(globalThis, "window");
+  }
 });

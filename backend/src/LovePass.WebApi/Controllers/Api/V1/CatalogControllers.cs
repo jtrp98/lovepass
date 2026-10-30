@@ -11,8 +11,8 @@ namespace LovePass.WebApi.Controllers.Api.V1;
 public sealed class CouponTemplatesController(ISender mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] string? rarity, CancellationToken cancellationToken)
-        => Ok(await mediator.Send(new GetCouponTemplatesQuery(rarity), cancellationToken));
+    public async Task<IActionResult> List([FromQuery] string? rarity, [FromQuery] string? category, CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new GetCouponTemplatesQuery(rarity, category), cancellationToken));
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id, CancellationToken cancellationToken)

@@ -46,8 +46,8 @@ public sealed class DeleteCouponSetCommandHandler(IApplicationDbContext db)
 }
 
 /// <summary>
-/// Soft delete user — บัญชีล็อกอินไม่ได้ทันที ยุติคู่ทั้งหมด และยกเลิกคำขอที่ค้างอยู่ (คืนสิทธิ์ที่กันไว้)
-/// ประวัติการมอบ/ใช้คูปองคงเดิม
+/// Soft delete user — บัญชีล็อกอินไม่ได้ทันที ลบได้เฉพาะผู้ใช้ที่ไม่เคยจับคู่กับใครเลย
+/// (คนที่เคยจับคู่ ให้ยกเลิกคู่แทน เพื่อรักษาความทรงจำของอีกฝ่าย)
 /// </summary>
 public sealed record DeleteUserCommand(int Id) : ICommand<Unit>;
 
@@ -65,30 +65,12 @@ public sealed class DeleteUserCommandHandler(IApplicationDbContext db, ICurrentU
         if (target.IsAdmin)
             throw new ConflictException("ไม่สามารถลบบัญชีผู้ดูแลระบบได้");
 
+        // เคยจับคู่กับใครแล้ว (แม้ยกเลิกคู่ไปแล้ว) ลบไม่ได้ — ความทรงจำของอีกฝ่ายต้องอ้างถึงบัญชีนี้ได้เสมอ
+        var everCoupled = await db.CoupleMembers.AnyAsync(m => m.UserId == request.Id, cancellationToken);
+        if (everCoupled)
+            throw new ConflictException("ไม่สามารถลบผู้ใช้ที่เคยจับคู่แล้วได้ เพราะเป็นส่วนหนึ่งของความทรงจำของอีกฝ่าย — ถ้าต้องการแยกกัน ให้ยกเลิกคู่แทน");
+
         await identity.SoftDeleteUserAsync(request.Id, cancellationToken);
-
-        // ยุติคู่ทุกคู่ที่ user นี้เป็นสมาชิก
-        var couples = await db.Couples
-            .Include(c => c.Members)
-            .Where(c => c.Status == CoupleStatus.Active && c.Members.Any(m => m.UserId == request.Id))
-            .ToListAsync(cancellationToken);
-        foreach (var couple in couples)
-            couple.Status = CoupleStatus.Dissolved;
-
-        // ยกเลิกคำขอที่ยัง PENDING และเกี่ยวข้องกับ user นี้ — คืนสิทธิ์ที่กันไว้ให้คู่อีกฝ่าย
-        var pendingRedemptions = await db.Redemptions
-            .Include(r => r.IssuedCoupon)
-            .Where(r => r.Status == RedemptionStatus.Pending
-                && (r.RequesterId == request.Id || r.IssuedCoupon!.SenderId == request.Id))
-            .ToListAsync(cancellationToken);
-        foreach (var redemption in pendingRedemptions)
-        {
-            redemption.IssuedCoupon!.TryReleaseReservation();
-            redemption.Status = RedemptionStatus.Cancelled;
-            redemption.ResolvedAt = DateTime.UtcNow;
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

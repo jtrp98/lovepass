@@ -45,7 +45,7 @@ export default function AdminUsersPage() {
     if (mutationLock.current) return;
     if (
       !window.confirm(
-        `ลบผู้ใช้ "${target.displayName}" (${target.email})?\n(บัญชีล็อกอินไม่ได้ทันที คู่ถูกยุติ แต่ประวัติคูปองคงเดิม)`,
+        `ลบผู้ใช้ "${target.displayName}" (${target.email})?\n(บัญชีล็อกอินไม่ได้ทันที ลบได้เฉพาะผู้ใช้ที่ไม่เคยจับคู่กับใคร)`,
       )
     )
       return;

@@ -9,6 +9,7 @@ import { LoveTicket } from "./love-ticket";
 import { Envelope, StationeryIcon } from "./stationery";
 import { TierEnvelope } from "./tier-envelope";
 import type { CouponTemplate, GiftPack, Rarity } from "@/types";
+import { couponCategories, resolveCategory, type CouponCategory } from "@/lib/coupon-categories";
 
 const rarities = Object.keys(rarityStyles) as Rarity[];
 const load = async () => {
@@ -24,6 +25,7 @@ export function PackComposer() {
   const [expiry, setExpiry] = useState(defaultExpiry);
   const [limits, setLimits] = useState<Record<number, number>>({});
   const [quotas, setQuotas] = useState<Partial<Record<Rarity, number>>>({ COMMON: 10 });
+  const [categoryFilter, setCategoryFilter] = useState<CouponCategory | "ALL">("ALL");
   const [filter, setFilter] = useState<Rarity | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedOnly, setSelectedOnly] = useState(false);
@@ -94,7 +96,7 @@ export function PackComposer() {
     <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={() => void send()}>{busy ? "กำลังปิดผนึกและส่ง…" : "ปิดผนึก ส่งให้แฟน"}</Button><Button variant="secondary" disabled={busy} onClick={() => { setReview(false); setError(null); }}>กลับไปจัดซอง</Button></div>
   </Card>;
 
-  const visible = templates.filter(t => (filter === "ALL" || t.rarity === filter) && (!selectedOnly || limits[t.id] > 0) && `${t.name} ${t.description}`.includes(search.trim()));
+  const visible = templates.filter(t => (filter === "ALL" || t.rarity === filter) && (categoryFilter === "ALL" || resolveCategory(t.category) === categoryFilter) && (!selectedOnly || limits[t.id] > 0) && `${t.name} ${t.description}`.includes(search.trim()));
   return <div className="space-y-6">
     <Card variant="letter" className="space-y-4">
       <h2>อยากจัดของขวัญเป็นชุดแบบไหน?</h2>
@@ -113,9 +115,23 @@ export function PackComposer() {
     {mode === "CHOICE" && <section className="space-y-4" aria-label="ซองของขวัญตามระดับ"><h2>จัดซองตาม tier ใส่ชุดของขวัญ</h2><p className="text-sm text-muted">เช่น EPIC 10 ใบ ผู้รับแบ่งเลือกหรือสุ่มครั้งละ 1 ใบ หรือหลายใบก็ได้ ซองเหล่านี้แยกจากการ์ดข้อความที่ส่งไปด้วยกัน</p><div className="tier-envelope-grid">{rarities.map(r => <TierEnvelope key={r} rarity={r} quantity={quotas[r] ?? 0}><Field label={r}><Input type="number" min={0} max={100} step={1} value={quotas[r] ?? 0} onChange={e => setQuotas(previous => ({ ...previous, [r]: Math.max(0, Math.min(100, Math.trunc(Number(e.target.value) || 0))) }))} /></Field></TierEnvelope>)}</div></section>}
     {mode === "FIXED" && <section className="space-y-4" aria-label="เลือกคูปองใส่ซอง">
       <div><h2>เลือกคำสัญญาใส่ซอง</h2><p className="text-sm text-muted">กางตั๋วอ่านเงื่อนไข แล้วกำหนดจำนวนใบ · เลือกไว้แล้ว {selected.length} แบบ</p></div>
-      <div className="grid gap-3 sm:grid-cols-2"><Field label="หาคูปอง"><Input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="งานบ้าน กอด ไปหา…" /></Field><Field label="ระดับความพิเศษ"><Select value={filter} onChange={e => setFilter(e.target.value as Rarity | "ALL")}><option value="ALL">ทุกระดับ</option>{rarities.map(r => <option key={r} value={r}>{rarityStyles[r].label}</option>)}</Select></Field></div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="หาคูปอง"><Input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="งานบ้าน กอด ไปหา…" /></Field>
+        <Field label="หมวดหมู่">
+          <Select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as CouponCategory | "ALL")}>
+            <option value="ALL">ทุกหมวดหมู่</option>
+            {Object.entries(couponCategories).map(([key, category]) => <option key={key} value={key}>{category.label}</option>)}
+          </Select>
+        </Field>
+        <Field label="ระดับความพิเศษ">
+          <Select value={filter} onChange={e => setFilter(e.target.value as Rarity | "ALL")}>
+            <option value="ALL">ทุกระดับ</option>
+            {rarities.map(r => <option key={r} value={r}>{rarityStyles[r].label}</option>)}
+          </Select>
+        </Field>
+      </div>
       <Button variant="secondary" aria-pressed={selectedOnly} onClick={() => setSelectedOnly(!selectedOnly)}>{selectedOnly ? "ดูคลังคูปองทั้งหมด" : `ดูเฉพาะที่เลือก (${selected.length})`}</Button>
-      {!visible.length && <p role="status">ยังไม่มีคูปองตรงกับที่ค้นหา ลองเปลี่ยนคำค้นหรือระดับดูนะ</p>}
+      {!visible.length && <p role="status">ยังไม่มีคูปองตรงกับที่ค้นหา ลองเปลี่ยนคำค้น หมวดหมู่ หรือระดับดูนะ</p>}
       <div className="pack-ticket-grid">{visible.map(t => <div key={t.id} className="pack-pool-item" data-selected={!!limits[t.id] || undefined}>
         {limits[t.id] > 0 && <p className="pack-selection-label"><StationeryIcon name="check" />อยู่ในซอง · จำนวน {limits[t.id]} ใบ</p>}
         <LoveTicket ticket={{ id: `POOL-${t.id}`, name: t.name, note: t.description, terms: t.terms, rarity: t.rarity, category: t.category, state: "available" }} catalog open={opened === t.id} onOpen={() => setOpened(t.id)} onClose={() => setOpened(null)}>

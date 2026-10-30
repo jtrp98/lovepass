@@ -15,6 +15,20 @@ import { useResource } from "@/lib/use-resource";
 import { api, giftCart, type CartItem } from "@/lib/api";
 import { useEffect, useState } from "react";
 import type { CouponTemplate, Rarity } from "@/types";
+import { couponCategories, resolveCategory, type CouponCategory } from "@/lib/coupon-categories";
+
+const categories: (CouponCategory | "ALL")[] = [
+  "ALL",
+  "AFFECTION",
+  "TOGETHER",
+  "FOOD",
+  "CARE",
+  "WISH",
+  "ADVENTURE",
+  "GIFT",
+  "POWER",
+  "OTHER",
+];
 
 const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
 
@@ -23,6 +37,7 @@ function toTicket(template: CouponTemplate): LoveTicketData {
 }
 
 export default function CatalogPage() {
+  const [categoryFilter, setCategoryFilter] = useState<CouponCategory | "ALL">("ALL");
   const [filter, setFilter] = useState<Rarity | "ALL">("ALL");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selected, setSelected] = useState<CouponTemplate | null>(null);
@@ -32,7 +47,11 @@ export default function CatalogPage() {
   }, []);
 
   const resource = useResource(api.catalog.templates);
-  const templates = resource.data?.filter((template) => filter === "ALL" || template.rarity === filter);
+  const templates = resource.data?.filter((template) => {
+    const matchesRarity = filter === "ALL" || template.rarity === filter;
+    const matchesCategory = categoryFilter === "ALL" || resolveCategory(template.category) === categoryFilter;
+    return matchesRarity && matchesCategory;
+  });
   const [feedback, setFeedback] = useState<{ id: number; text: string } | null>(null);
 
   function addToCart(template: CouponTemplate, quantity: number) {
@@ -77,17 +96,41 @@ export default function CatalogPage() {
       </header>
 
       <GiftViews />
-      <div className="flex flex-wrap gap-2" role="group" aria-label="ประเภทคูปอง">
-        {rarities.map((rarity) => (
-          <button
-            key={rarity}
-            aria-pressed={filter === rarity}
-            onClick={() => setFilter(rarity)}
-            className="rarity-filter"
-          >
-            {rarity === "ALL" ? "ทุกประเภท" : <RarityBadge rarity={rarity} />}
-          </button>
-        ))}
+
+      <div className="space-y-3">
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-muted">หมวดหมู่</p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="หมวดหมู่คูปอง">
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={categoryFilter === category}
+                onClick={() => setCategoryFilter(category)}
+                className="category-filter"
+              >
+                {category === "ALL" ? "ทุกหมวดหมู่" : couponCategories[category].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-muted">ระดับความพิเศษ</p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="ประเภทคูปอง">
+            {rarities.map((rarity) => (
+              <button
+                key={rarity}
+                type="button"
+                aria-pressed={filter === rarity}
+                onClick={() => setFilter(rarity)}
+                className="rarity-filter"
+              >
+                {rarity === "ALL" ? "ทุกประเภท" : <RarityBadge rarity={rarity} />}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {resource.error ? (

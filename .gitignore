@@ -31,3 +31,6 @@ next-env.d.ts
 .idea/
 .DS_Store
 Thumbs.db
+
+# local Claude Code preview config
+.claude/launch.json

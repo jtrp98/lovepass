@@ -5,6 +5,7 @@ import type {
   AdminCouponSet,
   AdminCouponTemplate,
   AdminStats,
+  AdminCouple,
   AdminUser,
   CouponSet,
   CouponTemplate,
@@ -49,11 +50,13 @@ export const tokenStore = {
 export class ApiError extends Error {
   readonly status: number;
   readonly errors?: Record<string, string[]>;
+  readonly sessionExpired: boolean;
 
-  constructor(status: number, title: string, errors?: Record<string, string[]>) {
+  constructor(status: number, title: string, errors?: Record<string, string[]>, sessionExpired = status === 401) {
     super(title);
     this.status = status;
     this.errors = errors;
+    this.sessionExpired = sessionExpired;
   }
 
   get fieldMessages(): Record<string, string[]> {
@@ -68,7 +71,10 @@ export class ApiError extends Error {
   }
 
   get displayMessage(): string {
-    if (this.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
+    if (this.status === 401) return this.sessionExpired
+      ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+      : /[\u0E00-\u0E7F]/.test(this.message) ? this.message
+      : "ยืนยันตัวตนไม่สำเร็จ กรุณาตรวจสอบข้อมูลแล้วลองอีกครั้ง";
     if (this.status === 403) return "คุณไม่มีสิทธิ์ดำเนินการกับรายการนี้";
     if (this.status === 404) return "ไม่พบรายการนี้ อาจถูกลบหรือใช้ไม่ได้แล้ว";
     if (this.status >= 500) return "ระบบขัดข้องชั่วคราว กรุณาลองอีกครั้ง";
@@ -121,34 +127,43 @@ async function toApiError(res: Response): Promise<ApiError> {
   }
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+async function apiFetch<T>(path: string, init?: RequestInit, authenticated = true): Promise<T> {
   const doFetch = () => {
     const headers: Record<string, string> = {};
     if (init?.body) headers["Content-Type"] = "application/json";
-    const token = tokenStore.access;
+    const token = authenticated ? tokenStore.access : null;
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(`${API_BASE}${path}`, { ...init, headers });
   };
 
   let res = await doFetch();
 
-  if (res.status === 401 && (await tryRefresh())) {
+  if (authenticated && res.status === 401 && (await tryRefresh())) {
     res = await doFetch();
   }
 
-  if (res.status === 401) {
+  if (authenticated && res.status === 401) {
     tokenStore.clear();
     window.dispatchEvent(new Event("lovepass:session-expired"));
   }
-  if (!res.ok) throw await toApiError(res);
+  if (!res.ok) {
+    const error = await toApiError(res);
+    if (!authenticated && res.status === 401) {
+      const message = path === "/api/v1/auth/login"
+        ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง"
+        : error.message;
+      throw new ApiError(error.status, message, error.errors, false);
+    }
+    throw error;
+  }
   // 204 (เช่น Ok(null) ของ .NET) หมายถึง "ไม่มีข้อมูล" — คืน null ไม่ใช่ undefined
   if (res.status === 204) return null as T;
   return (await res.json()) as T;
 }
 
 const get = <T>(path: string) => apiFetch<T>(path);
-const post = <T>(path: string, body?: unknown) =>
-  apiFetch<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) });
+const post = <T>(path: string, body?: unknown, authenticated = true) =>
+  apiFetch<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }, authenticated);
 const put = <T>(path: string, body?: unknown) =>
   apiFetch<T>(path, { method: "PUT", body: body === undefined ? undefined : JSON.stringify(body) });
 
@@ -166,21 +181,21 @@ export const api = {
   },
   auth: {
     async login(email: string, password: string): Promise<TokenPair> {
-      const pair = await post<TokenPair>("/api/v1/auth/login", { email, password });
+      const pair = await post<TokenPair>("/api/v1/auth/login", { email, password }, false);
       tokenStore.set(pair.accessToken, pair.refreshToken);
       return pair;
     },
     async register(email: string, password: string, displayName: string): Promise<TokenPair> {
-      const pair = await post<TokenPair>("/api/v1/auth/register", { email, password, displayName });
+      const pair = await post<TokenPair>("/api/v1/auth/register", { email, password, displayName }, false);
       tokenStore.set(pair.accessToken, pair.refreshToken);
       return pair;
     },
     me: () => get<CurrentUser>("/api/v1/auth/me"),
-    forgotPassword: (email: string) => post<void>("/api/v1/auth/forgot-password", { email }),
+    forgotPassword: (email: string) => post<void>("/api/v1/auth/forgot-password", { email }, false),
     resetPassword: (email: string, token: string, newPassword: string) =>
-      post<void>("/api/v1/auth/reset-password", { email, token, newPassword }),
+      post<void>("/api/v1/auth/reset-password", { email, token, newPassword }, false),
     async google(idToken: string): Promise<TokenPair> {
-      const pair = await post<TokenPair>("/api/v1/auth/google", { idToken });
+      const pair = await post<TokenPair>("/api/v1/auth/google", { idToken }, false);
       tokenStore.set(pair.accessToken, pair.refreshToken);
       return pair;
     },
@@ -193,8 +208,13 @@ export const api = {
   },
 
   catalog: {
-    templates: (rarity?: string) =>
-      get<CouponTemplate[]>(`/api/v1/coupon-templates${rarity ? `?rarity=${rarity}` : ""}`),
+    templates: (rarity?: string, category?: string) => {
+      const params = new URLSearchParams();
+      if (rarity) params.set("rarity", rarity);
+      if (category) params.set("category", category);
+      const query = params.toString();
+      return get<CouponTemplate[]>(`/api/v1/coupon-templates${query ? `?${query}` : ""}`);
+    },
     sets: () => get<CouponSet[]>("/api/v1/coupon-sets"),
   },
 
@@ -251,6 +271,9 @@ export const api = {
     deleteSet: (id: number) => apiFetch<void>(`/api/v1/admin/coupon-sets/${id}`, { method: "DELETE" }),
     users: () => get<AdminUser[]>("/api/v1/admin/users"),
     deleteUser: (id: number) => apiFetch<void>(`/api/v1/admin/users/${id}`, { method: "DELETE" }),
+    couples: () => get<AdminCouple[]>("/api/v1/admin/couples"),
+    dissolveCouple: (id: number) =>
+      apiFetch<void>(`/api/v1/admin/couples/${id}/dissolve`, { method: "POST" }),
     stats: () => get<AdminStats>("/api/v1/admin/dashboard/stats"),
     gifts: () => get<SentGift[]>("/api/v1/admin/gifts"),
     redemptions: () => get<Redemption[]>("/api/v1/admin/redemptions"),
