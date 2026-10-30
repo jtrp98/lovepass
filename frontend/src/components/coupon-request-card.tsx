@@ -24,8 +24,8 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
     <article className="pocket-ticket request-ticket" data-rarity={item.rarity} data-state={item.status === "APPROVED" ? "used" : item.status === "PENDING" ? "pending" : undefined} data-status={item.status} aria-labelledby={heading}>
       <div className="pocket-face">
         <div className="pocket-topline">
-          <span className="pocket-mono">REQUEST NOTE / RQ-{String(item.id).padStart(4, "0")}</span>
-          <span className="request-status"><span aria-hidden="true">{status.symbol}</span><span>{status.label}</span></span>
+          <span className="pocket-mono pocket-admit">REQUEST SLIP <span aria-hidden="true">✦</span> RQ-{String(item.id).padStart(4, "0")}</span>
+          <span className="request-status pocket-status"><span aria-hidden="true">{status.symbol}</span><span>{status.label}</span></span>
         </div>
         <div className="pocket-story request-story">
           <div>
@@ -33,7 +33,10 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
             <h2 id={heading}>{item.couponName}</h2>
             <p className="request-person">{direction === "received" ? `${item.requesterName} ขอใช้ใบนี้` : "คำขอที่ส่งให้แฟน"}</p>
           </div>
-          <TicketIllustration category={item.category} />
+          <div className="pocket-emblem">
+            <TicketIllustration category={item.category} />
+            {item.status === "APPROVED" && <RubberStamp date={item.resolvedAt} animate={animateStamp} />}
+          </div>
         </div>
         {item.message && <blockquote className="request-note"><p>{item.message}</p></blockquote>}
         <div className="request-dates">
@@ -43,7 +46,6 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
       </div>
       <div className="pocket-perforation" aria-hidden="true" />
       <div className="pocket-stub request-stub">
-        {item.status === "APPROVED" && <RubberStamp date={item.resolvedAt} animate={animateStamp} />}
         <div className="pocket-stub-copy">
           <span className="pocket-from">{item.status === "PENDING" ? "คำขอนี้กันคูปองไว้ 1 ใบ" : item.status === "APPROVED" ? "อีกหนึ่งความทรงจำของเรา" : "คืนสิทธิ์คูปองแล้ว"}</span>
           <span className="pocket-quantity-note">ใช้ได้ถึง <time dateTime={item.couponExpiresAt}>{formatDate(item.couponExpiresAt)}</time></span>

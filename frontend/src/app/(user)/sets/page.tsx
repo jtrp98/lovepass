@@ -4,6 +4,7 @@ import { LinkButton, ErrorState, Skeleton, Card, EmptyState, PageTitle, RarityBa
 import { useResource } from "@/lib/use-resource";
 import { api } from "@/lib/api";
 import { GiftViews } from "@/components/nav";
+import { StationeryIcon } from "@/components/stationery";
 
 export default function SetsPage() {
   const resource = useResource(api.catalog.sets);
@@ -43,7 +44,7 @@ export default function SetsPage() {
                     className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-line px-3 py-2"
                   >
                     <span className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="text-lg">{item.emoji ?? "🎟️"}</span>
+                      <StationeryIcon name="ticket" className="h-6 w-6 text-love" />
                       {item.name}
                     </span>
                     <span className="flex flex-wrap items-center gap-2">

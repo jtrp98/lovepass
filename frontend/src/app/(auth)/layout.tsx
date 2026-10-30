@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <Link href="/" className="text-2xl font-semibold text-love">
-            💝 LOVE PASS
+            <span aria-hidden="true" className="brand-heart">♡</span> LOVE PASS
           </Link>
         </div>
         <Card variant="letter" className="p-6">{children}</Card>

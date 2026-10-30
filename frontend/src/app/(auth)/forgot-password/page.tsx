@@ -4,6 +4,7 @@ import { Button, ErrorText, Field, Input } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import Link from "next/link";
 import { useState } from "react";
+import { StationeryIcon } from "@/components/stationery";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="space-y-3 text-center">
-        <p className="text-3xl">📧</p>
+        <StationeryIcon name="letter" className="mx-auto h-12 w-12 text-love" />
         <h1 className="text-lg font-semibold" role="status">
           ตรวจสอบอีเมลของคุณ
         </h1>

@@ -66,7 +66,7 @@ export default function CouplePage() {
       }
       await api.couples.acceptInvitation(code);
       setAcceptToken("");
-      setNotice("จับคู่สำเร็จ 🎉");
+      setNotice("จับคู่สำเร็จแล้ว");
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.displayMessage : "ยอมรับคำเชิญไม่สำเร็จ");

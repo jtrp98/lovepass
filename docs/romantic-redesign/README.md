@@ -73,3 +73,21 @@ Browser evidence is in [evidence.json](evidence.json), [pocket-verification.json
 Representative views: [ticket collection](screenshots/pocket-cards-1440.png), [dashboard](screenshots/dashboard-1280.png), [history](screenshots/history-320.png), [sent gift](screenshots/sent-gifts-320.png), [landing](screenshots/landing-1440.png), [login](screenshots/login-320.png).
 
 Browser integration checks use deterministic intercepted API responses, not live accounts or database writes. Live backend persistence, Google OAuth, email delivery, and non-Chromium browser engines were not exercised. No deployment was performed. The pre-existing `docs/theme-audit.md` was left untouched.
+
+## Material layer (second pass)
+
+No image-generation tool was available, so every material is authored or procedurally generated SVG in `frontend/public/materials/`. Geometric assets (guilloché, frame corners, postmark waves, postage stamp) are produced by `frontend/scripts/materials.mjs`; paper fibre, washi tape and wax seal are hand-authored. Text and state stay in HTML.
+
+| Asset / component | Use |
+| --- | --- |
+| `paper/paper-fiber.svg` | `--paper-grain` for every paper surface: mottling, two fibre directions, grain, flecks |
+| `tickets/guilloche.svg`, `tickets/corner-*.svg` | Security-print stub pattern; printed frame corners |
+| `stamps/postage-heart.svg`, `stamps/postmark-waves.svg` | Sent-gift postcard stamp and cancellation |
+| `illustrations/wax-seal.svg`, `paper/washi-tape.svg` | Letter material, envelope flap; scrapbook entries |
+| `components/material-defs.tsx` | Root SVG filters: `lp-stamp-ink` (rubber edge, ink gaps, uneven pressure), `lp-print`, `lp-torn` |
+| `components/rubber-stamp.tsx` | Round postmark through the ink filter; optional stamper press animation |
+| `components/stationery.tsx` | `Envelope` (opens once; resting state open for reduced motion), `WaxSeal`, `StationeryIcon` (replaces emoji illustrations) |
+
+The love ticket is now a die-cut silhouette: each paper part masks its own concave corners or notches and the parent drop-shadow traces the cut edge. The perforation is a row of punched holes, the face carries a double printed rule with corner ornaments, a numbering-machine serial, rarity pips and a halftone emblem; the stub carries guilloché. Used tickets are postmarked across the emblem; pending tickets are held by a paper clip; expired tickets age to warmer stock. The ticket action sits outside the masked stub (subgrid + grid-item `z-index`) so its overlay still makes the whole ticket tappable.
+
+`animate` on `RubberStamp` is still only set after a successful approval; stored used tickets render the final impression without motion.

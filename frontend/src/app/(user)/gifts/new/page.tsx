@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import type { CoupleInfo, CouponSet, GiftResult } from "@/types";
+import { Envelope, StationeryIcon } from "@/components/stationery";
 
 function NewGiftForm() {
   const searchParams = useSearchParams();
@@ -148,9 +149,11 @@ function NewGiftForm() {
   if (result) {
     return (
       <Card variant="letter" className="gift-success space-y-4 text-center">
-        <p aria-hidden="true" className="success-pop text-5xl">
-          💝
-        </p>
+        <Envelope>
+          <span className="pocket-mono">FOR {couple?.partnerDisplayName ?? "YOU"}</span>
+          <strong>{result.totalCoupons}</strong>
+          <span>คำสัญญาจากใจ</span>
+        </Envelope>
         <Notice>ของขวัญส่งถึงแฟนแล้ว</Notice>
         <h1 className="text-xl font-semibold">มอบคูปองสำเร็จ!</h1>
         <p className="text-muted">
@@ -164,7 +167,7 @@ function NewGiftForm() {
               className="flex items-center justify-between rounded-lg bg-love-soft px-3 py-1.5"
             >
               <span>
-                {item.emoji ?? "🎟️"} {item.name}
+                <span className="inline-flex items-center gap-2"><StationeryIcon name="ticket" className="h-5 w-5 text-love" />{item.name}</span>
               </span>
               <span className="font-semibold">×{item.quantity}</span>
             </li>
@@ -186,7 +189,7 @@ function NewGiftForm() {
   if (couple === null) {
     return (
       <Card className="space-y-3 text-center">
-        <p className="text-4xl">💞</p>
+        <StationeryIcon name="hearts" className="mx-auto h-12 w-12 text-love" />
         <h1 className="font-semibold">ยังไม่ได้จับคู่</h1>
         <p className="text-sm text-muted">ต้องจับคู่กับแฟนก่อนจึงจะมอบคูปองได้</p>
         <LinkButton href="/couple">ไปจับคู่</LinkButton>
@@ -199,7 +202,7 @@ function NewGiftForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PageTitle
-        title="มอบคูปองให้แฟน 💝"
+        title="เตรียมของขวัญให้แฟน"
         subtitle={`ผู้รับ: ${couple.partnerDisplayName} — เลือกคูปองเอง หรือเลือกชุดสำเร็จรูป`}
       />
 
@@ -253,7 +256,7 @@ function NewGiftForm() {
                     className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-control p-3"
                   >
                     <span className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="text-lg">{item.emoji ?? "🎟️"}</span>
+                      <StationeryIcon name="ticket" className="h-6 w-6 text-love" />
                       {item.name}
                       <RarityBadge rarity={item.rarity} />
                     </span>
@@ -333,7 +336,7 @@ function NewGiftForm() {
         }
         className="w-full py-3 text-base"
       >
-        {submitting ? "กำลังมอบ..." : "ยืนยันมอบคูปอง 💝"}
+        {submitting ? "กำลังมอบ..." : "ยืนยันมอบคูปอง"}
       </Button>
     </form>
   );
