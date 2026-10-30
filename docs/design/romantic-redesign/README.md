@@ -72,7 +72,7 @@ Browser evidence is in [evidence.json](evidence.json), [pocket-verification.json
 
 Representative views: [ticket collection](screenshots/pocket-cards-1440.png), [dashboard](screenshots/dashboard-1280.png), [history](screenshots/history-320.png), [sent gift](screenshots/sent-gifts-320.png), [landing](screenshots/landing-1440.png), [login](screenshots/login-320.png).
 
-Browser integration checks use deterministic intercepted API responses, not live accounts or database writes. Live backend persistence, Google OAuth, email delivery, and non-Chromium browser engines were not exercised. No deployment was performed. The pre-existing `docs/theme-audit.md` was left untouched.
+Browser integration checks use deterministic intercepted API responses, not live accounts or database writes. Live backend persistence, Google OAuth, email delivery, and non-Chromium browser engines were not exercised. No deployment was performed. The pre-existing theme audit (now `docs/archive/theme-audit.md`) was left untouched.
 
 ## Material layer (second pass)
 

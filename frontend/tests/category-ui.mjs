@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(path.join(process.env.PLAYWRIGHT_MODULE, "index.mjs")).href : "playwright");
 const base = process.env.UI_TEST_URL || "http://localhost:3000";
 assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
-const output = fileURLToPath(new URL("../../docs/ui-implementation/", import.meta.url));
+const output = process.env.UI_TEST_OUT || fileURLToPath(new URL("../test-results/", import.meta.url));
 const browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {}) });
 const checks = [], errors = [];
 const pass = (name) => { checks.push(name); console.log("PASS", name); };

@@ -1,6 +1,6 @@
 # Setup & Deployment
 
-รายละเอียดวิธีรัน local และ deploy ทั้งหมด (ย้ายมาจาก README) — ภาพรวม requirements/architecture ดูที่ [lovepass.md](lovepass.md)
+รายละเอียดวิธีรัน local และ deploy ทั้งหมด (ย้ายมาจาก README) — ภาพรวม requirements/architecture ดูที่ [lovepass.md](../product/lovepass.md)
 
 ส่งเมลจาก Gmail ของคุณโดยไม่ต้องมีโดเมน: [ตั้งค่า Gmail API](gmail-setup.md)
 หลังอนุญาต Google แล้ว สคริปต์จะบันทึกค่าและสลับเป็น Gmail ให้ใน `backend/.env`

@@ -17,11 +17,11 @@
 
 ### Theme หลัก
 
-[globals.css:1](../frontend/src/app/globals.css#L1) ใช้ Tailwind v4 ผ่าน `@import "tailwindcss"` และ `@theme` กำหนดสี เช่น `canvas`, `surface`, `ink`, `muted`, `love`, `danger`, `focus` และคู่สีสำหรับ rarity จึงใช้ได้ทั้ง utility เช่น `bg-surface` และ CSS เช่น `var(--color-surface)`
+[globals.css:1](../../frontend/src/app/globals.css#L1) ใช้ Tailwind v4 ผ่าน `@import "tailwindcss"` และ `@theme` กำหนดสี เช่น `canvas`, `surface`, `ink`, `muted`, `love`, `danger`, `focus` และคู่สีสำหรับ rarity จึงใช้ได้ทั้ง utility เช่น `bg-surface` และ CSS เช่น `var(--color-surface)`
 
-ไม่พบ Tailwind config แยกสำหรับกำหนด theme การตั้งค่าหลักอยู่ใน CSS ส่วน [postcss.config.mjs:1](../frontend/postcss.config.mjs#L1) เชื่อม Tailwind ผ่าน PostCSS
+ไม่พบ Tailwind config แยกสำหรับกำหนด theme การตั้งค่าหลักอยู่ใน CSS ส่วน [postcss.config.mjs:1](../../frontend/postcss.config.mjs#L1) เชื่อม Tailwind ผ่าน PostCSS
 
-[layout.tsx:4](../frontend/src/app/layout.tsx#L4) โหลด stylesheet ตามลำดับ:
+[layout.tsx:4](../../frontend/src/app/layout.tsx#L4) โหลด stylesheet ตามลำดับ:
 
 1. `globals.css`
 2. `vouchers.css`
@@ -29,17 +29,17 @@
 
 Root layout โหลด Sarabun 400/600 และ Mali 600 จากไฟล์ local แล้วผูกตัวแปร `--font-sarabun` และ `--font-mali` บน `<html>` ส่วน `@theme inline` เชื่อมกับ `--font-sans` และ `--font-display`
 
-[globals.css:29](../frontend/src/app/globals.css#L29) กำหนดพื้นหลัง ตัวอักษร หัวข้อ placeholder และ focus กลาง ส่วน spacing, radius และ shadow ของ utility ส่วนใหญ่ใช้มาตราส่วนเริ่มต้นของ Tailwind
+[globals.css:29](../../frontend/src/app/globals.css#L29) กำหนดพื้นหลัง ตัวอักษร หัวข้อ placeholder และ focus กลาง ส่วน spacing, radius และ shadow ของ utility ส่วนใหญ่ใช้มาตราส่วนเริ่มต้นของ Tailwind
 
 ### Component กลาง
 
-[ui.tsx:22](../frontend/src/components/ui.tsx#L22) รวม Button, Input, Select, Textarea, Card, Dialog, Badge, Skeleton, EmptyState, ErrorState และ Notice ซึ่งอ้างอิง token หลักจริง
+[ui.tsx:22](../../frontend/src/components/ui.tsx#L22) รวม Button, Input, Select, Textarea, Card, Dialog, Badge, Skeleton, EmptyState, ErrorState และ Notice ซึ่งอ้างอิง token หลักจริง
 
 `rarityStyles` ในไฟล์เดียวกันเชื่อม rarity กับชื่อ สี badge และตัวแปรสีตั๋ว ส่วน StatusBadge กำหนดคู่สีของ pending, approved, rejected และสถานะอื่นจาก token กลาง
 
 ### ชุด Pocket
 
-[pocket.css:2](../frontend/src/app/pocket.css#L2) ประกาศชุดสี `--pocket-*` อีกชุด โดยไม่ได้อ้างกลับไปยังสีหลัก ใช้จริงกับ catalog, คูปองฉัน, คำขอ, ของขวัญที่ส่ง และรายละเอียดคูปอง
+[pocket.css:2](../../frontend/src/app/pocket.css#L2) ประกาศชุดสี `--pocket-*` อีกชุด โดยไม่ได้อ้างกลับไปยังสีหลัก ใช้จริงกับ catalog, คูปองฉัน, คำขอ, ของขวัญที่ส่ง และรายละเอียดคูปอง
 
 ชุดนี้มีสีข้อความ พื้นผิว เส้นขอบ และ rarity ของตัวเอง พร้อม CSS ทับปุ่มและ tab กลางบางส่วน จึงเป็นระบบหน้าตาอีกชุดที่ใช้งานจริง ไม่ใช่เพียง style ของ demo
 
@@ -47,7 +47,7 @@ Root layout โหลด Sarabun 400/600 และ Mali 600 จากไฟล�
 
 ไม่มี ThemeProvider สำหรับหน้าตา; provider ใน root คือ `AuthProvider` การกระจาย theme ใช้ CSS ที่ root และการสืบทอดตัวแปร จึงไม่พบปัญหาหน้าปกติหลุดจาก theme เพราะอยู่นอก provider
 
-รองรับเฉพาะ light mode: [globals.css:31](../frontend/src/app/globals.css#L31) ระบุ `color-scheme: light` ไม่พบระบบสลับสีหรือชุด token dark mode การไม่มี dark mode จึงยังไม่ใช่ข้อบกพร่องตามความสามารถปัจจุบัน
+รองรับเฉพาะ light mode: [globals.css:31](../../frontend/src/app/globals.css#L31) ระบุ `color-scheme: light` ไม่พบระบบสลับสีหรือชุด token dark mode การไม่มี dark mode จึงยังไม่ใช่ข้อบกพร่องตามความสามารถปัจจุบัน
 
 ## 2. ขอบเขตหน้าและ Component ที่ตรวจ
 
@@ -71,15 +71,15 @@ Component ที่ตรวจทั้ง 10 ไฟล์ ได้แก่ `
 
 | ไฟล์และเลขบรรทัด | สิ่งที่พบ | ผลกระทบ | แนวทางแก้ |
 | --- | --- | --- | --- |
-| **1 · สูง** — [globals.css:3](../frontend/src/app/globals.css#L3), [pocket.css:2](../frontend/src/app/pocket.css#L2) | มี palette หลักและ Pocket แยกกัน เช่น `--color-ink` กับ `--pocket-ink`; rarity ก็มี mapping แยกใน CSS และ `rarityStyles` | เปลี่ยนสีหลักแล้วหน้าคูปองและรายละเอียดไม่ตาม ขณะที่หน้าใน flow เดียวกัน เช่น catalog → sets → ตรวจของขวัญ ใช้คนละชุดหน้าตา | กำหนดให้ชัดว่า Pocket เป็น theme ผลิตภัณฑ์หรือ variant ของตั๋ว แล้วเชื่อม token บทบาทร่วม เช่น surface/text/action/status เข้ากับแหล่งเดียว |
-| **2 · สูง** — [pocket.css:67](../frontend/src/app/pocket.css#L67), [pocket.css:175](../frontend/src/app/pocket.css#L175), [pocket.css:195](../frontend/src/app/pocket.css#L195) | selector เช่น `.ticket-dialog .ui-button.bg-love` และ `.sent-gifts-page .ui-button.bg-love` ทับ background ของ Button โดยไม่ได้กำหนด hover ให้ครบ | `hover:bg-love-hover`/`hover:bg-canvas` จากปุ่มกลางไม่สามารถเปลี่ยนพื้นหลังในบริบทเหล่านี้ได้ ปุ่ม variant เดียวกันจึงตอบสนองต่างกันตามหน้า | ให้ Button รับสีผ่านตัวแปรหรือ variant ที่ชัดเจน และกำหนดสถานะให้ครบ หลีกเลี่ยงใช้ชื่อ utility เป็นจุดเชื่อม CSS |
-| **3 · กลาง** — [pocket.css:46](../frontend/src/app/pocket.css#L46), [globals.css:35](../frontend/src/app/globals.css#L35) | รอยเว้าตั๋วใช้ `--pocket-canvas` (`#f5f2ea`) แต่พื้นหลังหน้าผลิตภัณฑ์ใช้ `--color-canvas` (`#fff8f3`) | พื้นที่ที่ควรดูเหมือนเจาะทะลุไปยังพื้นหลังมีสีคนละค่า โดย demo มีพื้นหลัง Pocket จึงอาจไม่เห็นปัญหาเดียวกัน | อ้างอิงสีพื้นผิวที่ครอบตั๋วจริง หรือกำหนดตัวแปรพื้นหลังจาก container; ตรวจภาพหน้าผลิตภัณฑ์ประกอบ |
-| **4 · กลาง** — [admin/coupons/page.tsx:246](../frontend/src/app/admin/coupons/page.tsx#L246), [admin/sets/page.tsx:193](../frontend/src/app/admin/sets/page.tsx#L193) | checkbox ใช้ `accent-purple-600` ซึ่งทับ `accent-color: var(--color-love)` ใน global base | เปลี่ยนสี action กลางแล้ว checkbox ทั้งสองหน้าไม่ตาม | ใช้ accent token ของระบบ หรือกำหนด token สำหรับ admin ที่มีบทบาทชัดเจน |
-| **5 · กลาง** — [auth/layout.tsx:12](../frontend/src/app/%28auth%29/layout.tsx#L12), [admin/users/page.tsx:97](../frontend/src/app/admin/users/page.tsx#L97), [admin/coupons/page.tsx:274](../frontend/src/app/admin/coupons/page.tsx#L274), [couple/page.tsx:110](../frontend/src/app/%28user%29/couple/page.tsx#L110) | ใช้ `bg-white` กับพื้นผิวทั่วไป แทน `bg-surface` | วันนี้สีตรงกัน แต่เมื่อปรับ surface จุดเหล่านี้จะยังขาว | เปลี่ยนพื้นผิวทั่วไปให้อ้างอิง semantic token เดียวกัน |
-| **6 · กลาง** — [pocket.css:20](../frontend/src/app/pocket.css#L20), [pocket.css:30](../frontend/src/app/pocket.css#L30), [pocket.css:58](../frontend/src/app/pocket.css#L58), [pocket.css:116](../frontend/src/app/pocket.css#L116) | สี RARE/LEGENDARY บางค่า สี used/expired, shadow และพื้นหลังใบรับความทรงจำยังเป็น hex ใน selector | แม้เปลี่ยน `--pocket-*` แล้ว รายละเอียดสถานะและเงาบางส่วนยังคงสีเดิม | ย้ายค่าที่มีบทบาทซ้ำเป็น token เช่น rarity/status/paper/shadow แล้วใช้ใน selector |
-| **7 · กลาง–ต่ำ** — [ui.tsx:24](../frontend/src/components/ui.tsx#L24), [pocket.css:172](../frontend/src/app/pocket.css#L172), [globals.css:241](../frontend/src/app/globals.css#L241) | hover ของปุ่มและ status tab ไม่ได้ตัด `:disabled` ออก แม้มี opacity ลดลงแล้ว | ระหว่าง busy ปุ่มหรือ tab ที่กดไม่ได้ยังเปลี่ยนสีเมื่อชี้เมาส์; ส่วน active ของ `.ui-button` มี guard ถูกต้องแล้ว | จำกัด hover ด้วย `:not(:disabled)` และตรวจสถานะ busy ด้วยเมาส์จริง |
-| **8 · ต่ำ** — [ui.tsx:30](../frontend/src/components/ui.tsx#L30), [ui.tsx:38](../frontend/src/components/ui.tsx#L38), [pocket.css:53](../frontend/src/app/pocket.css#L53) | Button รับ `size="sm"` แต่ส่งออกเพียง `data-size`; ไม่พบ style ที่อ่านค่านี้ ปุ่ม Pocket กำหนดขนาด/ฟอนต์/radius แยก | ผู้เรียกใช้ขนาดกลางไม่ได้ตาม API ที่ระบุ และต้องพึ่ง CSS ของแต่ละบริบท | ทำ size variant ให้มีผลจริง และรวมค่าของ control ที่ตั้งใจใช้ซ้ำ |
-| **9 · ต่ำ** — [layout.tsx:5](../frontend/src/app/layout.tsx#L5), [vouchers.css:1](../frontend/src/app/vouchers.css#L1), [globals.css:114](../frontend/src/app/globals.css#L114) | ยังโหลด stylesheet voucher เก่าทุกหน้า ทั้งที่ไม่พบ JSX ใช้ class ของมัน รวมถึง style `love-note`, `note-*`, `coupon-sticker` ที่ไม่พบ consumer ปัจจุบัน | มีระบบหน้าตาเก่าปะปน ทำให้ดูแลและเลือกแก้ theme ผิดชุดได้ | ตรวจยืนยัน runtime ก่อนถอด import และลบ style ที่เลิกใช้ |
+| **1 · สูง** — [globals.css:3](../../frontend/src/app/globals.css#L3), [pocket.css:2](../../frontend/src/app/pocket.css#L2) | มี palette หลักและ Pocket แยกกัน เช่น `--color-ink` กับ `--pocket-ink`; rarity ก็มี mapping แยกใน CSS และ `rarityStyles` | เปลี่ยนสีหลักแล้วหน้าคูปองและรายละเอียดไม่ตาม ขณะที่หน้าใน flow เดียวกัน เช่น catalog → sets → ตรวจของขวัญ ใช้คนละชุดหน้าตา | กำหนดให้ชัดว่า Pocket เป็น theme ผลิตภัณฑ์หรือ variant ของตั๋ว แล้วเชื่อม token บทบาทร่วม เช่น surface/text/action/status เข้ากับแหล่งเดียว |
+| **2 · สูง** — [pocket.css:67](../../frontend/src/app/pocket.css#L67), [pocket.css:175](../../frontend/src/app/pocket.css#L175), [pocket.css:195](../../frontend/src/app/pocket.css#L195) | selector เช่น `.ticket-dialog .ui-button.bg-love` และ `.sent-gifts-page .ui-button.bg-love` ทับ background ของ Button โดยไม่ได้กำหนด hover ให้ครบ | `hover:bg-love-hover`/`hover:bg-canvas` จากปุ่มกลางไม่สามารถเปลี่ยนพื้นหลังในบริบทเหล่านี้ได้ ปุ่ม variant เดียวกันจึงตอบสนองต่างกันตามหน้า | ให้ Button รับสีผ่านตัวแปรหรือ variant ที่ชัดเจน และกำหนดสถานะให้ครบ หลีกเลี่ยงใช้ชื่อ utility เป็นจุดเชื่อม CSS |
+| **3 · กลาง** — [pocket.css:46](../../frontend/src/app/pocket.css#L46), [globals.css:35](../../frontend/src/app/globals.css#L35) | รอยเว้าตั๋วใช้ `--pocket-canvas` (`#f5f2ea`) แต่พื้นหลังหน้าผลิตภัณฑ์ใช้ `--color-canvas` (`#fff8f3`) | พื้นที่ที่ควรดูเหมือนเจาะทะลุไปยังพื้นหลังมีสีคนละค่า โดย demo มีพื้นหลัง Pocket จึงอาจไม่เห็นปัญหาเดียวกัน | อ้างอิงสีพื้นผิวที่ครอบตั๋วจริง หรือกำหนดตัวแปรพื้นหลังจาก container; ตรวจภาพหน้าผลิตภัณฑ์ประกอบ |
+| **4 · กลาง** — [admin/coupons/page.tsx:246](../../frontend/src/app/admin/coupons/page.tsx#L246), [admin/sets/page.tsx:193](../../frontend/src/app/admin/sets/page.tsx#L193) | checkbox ใช้ `accent-purple-600` ซึ่งทับ `accent-color: var(--color-love)` ใน global base | เปลี่ยนสี action กลางแล้ว checkbox ทั้งสองหน้าไม่ตาม | ใช้ accent token ของระบบ หรือกำหนด token สำหรับ admin ที่มีบทบาทชัดเจน |
+| **5 · กลาง** — [auth/layout.tsx:12](../../frontend/src/app/%28auth%29/layout.tsx#L12), [admin/users/page.tsx:97](../../frontend/src/app/admin/users/page.tsx#L97), [admin/coupons/page.tsx:274](../../frontend/src/app/admin/coupons/page.tsx#L274), [couple/page.tsx:110](../../frontend/src/app/%28user%29/couple/page.tsx#L110) | ใช้ `bg-white` กับพื้นผิวทั่วไป แทน `bg-surface` | วันนี้สีตรงกัน แต่เมื่อปรับ surface จุดเหล่านี้จะยังขาว | เปลี่ยนพื้นผิวทั่วไปให้อ้างอิง semantic token เดียวกัน |
+| **6 · กลาง** — [pocket.css:20](../../frontend/src/app/pocket.css#L20), [pocket.css:30](../../frontend/src/app/pocket.css#L30), [pocket.css:58](../../frontend/src/app/pocket.css#L58), [pocket.css:116](../../frontend/src/app/pocket.css#L116) | สี RARE/LEGENDARY บางค่า สี used/expired, shadow และพื้นหลังใบรับความทรงจำยังเป็น hex ใน selector | แม้เปลี่ยน `--pocket-*` แล้ว รายละเอียดสถานะและเงาบางส่วนยังคงสีเดิม | ย้ายค่าที่มีบทบาทซ้ำเป็น token เช่น rarity/status/paper/shadow แล้วใช้ใน selector |
+| **7 · กลาง–ต่ำ** — [ui.tsx:24](../../frontend/src/components/ui.tsx#L24), [pocket.css:172](../../frontend/src/app/pocket.css#L172), [globals.css:241](../../frontend/src/app/globals.css#L241) | hover ของปุ่มและ status tab ไม่ได้ตัด `:disabled` ออก แม้มี opacity ลดลงแล้ว | ระหว่าง busy ปุ่มหรือ tab ที่กดไม่ได้ยังเปลี่ยนสีเมื่อชี้เมาส์; ส่วน active ของ `.ui-button` มี guard ถูกต้องแล้ว | จำกัด hover ด้วย `:not(:disabled)` และตรวจสถานะ busy ด้วยเมาส์จริง |
+| **8 · ต่ำ** — [ui.tsx:30](../../frontend/src/components/ui.tsx#L30), [ui.tsx:38](../../frontend/src/components/ui.tsx#L38), [pocket.css:53](../../frontend/src/app/pocket.css#L53) | Button รับ `size="sm"` แต่ส่งออกเพียง `data-size`; ไม่พบ style ที่อ่านค่านี้ ปุ่ม Pocket กำหนดขนาด/ฟอนต์/radius แยก | ผู้เรียกใช้ขนาดกลางไม่ได้ตาม API ที่ระบุ และต้องพึ่ง CSS ของแต่ละบริบท | ทำ size variant ให้มีผลจริง และรวมค่าของ control ที่ตั้งใจใช้ซ้ำ |
+| **9 · ต่ำ** — [layout.tsx:5](../../frontend/src/app/layout.tsx#L5), [vouchers.css:1](../../frontend/src/app/vouchers.css#L1), [globals.css:114](../../frontend/src/app/globals.css#L114) | ยังโหลด stylesheet voucher เก่าทุกหน้า ทั้งที่ไม่พบ JSX ใช้ class ของมัน รวมถึง style `love-note`, `note-*`, `coupon-sticker` ที่ไม่พบ consumer ปัจจุบัน | มีระบบหน้าตาเก่าปะปน ทำให้ดูแลและเลือกแก้ theme ผิดชุดได้ | ตรวจยืนยัน runtime ก่อนถอด import และลบ style ที่เลิกใช้ |
 
 ข้อ 2 ตรวจเทียบกับ CSS ที่ build ไว้ด้วย พบทั้ง utility hover และกฎ Pocket ที่ทับอยู่จริง กฎ Pocket อยู่นอก CSS layer ของ utility จึงมีผลเหนือ utility ปกติ แต่ผล build เดิมเป็นหลักฐานเสริม ไม่ใช้แทน source ปัจจุบัน
 
@@ -107,22 +107,22 @@ Component ที่ตรวจทั้ง 10 ไฟล์ ได้แก่ `
 - ฟอนต์ monospace สำหรับเลขตั๋ว และ Georgia สำหรับข้อความตกแต่ง มีบทบาทเฉพาะ ต่างจากการใช้ฟอนต์สุ่มกับเนื้อหาปกติ
 - SVG หมวดคูปองใช้ `currentColor` และ `--pocket-accent` จริง ส่วน hex fallback ช่วยให้ดาวน์โหลด SVG ไปเปิดเดี่ยว ๆ ได้ จึงไม่จัดเป็นการข้าม theme ในแอป
 - `text-white` บนปุ่มและสีดำโปร่งใสของ backdrop อาจเป็นค่าคงที่ที่ตั้งใจไว้ หากต้องปรับตามหลาย theme ค่อยกำหนด `on-action` และ `overlay` token
-- Google Sign-In ใช้ SDK พร้อม `theme: "outline"` ที่ [GoogleLoginButton.tsx:122](../frontend/src/components/GoogleLoginButton.tsx#L122) เป็น UI ที่ภายนอกควบคุม ไม่ควรคาดว่าจะรับ CSS variables ของแอปเหมือนปุ่มที่เขียนเอง
+- Google Sign-In ใช้ SDK พร้อม `theme: "outline"` ที่ [GoogleLoginButton.tsx:122](../../frontend/src/components/GoogleLoginButton.tsx#L122) เป็น UI ที่ภายนอกควบคุม ไม่ควรคาดว่าจะรับ CSS variables ของแอปเหมือนปุ่มที่เขียนเอง
 - `window.confirm()` ใน admin เป็นหน้าตาของ browser/OS จึงไม่รับ theme เว็บ หากต้องการความสม่ำเสมอถึง confirmation ต้องเปลี่ยนมาใช้ Dialog กลาง
-- [EmailTemplates.cs:12](../backend/src/LovePass.Application/Common/Services/EmailTemplates.cs#L12) เป็น HTML อีเมลที่ใช้งานจริง แต่ยังไม่มี branded styles และไม่ได้รับ CSS จาก frontend หากคำว่า “ทั้ง project” รวมอีเมลด้วย ส่วนนี้ยังไม่ได้ใช้ theme ผลิตภัณฑ์
+- [EmailTemplates.cs:12](../../backend/src/LovePass.Application/Common/Services/EmailTemplates.cs#L12) เป็น HTML อีเมลที่ใช้งานจริง แต่ยังไม่มี branded styles และไม่ได้รับ CSS จาก frontend หากคำว่า “ทั้ง project” รวมอีเมลด้วย ส่วนนี้ยังไม่ได้ใช้ theme ผลิตภัณฑ์
 
 ## 6. โค้ดจริง ตัวอย่าง และส่วนที่ไม่พบการใช้งาน
 
 | ส่วน | สถานะและหลักฐาน |
 | --- | --- |
 | Component 9 จาก 10 ไฟล์ | พบเส้นทาง import จาก page/layout |
-| [LoveDoodle](../frontend/src/components/love-doodle.tsx#L2) | ไม่พบผู้เรียกใช้ในโค้ดปัจจุบัน |
+| [LoveDoodle](../../frontend/src/components/love-doodle.tsx#L2) | ไม่พบผู้เรียกใช้ในโค้ดปัจจุบัน |
 | `CouponCard` | ยังใช้ที่ landing page จึงไม่ใช่โค้ดตาย แม้หน้าคูปองจริงเปลี่ยนมาใช้ LoveTicket แล้ว |
 | `/design/love-pass` | Demo ที่มี route จริง มีข้อมูลจำลองชัดเจน แต่ LoveTicket, TicketRequest และ SVG ที่ใช้ร่วมกันเป็นโค้ดผลิตภัณฑ์ด้วย |
 | `vouchers.css` | ถูกโหลดจริง แต่ไม่พบ element ที่ใช้ class ของมัน; token `--color-paper`, `--stub-width`, `--ticket-ink` จึงอยู่ในชุดที่ไม่พบ consumer ปัจจุบัน |
 | Color token หลัก | ไม่พบ token ที่ประกาศแล้วไร้การอ้างอิงใน source |
 | `--font-sans` | ถูก Tailwind ใช้ทางอ้อม จึงไม่นับว่า unused แม้ไม่มี class `font-sans` โดยตรง |
-| [fonts/source.css](../frontend/src/app/fonts/source.css#L1) | ไม่ถูก import ใช้งานจริง เป็นข้อมูลแหล่งฟอนต์เดิม ส่วน runtime ใช้ local font จาก root layout |
+| [fonts/source.css](../../frontend/src/app/fonts/source.css#L1) | ไม่ถูก import ใช้งานจริง เป็นข้อมูลแหล่งฟอนต์เดิม ส่วน runtime ใช้ local font จาก root layout |
 | `rarityStyles.border` | ประกาศไว้ แต่ไม่พบผู้ใช้ property นี้ใน source ปัจจุบัน; ตัว `rarityStyles` และ property อื่นยังใช้จริง |
 | `docs/archive/` และ screenshot/evidence | เป็นหลักฐานงานเก่า ไม่ใช่ source runtime และไม่ใช้ยืนยันว่าหน้าปัจจุบันผ่านแล้ว |
 

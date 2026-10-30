@@ -9,7 +9,7 @@ const { chromium } = await import(
 );
 const BASE = process.env.UI_TEST_URL || "http://127.0.0.1:3000";
 assert.ok(["127.0.0.1", "localhost"].includes(new URL(BASE).hostname), "UI tests run only on localhost");
-const OUT = process.env.UI_TEST_OUT || fileURLToPath(new URL("../../docs/ui-implementation/", import.meta.url));
+const OUT = process.env.UI_TEST_OUT || fileURLToPath(new URL("../test-results/", import.meta.url));
 fs.mkdirSync(path.join(OUT, "screenshots"), { recursive: true });
 const user = {
   id: 1,

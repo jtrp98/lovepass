@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(path.join(process.env.PLAYWRIGHT_MODULE, "index.mjs")).href : "playwright");
 const base = process.env.UI_TEST_URL || "http://localhost:3000";
 assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
-const output = process.env.UI_TEST_OUT || fileURLToPath(new URL("../../docs/ui-implementation/", import.meta.url));
+const output = process.env.UI_TEST_OUT || fileURLToPath(new URL("../test-results/", import.meta.url));
 const evidence = { checks: [], screenshots: [], consoleErrors: [], contrast: [] };
 const pass = (text) => { evidence.checks.push(text); console.log("PASS", text); };
 fs.mkdirSync(path.join(output, "screenshots"), { recursive: true });

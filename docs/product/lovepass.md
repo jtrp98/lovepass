@@ -512,8 +512,8 @@ RDBMS: **PostgreSQL** เข้าถึงผ่าน **EF Core** (Provider: N
 
 ```
 lovepass/
-├── docs/
-│   └── lovepass.md              # เอกสารนี้
+├── docs/                        # สารบัญที่ docs/README.md
+│   └── product/lovepass.md      # เอกสารนี้
 ├── frontend/                    # Next.js application
 ├── backend/                     # .NET solution
 │   ├── LovePass.sln
