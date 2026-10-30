@@ -16,7 +16,9 @@ try {
   await page.goto(base + "/design/love-pass");
   const gallery = page.locator(".category-icon-grid");
   await gallery.waitFor();
-  assert.equal(await gallery.getByRole("link").count(), 7);
+  assert.equal(await gallery.getByRole("link").count(), 9);
+  assert.equal(await gallery.locator('use[href$="gift.svg#drawing"]').count(), 1);
+  assert.equal(await gallery.locator('use[href$="power.svg#drawing"]').count(), 1);
   for (const drawing of await gallery.locator("svg").all()) {
     await drawing.evaluate((svg) => new Promise((resolve, reject) => {
       let attempts = 0;
@@ -42,7 +44,7 @@ try {
     await page.setViewportSize({ width, height: 844 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   }
-  pass("7 external SVG assets render; category selects artwork, tier changes ink without changing the SVG; gallery reflows at 320/390/768/1440");
+  pass("9 external SVG assets including GIFT/POWER render; category selects artwork, tier changes ink without changing the SVG; gallery reflows at 320/390/768/1440");
   await context.addInitScript(() => {
     localStorage.setItem("lovepass.accessToken", "fixture-access");
     localStorage.setItem("lovepass.refreshToken", "fixture-refresh");

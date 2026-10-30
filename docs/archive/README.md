@@ -2,6 +2,10 @@
 
 เอกสารของงานที่จบแล้ว เก็บไว้อ้างอิงเท่านั้น — เอกสารที่ยังใช้งานอยู่ดูที่ [docs/README.md](../README.md)
 
+## Releases
+
+- [1.1.0](releases/1.1.0.md) — MYTHIC, หมวด GIFT/POWER, คูปองพลังพิเศษ และ romantic stationery (30 ตุลาคม 2026)
+
 ## UI/UX Audit + Implementation (30 ตุลาคม 2026)
 
 | ไฟล์ | คืออะไร |

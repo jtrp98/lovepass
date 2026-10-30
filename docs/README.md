@@ -28,6 +28,7 @@
 
 ## archive — ประวัติ
 
+- [Release notes 1.1.0](archive/releases/1.1.0.md) — MYTHIC, หมวด GIFT/POWER, คูปองพลังพิเศษ และ romantic stationery
 - [archive/README.md](archive/README.md) — รายการงานที่จบแล้ว (UI audit, ticket refresh, theme audit, requests/sent-gifts refresh)
 
 ## กติกาการเขียนเอกสาร
