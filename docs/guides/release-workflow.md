@@ -15,7 +15,8 @@ Release tags use plain semantic versions such as `1.0.0`, without a `v` prefix, 
 3. Run backend tests, Gmail setup tests, frontend tests, lint, and a production build.
 4. Create `release/x.y.z` and an annotated `x.y.z` tag from the tested release commit, then push both branches and the tag.
 5. Open a pull request from `dev/golf` into `main`. Merge after review and CI checks pass. If review changes the release, update its version branch to the final tested commit before merging.
-6. Continue development on `dev/golf`.
+6. After the merge, Vercel deploys the frontend automatically but Render auto deploy is off. Run **Manual Deploy** on Render for the merge commit, then check that new endpoints answer with a valid token (an unauthenticated request returns 401 for every path, including unknown ones, so it proves nothing). A release that adds an endpoint is broken for users until this step is done.
+7. Continue development on `dev/golf`.
 
 Do not create a branch named `release`: Git cannot store both `release` and `release/x.y.z`.
 
