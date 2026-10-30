@@ -31,8 +31,9 @@ public sealed class CreateGiftPackCommandValidator : AbstractValidator<CreateGif
         RuleFor(x => x.Mode).Must(m => m is "FIXED" or "CHOICE");
         RuleFor(x => x.ExpiresAt).Must(d => d > DateTime.UtcNow).WithMessage("เลือกวันหมดอายุในอนาคตนะ");
         RuleFor(x => x.Message).MaximumLength(500);
-        RuleFor(x => x.Options).NotEmpty().Must(o => o is not null && o.Count <= 50 && o.All(i => i is not null) && o.Select(i => i.CouponTemplateId).Distinct().Count() == o.Count)
+        RuleFor(x => x.Options).NotNull().Must(o => o is not null && o.Count <= 50 && o.All(i => i is not null) && o.Select(i => i.CouponTemplateId).Distinct().Count() == o.Count)
             .WithMessage("เลือกคูปองไม่ซ้ำกันได้ไม่เกิน 50 แบบ");
+        RuleFor(x => x.Options).NotEmpty().When(x => x.Mode == "FIXED");
         RuleForEach(x => x.Options).NotNull().ChildRules(o =>
         {
             o.RuleFor(i => i.CouponTemplateId).GreaterThan(0);
@@ -67,13 +68,24 @@ public sealed class CreateGiftPackCommandHandler(IApplicationDbContext db, ICurr
             .Select(m => m.CoupleId).FirstOrDefaultAsync(ct);
         if (coupleId == 0) throw new ForbiddenAccessException();
 
-        var ids = request.Options.Select(o => o.CouponTemplateId).ToList();
-        var templates = await db.CouponTemplates.Where(t => t.IsActive && ids.Contains(t.Id)).ToDictionaryAsync(t => t.Id, ct);
-        if (templates.Count != ids.Count) throw new ConflictException("มีคูปองที่ไม่พร้อมมอบแล้ว กรุณาเลือกรายการใหม่");
+        var options = request.Options;
+        var ids = options.Select(o => o.CouponTemplateId).ToList();
+        var automaticPool = request.Mode == "CHOICE" && options.Count == 0;
+        var tiers = request.Quotas.Select(q => Enum.Parse<Rarity>(q.Rarity, true)).ToList();
+        var templates = await db.CouponTemplates.Where(t => t.IsActive && (automaticPool ? tiers.Contains(t.Rarity) : ids.Contains(t.Id)))
+            .OrderBy(t => t.Id).ToDictionaryAsync(t => t.Id, ct);
+        if (automaticPool)
+        {
+            options = templates.Values.Select(t => new PackOptionInput(t.Id,
+                request.Quotas.Single(q => q.Rarity == t.Rarity.ToString().ToUpperInvariant()).Quantity)).ToList();
+            if (request.Quotas.Any(q => !templates.Values.Any(t => t.Rarity.ToString().ToUpperInvariant() == q.Rarity)))
+                throw new ConflictException("บางระดับยังไม่มีคูปองให้รับ กรุณาเลือกระดับอื่นก่อนนะ");
+        }
+        else if (templates.Count != ids.Count) throw new ConflictException("มีคูปองที่ไม่พร้อมมอบแล้ว กรุณาเลือกรายการใหม่");
         var plan = new GiftPackPlan
         {
             SourceHash = hash, Name = request.Name.Trim(), Mode = request.Mode, ExpiresAt = request.ExpiresAt,
-            Options = request.Options.Select(o => new PackOption(o.CouponTemplateId, o.Limit, CouponTemplateSnapshot.Of(templates[o.CouponTemplateId]))).ToList(),
+            Options = options.Select(o => new PackOption(o.CouponTemplateId, o.Limit, CouponTemplateSnapshot.Of(templates[o.CouponTemplateId]))).ToList(),
             Quotas = request.Quotas.ToDictionary(q => q.Rarity, q => q.Quantity)
         };
         if (plan.Total is < 1 or > 100 || (plan.Mode == "FIXED" && plan.Quotas.Count != 0))

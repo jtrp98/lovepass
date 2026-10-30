@@ -97,6 +97,8 @@ public class GiftPackTests
             [new(1, 8)], [new("COMMON", 10)]);
         var validator = new CreateGiftPackCommandValidator();
         Assert.True(validator.Validate(command).IsValid);
+        Assert.True(validator.Validate(command with { Options = [] }).IsValid);
+        Assert.False(validator.Validate(command with { Mode = "FIXED", Options = [], Quotas = [] }).IsValid);
         Assert.False(validator.Validate(command with { Options = [new(1, 8), new(1, 8)] }).IsValid);
         Assert.False(validator.Validate(command with { Quotas = [new("COMMON", 1), new("COMMON", 1)] }).IsValid);
         Assert.False(validator.Validate(command with { Quotas = [new("FAKE", 1)] }).IsValid);
