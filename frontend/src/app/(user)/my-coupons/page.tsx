@@ -12,6 +12,8 @@ import {
 import { couponGroupKey } from "@/lib/flow";
 import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
+import { CouponRequestCard } from "@/components/coupon-request-card";
+import { useResource } from "@/lib/use-resource";
 import { MetaTargetPicker } from "@/components/meta-target-picker";
 import { ApiError, api } from "@/lib/api";
 import { metaEffect } from "@/lib/coupon-effects";
@@ -19,6 +21,21 @@ import { useEffect, useRef, useState } from "react";
 import type { MetaTarget, MyCoupon, Rarity } from "@/types";
 
 const rarities: (Rarity | "ALL")[] = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
+
+const loadSentRequests = () => api.redemptions.list("sent");
+
+function PendingRequests({ rarity }: { rarity: Rarity | "ALL" }) {
+  const { data, error, retry } = useResource(loadSentRequests);
+  if (error) return <ErrorState message={error} retry={retry} />;
+  if (!data) return <Skeleton />;
+  const requests = data.filter((item) => item.status === "PENDING" && (rarity === "ALL" || item.rarity === rarity));
+  if (!requests.length) return <EmptyState title="ยังไม่มีคำขอที่รอแฟนยืนยัน" hint="เมื่อส่งคำขอใช้คูปองแล้ว จะดูโน้ตและรายละเอียดที่ส่งไปได้ที่นี่นะ" />;
+  return (
+    <div className="pocket-collection">
+      {requests.map((item) => <CouponRequestCard key={item.id} item={item} direction="sent" />)}
+    </div>
+  );
+}
 
 /** รวมคูปองชนิดเดียวกัน + วันหมดอายุเดียวกันเป็นการ์ดเดียว (แสดง ×N) — คนละวันหมดอายุแยกการ์ด */
 interface GroupedCoupon {
@@ -195,7 +212,9 @@ export default function MyCouponsPage() {
 
       {notice && <Notice>{notice}</Notice>}
 
-      {error ? (
+      {task === "pending" ? (
+        <PendingRequests rarity={filter} />
+      ) : error ? (
         <ErrorState message={error} retry={() => load(filter === "ALL" ? undefined : filter)} />
       ) : !groups ? (
         <Skeleton />

@@ -651,8 +651,18 @@ async function run() {
   await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^พับเก็บ/ }).click();
   assert.equal(requestCalls(), beforePendingView);
   pass("pending-only coupon details remain readable without allowing another request");
+  const originalRequests = state.requests;
+  state.requests = [
+    { ...redemption, id: 51, status: "PENDING", message: "โน้ตที่ส่งไปแล้ว" },
+    { ...redemption, id: 52, status: "PENDING", message: "อีกคำขอที่ส่งไปแล้ว" },
+  ];
   await page.getByRole("group", { name: "สถานะคูปอง" }).getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).click();
+  await page.getByText("โน้ตที่ส่งไปแล้ว", { exact: true }).waitFor();
   assert.equal(await page.locator("article").count(), 2);
+  assert.equal(await page.getByRole("textbox").count(), 0);
+  assert.equal(await page.locator(".tear-tab").count(), 0);
+  assert.equal(requestCalls(), beforePendingView);
+  state.requests = originalRequests;
   state.coupons = originalCoupons;
   pass("coupon refresh at 320/768/1024/1440: reflow, hover, entry/unfold motion, reduced motion, keyboard and pending filter");
   // Font network sizes are Resource Timing values, not gzip estimates.

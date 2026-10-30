@@ -108,6 +108,7 @@ export interface CreateGiftPackInput {
   mode: GiftPack["mode"];
   expiresAt: string;
   message?: string;
+  /** CHOICE ส่ง [] เพื่อให้ระบบเตรียมคูปองทั้งหมดตาม quotas; FIXED ระบุคูปองที่จะให้ */
   options: { couponTemplateId: number; limit: number }[];
   quotas: PackQuota[];
 }

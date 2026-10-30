@@ -151,7 +151,8 @@ try {
   await context.unroute("**/*");
   await context.addInitScript(() => { localStorage.setItem("lovepass.accessToken", "fixture-access"); localStorage.setItem("lovepass.refreshToken", "fixture-refresh"); });
   const coupon = { id: 10, name: "ตั๋วกอดไม่อั้น", description: "เหนื่อยเมื่อไหร่ ก็มากอดกันนะ ♡", terms: "กอดได้ไม่จำกัดครั้งภายในวันหมดอายุ", rarity: "COMMON", quantity: 2, remaining: 2, available: 2, expiresAt: "2027-11-29T16:59:59Z", expiringSoon: false, senderId: 2, emoji: null, imageUrl: null };
-  let calls = 0, failRequest = false, submittedMessage;
+  let calls = 0, failRequest = false, submittedMessage, failSentRequests = false;
+  const sentRequests = [];
   await context.route("**/*", async (route) => {
     const url = new URL(route.request().url());
     if (!url.pathname.startsWith("/api/v1/")) return url.origin === new URL(base).origin ? route.continue() : route.abort();
@@ -165,8 +166,17 @@ try {
       calls++;
       submittedMessage = route.request().postDataJSON().message;
       if (failRequest) { status = 500; body = { title: "test error" }; }
-      else { coupon.available--; body = { id: 42, status: "PENDING" }; }
+      else {
+        coupon.available--;
+        body = { id: 42, issuedCouponId: coupon.id, couponName: coupon.name, rarity: coupon.rarity, status: "PENDING", message: submittedMessage, requestedAt: "2026-10-30T10:00:00Z", couponExpiresAt: coupon.expiresAt };
+        sentRequests.push(body);
+      }
       await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    else if (url.pathname.endsWith("/redemptions")) {
+      assert.equal(url.searchParams.get("direction"), "sent");
+      status = failSentRequests ? 500 : 200;
+      body = failSentRequests ? { title: "test error" } : sentRequests;
     }
     return route.fulfill({ status, headers: { ...headers, "content-type": "application/json" }, body: JSON.stringify(body) });
   });
@@ -195,6 +205,42 @@ try {
   assert.equal(await page.locator(".rubber-stamp").count(), 0);
   await shot("pocket-product-320");
   pass("real request integration: no POST from tap or short drag, errors retain message/quantity, retry locks duplicate clicks, refresh shows reserved sheet without used stamp");
+  sentRequests.push(
+    { ...sentRequests[0], id: 43, message: "ขอกอดพรุ่งนี้ด้วยนะ" },
+    { ...sentRequests[0], id: 44, rarity: "RARE", couponName: "ต่อเวลาคูปอง", effect: "EXTEND", targetName: coupon.name, message: "ขอต่อเวลาอีกหน่อยนะ" },
+    { ...sentRequests[0], id: 45, status: "APPROVED", message: "คำขอที่ยืนยันไปแล้ว" },
+  );
+  await page.getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).click();
+  await page.getByText("ขอกอดเย็นนี้นะ", { exact: true }).waitFor();
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 1000 });
+    assert.equal(await page.locator(".request-ticket").count(), 3);
+    assert.ok(await page.getByText("ขอกอดพรุ่งนี้ด้วยนะ", { exact: true }).isVisible());
+    assert.ok(await page.getByText("ส่งเมื่อ", { exact: false }).first().isVisible());
+    assert.equal(await page.getByRole("textbox").count(), 0);
+    assert.equal(await page.locator(".tear-tab").count(), 0);
+    assert.equal(await page.getByText("คำขอที่ยืนยันไปแล้ว", { exact: true }).count(), 0);
+    await reflow();
+    await shot(`pocket-sent-pending-${width}`);
+  }
+  await page.getByRole("group", { name: "ประเภทคูปอง" }).getByRole("button").nth(1).click();
+  assert.equal(await page.locator(".request-ticket").count(), 2);
+  await page.getByRole("group", { name: "ประเภทคูปอง" }).getByRole("button").nth(2).click();
+  assert.equal(await page.locator(".request-ticket").count(), 1);
+  assert.ok(await page.getByText("ใช้กับ", { exact: false }).isVisible());
+  await page.getByRole("group", { name: "ประเภทคูปอง" }).getByRole("button").nth(3).click();
+  await page.getByText("ยังไม่มีคำขอที่รอแฟนยืนยัน", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "ทุกประเภท", exact: true }).click();
+  failSentRequests = true;
+  await page.reload();
+  await page.getByRole("button", { name: "รอแฟนยืนยัน", exact: true }).click();
+  await page.getByText("ระบบขัดข้องชั่วคราว กรุณาลองอีกครั้ง", { exact: true }).waitFor();
+  failSentRequests = false;
+  await page.getByRole("button", { name: /ลองอีกครั้ง/ }).click();
+  await page.getByText("ขอกอดเย็นนี้นะ", { exact: true }).waitFor();
+  assert.equal(calls, 2, "viewing pending requests must never submit again");
+  await page.getByRole("button", { name: "ทั้งหมด", exact: true }).click();
+  pass("pending tab loads sent requests, preserves separate notes/dates/targets, filters rarity/status, retries errors and has no editable form even with available coupons");
   coupon.available = 0;
   await page.reload();
   await page.getByRole("button", { name: "เปิดดูความทรงจำ ตั๋วกอดไม่อั้น" }).click();
