@@ -14,12 +14,23 @@
 | Render | workspace `jtrp98`, service `lovepass-api-jtrp98`, แผน Free, Frankfurt |
 | ฐานข้อมูล | Supabase เดิม ไม่ได้สร้างฐานข้อมูลใหม่บน Render |
 | สาขา release / production มาตรฐาน | `main` ผ่าน pull request จาก `dev/golf` |
-| Snapshot ก่อน release 1.2.0 | Vercel `433b8da80500791dd5d473ad835541acef6c84b9` / Render `87e6905c79646d1af372f817ae315ef2e43d086e` |
+| Production | **1.2.0**, commit `e2c7990d474fed047ccdf13cab365a7e86cfa910` ตรงกันทั้ง Vercel และ Render |
 
-Vercel ติดตาม `main` สำหรับ production แล้ว ส่วน Render ปิด auto deploy และใช้การ deploy แบบ manual
-ก่อน deploy release 1.2.0 ให้เปลี่ยน **Settings → Build & Deploy → Branch** ของ Render จาก `codex/lovepass-online` เป็น `main` ตรวจ commit ก่อนกด deploy ทุกครั้ง ไม่ใช้สาขา `codex/lovepass-online` เป็นสาขาออนไลน์ต่อ
+Vercel และ Render ติดตาม `main` แล้ว ส่วน Render ปิด auto deploy และใช้การ deploy แบบ manual ตรวจ commit ก่อนกด deploy ทุกครั้ง ไม่ใช้สาขา `codex/lovepass-online` เป็นสาขาออนไลน์ต่อ
 
-Release 1.2.0 มี migration ของชุดของขวัญ ต้อง deploy API และยืนยัน migration/endpoint ใหม่สำเร็จก่อนเปิดใช้ frontend ใหม่ รายละเอียดอยู่ใน [release notes](../archive/releases/1.2.0.md)
+Release 1.2.0 มี migration ของชุดของขวัญ ตรวจผลจากฐานข้อมูลและ endpoint ใหม่บน production ผ่านแล้ว สำหรับ release ถัดไปที่มี endpoint ใหม่ ควรเตรียม API/migration ให้พร้อมก่อนเปิดใช้ frontend รายละเอียดอยู่ใน [release notes](../archive/releases/1.2.0.md)
+
+## ผลตรวจ release 1.2.0 (30 ตุลาคม 2026)
+
+- [PR #5](https://github.com/jtrp98/lovepass/pull/5) merge แล้ว และ CI ของ `main` ผ่านทั้ง backend/frontend
+- Vercel `dpl_SKhZ9S5V7bisXUMWtk5CBJ7DQwfC` เป็น READY และ Render `dep-dbi3nus9v7es738k42i0` เป็น live ที่ commit เดียวกัน
+- API health ตอบ 200; ล็อกอินด้วยบัญชี seed ของแอปตาม production profile แล้วอ่าน catalog, coupon sets และ gift packs สำเร็จ พร้อม CORS ของเว็บจริง
+- ตรวจผล migration: ชุดวันเกิด 22 ใบ งานบ้าน 8 ใบ, Romantic Set ไม่แสดง และ endpoint gift packs อ่าน schema ใหม่ได้
+- Browser จริง 390/1280 px: ตัวกรองครบห้า tier แสดงเฉพาะระดับที่เลือก ไม่มี horizontal scroll และหน้า `/packs` โหลด API จริงได้โดยไม่มี application error หรือ JavaScript page error
+- ไม่สร้างบัญชี คู่รัก ของขวัญ หรือคำขอใช้ใหม่บน production การตรวจ flow ที่เปลี่ยนข้อมูลใช้ฐานข้อมูลทดสอบแยกตาม [verification](../archive/gift-packs/verification.md)
+- ไม่พบ Vercel runtime error ใน deployment นี้ระหว่างตรวจ และไม่พบ Render application error หลัง 06:43 UTC (13:43 เวลาไทย)
+- พบ log ตอนเริ่ม instance เวลา 06:41 UTC ว่า `libgssapi_krb5.so.2` ไม่พบ แต่การเชื่อม DB, login และ API ที่ตรวจข้างต้นผ่าน ไม่เปลี่ยน Docker dependency เพิ่มใน release นี้
+- หลักฐานตรวจ production อยู่ใน `frontend/test-results/release-1.2.0-production/` (gitignored) ไม่มี credentials หรือ token ในรายงาน
 
 ## การตั้งค่า
 
@@ -44,7 +55,7 @@ Google ยังแสดงคำเตือน unverified app ในขั้
 
 ## ผลตรวจของ snapshot ออนไลน์เดิม (ก่อน release 1.2.0)
 
-- Render snapshot เดิมเป็น `87e6905c79646d1af372f817ae315ef2e43d086e` หลังอัปเดต Gmail ส่วน Vercel production ปัจจุบันเป็น READY ที่ `433b8da80500791dd5d473ad835541acef6c84b9`
+- ก่อน release 1.2.0: Render เป็น `87e6905c79646d1af372f817ae315ef2e43d086e` หลังอัปเดต Gmail และ Vercel เป็น `433b8da80500791dd5d473ad835541acef6c84b9`
 - Browser จริง: ล็อกอินผ่านเว็บ → Render → Supabase, หน้าแอดมินและ catalog ที่ 390/1440px ผ่าน
 - หน้าแรกและ privacy ที่ 320/768/1024/1440px ผ่าน ไม่มีหน้าล้นแนวนอนหรือ JavaScript page errors
 - ตรวจ CORS ของเว็บจริง, API health และการปฏิเสธ admin endpoint ที่ไม่ล็อกอินแล้ว
