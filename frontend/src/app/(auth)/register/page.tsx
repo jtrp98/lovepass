@@ -70,7 +70,7 @@ export default function RegisterPage() {
       <Field
         label="รหัสผ่าน (8 ตัวอักษรขึ้นไป)"
         error={fieldErrors.password?.[0]}
-        hint="ใช้รหัสผ่านอย่างน้อย 8 ตัวอักษร"
+        hint="อย่างน้อย 8 ตัวอักษร มีตัวพิมพ์เล็ก (a-z) และตัวเลข"
       >
         <PasswordInput
           autoComplete="new-password"
