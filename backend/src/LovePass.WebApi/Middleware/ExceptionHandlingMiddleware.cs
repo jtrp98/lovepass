@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentValidation;
 using LovePass.Application.Common.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace LovePass.WebApi.Middleware;
 
@@ -32,6 +33,8 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
             ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Access forbidden.", null),
             UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized.", null),
             ConflictException => (StatusCodes.Status409Conflict, exception.Message, null),
+            DbUpdateException { InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_GiftBatches_PackKey" } } =>
+                (StatusCodes.Status409Conflict, "ซองนี้กำลังถูกส่งอยู่ ลองคำขอเดิมอีกครั้งเพื่อดูผลนะ", null),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "ข้อมูลถูกแก้โดย request อื่น กรุณาลองใหม่", null),
             OperationCanceledException => (StatusCodes.Status499ClientClosedRequest, "Client closed request.", null),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.", null)

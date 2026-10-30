@@ -179,7 +179,7 @@ public sealed class GetSentGiftsQueryHandler(IApplicationDbContext db, ICurrentU
 
         var batches = await db.GiftBatches.AsNoTracking()
             .Include(b => b.Coupons)
-            .Where(b => b.SenderId == userId)
+            .Where(b => b.SenderId == userId && b.PackPlan == null)
             .OrderByDescending(b => b.CreatedAt)
             .Take(200)
             .ToListAsync(cancellationToken);

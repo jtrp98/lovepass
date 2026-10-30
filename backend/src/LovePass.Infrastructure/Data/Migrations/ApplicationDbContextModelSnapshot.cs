@@ -343,8 +343,20 @@ namespace LovePass.Infrastructure.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid?>("PackKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PackPlan")
+                        .HasColumnType("jsonb");
+
                     b.Property<int>("ReceiverId")
                         .HasColumnType("integer");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<int>("SenderId")
                         .HasColumnType("integer");
@@ -352,6 +364,9 @@ namespace LovePass.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CoupleId");
+
+                    b.HasIndex("PackKey")
+                        .IsUnique();
 
                     b.HasIndex("ReceiverId");
 

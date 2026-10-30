@@ -84,6 +84,9 @@ public class GiftBatchConfiguration : IEntityTypeConfiguration<GiftBatch>
     public void Configure(EntityTypeBuilder<GiftBatch> builder)
     {
         builder.Property(b => b.Message).HasMaxLength(500);
+        builder.Property(b => b.PackPlan).HasColumnType("jsonb");
+        builder.Property(b => b.RowVersion).IsRowVersion();
+        builder.HasIndex(b => b.PackKey).IsUnique();
         builder.HasMany(b => b.Coupons).WithOne(c => c.GiftBatch!).HasForeignKey(c => c.GiftBatchId).OnDelete(DeleteBehavior.Cascade);
     }
 }

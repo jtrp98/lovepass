@@ -13,6 +13,7 @@ export default function MorePage() {
           { href: "/couple", label: "คู่ของฉัน" },
           { href: "/history", label: "ประวัติ" },
           { href: "/sent-gifts", label: "ของขวัญที่ส่ง" },
+          { href: "/packs", label: "ซองคูปองของเรา" },
         ].map((link) => (
           <LinkButton key={link.href} href={link.href} variant="secondary">
             {link.label}

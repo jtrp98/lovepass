@@ -67,6 +67,8 @@ Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs
 | `DashboardPreview` | `dashboard-preview.tsx` | ภาพนิ่งของหน้าบ้านของเราหลังเข้าสู่ระบบ ติดป้าย "ตัวอย่าง" ไม่มีข้อมูลจริงหรือปุ่มที่กดได้ (ใช้ `.mini-ticket`) |
 | `TicketDemo` | `ticket-demo.tsx` | ตั๋วตัวอย่างให้ผู้เยี่ยมชมลองทั้งวงจรบนหน้าแรก ไม่ส่งข้อมูลจริง |
 | `Envelope`, `WaxSeal`, `StationeryIcon` | `stationery.tsx` | ซองเปิดหลังส่งสำเร็จ, ตราครั่ง, ไอคอนลายเส้น (แทน emoji) |
+| `PackComposer`, `GiftPack` | `pack-composer.tsx`, `gift-pack.tsx` | จัดซอง / เปิดซอง / เลือกหรือสุ่มโดยบันทึกสิทธิ์จริง ใช้ Envelope เดิมกับสถานะปิด/เปิดและ LoveTicket เดิม |
+| `TierEnvelope` | `tier-envelope.tsx` | ซองของขวัญสีตาม rarity แยกจากซองส่งการ์ด แสดงจำนวนคงเหลือและเปิดแต่ละ tier ก่อนเลือก/สุ่มครั้งละหลายใบ |
 | `TicketIllustration`, `LoveDoodle` | `ticket-illustration.tsx`, `love-doodle.tsx` | ภาพประจำหมวด, ภาพคู่รักใน journal |
 
 ## วัตถุประจำหน้า
@@ -79,6 +81,7 @@ Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs
 | `/sent-gifts` | โปสการ์ด airmail |
 | `/history` | สมุดภาพ (scrapbook) ติดเทป |
 | `/sets` | สมุดคูปองเย็บสัน (booklet) |
+| `/packs`, `/packs/new` | ซองตราครั่ง → กางคลังตัวเลือก → สับตั๋วระหว่างรอและพลิกผลหลัง API สำเร็จ ใช้ SVG วัสดุเดิม ไม่มี asset ใหม่ |
 | `/gifts/new` | เตรียมของขวัญ → ซองจดหมายเปิดเมื่อส่งสำเร็จ |
 | `/` | ตั๋วที่ลองเล่นได้ (`TicketDemo` — ฉีก, ยืนยันแทนแฟน, ประทับตรา โดยไม่ยิง API) และภาพตัวอย่างบ้านของเรา (`DashboardPreview`); ปุ่มเริ่มสมุดอยู่ที่หัวหน้าและหลังลองตั๋วจบ |
 | auth, `/couple/accept` | จดหมาย (letter) |

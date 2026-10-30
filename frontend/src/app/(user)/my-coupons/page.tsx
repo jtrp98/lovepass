@@ -162,6 +162,7 @@ export default function MyCouponsPage() {
         </div>
         <div className="pocket-seal" aria-hidden="true"><small>JUST FOR</small><span>you & me</span><small>WITH LOVE</small></div>
       </header>
+      <LinkButton href="/packs" variant="secondary">เปิดซองคูปองที่ได้รับ</LinkButton>
 
       <div className="status-tabs flex flex-wrap gap-2" role="group" aria-label="สถานะคูปอง">
         {[

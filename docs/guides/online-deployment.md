@@ -13,10 +13,13 @@
 | Vercel | ทีม `jtrp98`, โปรเจกต์ `lovepass`, แผน Hobby, root `frontend` |
 | Render | workspace `jtrp98`, service `lovepass-api-jtrp98`, แผน Free, Frankfurt |
 | ฐานข้อมูล | Supabase เดิม ไม่ได้สร้างฐานข้อมูลใหม่บน Render |
-| ซอร์ส production | สาขา `codex/lovepass-online`, commit `87e6905c79646d1af372f817ae315ef2e43d086e` |
+| สาขา release / production มาตรฐาน | `main` ผ่าน pull request จาก `dev/golf` |
+| Snapshot ก่อน release 1.2.0 | Vercel `433b8da80500791dd5d473ad835541acef6c84b9` / Render `87e6905c79646d1af372f817ae315ef2e43d086e` |
 
-Vercel ติดตามสาขา `codex/lovepass-online` สำหรับ production ส่วน Render ปิด auto deploy และใช้การ deploy แบบ manual
-การเปลี่ยนแปลงใน working tree ของ `main` ยังแยกจาก snapshot ที่ deploy เพื่อรักษางานอื่นที่ค้างอยู่
+Vercel ติดตาม `main` สำหรับ production แล้ว ส่วน Render ปิด auto deploy และใช้การ deploy แบบ manual
+ก่อน deploy release 1.2.0 ให้เปลี่ยน **Settings → Build & Deploy → Branch** ของ Render จาก `codex/lovepass-online` เป็น `main` ตรวจ commit ก่อนกด deploy ทุกครั้ง ไม่ใช้สาขา `codex/lovepass-online` เป็นสาขาออนไลน์ต่อ
+
+Release 1.2.0 มี migration ของชุดของขวัญ ต้อง deploy API และยืนยัน migration/endpoint ใหม่สำเร็จก่อนเปิดใช้ frontend ใหม่ รายละเอียดอยู่ใน [release notes](../archive/releases/1.2.0.md)
 
 ## การตั้งค่า
 
@@ -39,9 +42,9 @@ Google ยังแสดงคำเตือน unverified app ในขั้
 ดูเงื่อนไข [refresh token](https://developers.google.com/identity/protocols/oauth2#expiration)
 และ [ข้อยกเว้นการตรวจแอปสำหรับ personal use](https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification#personal-use)
 
-## ผลตรวจ
+## ผลตรวจของ snapshot ออนไลน์เดิม (ก่อน release 1.2.0)
 
-- Vercel production เป็น READY ที่ commit ข้างต้น และ Render deploy หลังอัปเดต Gmail เป็น live
+- Render snapshot เดิมเป็น `87e6905c79646d1af372f817ae315ef2e43d086e` หลังอัปเดต Gmail ส่วน Vercel production ปัจจุบันเป็น READY ที่ `433b8da80500791dd5d473ad835541acef6c84b9`
 - Browser จริง: ล็อกอินผ่านเว็บ → Render → Supabase, หน้าแอดมินและ catalog ที่ 390/1440px ผ่าน
 - หน้าแรกและ privacy ที่ 320/768/1024/1440px ผ่าน ไม่มีหน้าล้นแนวนอนหรือ JavaScript page errors
 - ตรวจ CORS ของเว็บจริง, API health และการปฏิเสธ admin endpoint ที่ไม่ล็อกอินแล้ว

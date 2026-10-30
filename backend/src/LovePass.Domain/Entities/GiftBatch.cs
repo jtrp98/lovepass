@@ -11,6 +11,9 @@ public class GiftBatch : BaseEntity
     public int CoupleId { get; set; }
     public Couple? Couple { get; set; }
     public string? Message { get; set; }
+    public Guid? PackKey { get; set; }
+    public string? PackPlan { get; set; }
+    public uint RowVersion { get; set; }
 
     public List<IssuedCoupon> Coupons { get; set; } = [];
 }

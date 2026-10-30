@@ -79,6 +79,39 @@ export interface CouponSet {
   totalCoupons: number;
 }
 
+export interface PackQuota { rarity: Rarity; quantity: number }
+export interface PackDraw { requestId: string; couponTemplateId: number; rarity: Rarity; random: boolean }
+export interface PackOption {
+  couponTemplateId: number;
+  limit: number;
+  selected: number;
+  coupon: Omit<CouponTemplate, "id">;
+}
+export interface GiftPack {
+  id: number;
+  name: string;
+  mode: "FIXED" | "CHOICE";
+  message: string | null;
+  expiresAt: string;
+  openedAt: string | null;
+  openedTiers: Rarity[];
+  isSender: boolean;
+  total: number;
+  quotas: PackQuota[];
+  options: PackOption[];
+  draws: PackDraw[];
+}
+export interface CreateGiftPackInput {
+  requestId: string;
+  receiverId: number;
+  name: string;
+  mode: GiftPack["mode"];
+  expiresAt: string;
+  message?: string;
+  options: { couponTemplateId: number; limit: number }[];
+  quotas: PackQuota[];
+}
+
 // ---------------- Gifts / Coupons ----------------
 
 export interface GiftItemInput {

@@ -1,4 +1,7 @@
 import type {
+  GiftPack,
+  CreateGiftPackInput,
+  Rarity,
   AdminCouponSet,
   AdminCouponTemplate,
   AdminStats,
@@ -152,6 +155,14 @@ const put = <T>(path: string, body?: unknown) =>
 // ---------------- typed endpoints ----------------
 
 export const api = {
+  packs: {
+    list: () => get<GiftPack[]>("/api/v1/gift-packs"),
+    create: (input: CreateGiftPackInput) => post<GiftPack>("/api/v1/gift-packs", input),
+    open: (id: number) => post<GiftPack>(`/api/v1/gift-packs/${id}/open`),
+    openTier: (id: number, rarity: Rarity) => post<GiftPack>(`/api/v1/gift-packs/${id}/tiers/${rarity}/open`),
+    draw: (id: number, input: { requestId: string; rarity: Rarity; couponTemplateId?: number; couponTemplateIds?: number[]; quantity: number; expectedDrawCount: number }) =>
+      post<GiftPack>(`/api/v1/gift-packs/${id}/draws`, input),
+  },
   auth: {
     async login(email: string, password: string): Promise<TokenPair> {
       const pair = await post<TokenPair>("/api/v1/auth/login", { email, password });

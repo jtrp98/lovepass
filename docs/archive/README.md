@@ -4,6 +4,10 @@
 
 ## Releases
 
+- [1.2.0](releases/1.2.0.md) — ชุดของขวัญ ซองตาม tier และตัวกรองคลังคูปอง (30 ตุลาคม 2026)
+
+- [Gift packs verification](gift-packs/verification.md) — การ์ดแยกจากซองตาม tier, เลือก/สุ่มหลายใบ, ชุดวันเกิด และผลตรวจ API/browser (30 ตุลาคม 2026)
+
 - [1.1.1](releases/1.1.1.md) — ลดเนื้อหาและปุ่มสมัครที่ซ้ำในหน้าแรก (30 ตุลาคม 2026)
 - [1.1.0](releases/1.1.0.md) — MYTHIC, หมวด GIFT/POWER, คูปองพลังพิเศษ และ romantic stationery (30 ตุลาคม 2026)
 

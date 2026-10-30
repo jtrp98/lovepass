@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
@@ -10,7 +10,8 @@
     "test": "node --experimental-strip-types --test tests/flow.test.ts",
     "test:ui": "node tests/ui.mjs",
     "test:pocket": "node tests/pocket-ui.mjs",
-    "test:categories": "node tests/category-ui.mjs"
+    "test:categories": "node tests/category-ui.mjs",
+    "test:packs": "node tests/pack-ui.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

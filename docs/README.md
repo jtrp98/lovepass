@@ -13,6 +13,7 @@
 
 - [lovepass.md](product/lovepass.md) — requirements และ technical design ฉบับเต็ม (บทบาท, flow, data model, API, architecture)
 - [coupon-categories.md](product/coupon-categories.md) — หมวดหมู่คูปอง, snapshot, API contract และภาพประกอบประจำหมวด
+- [gift-packs.md](product/gift-packs.md) — ซองคูปอง เลือกให้เอง / ให้แฟนเลือกหรือสุ่ม, ชุดวันเกิด และ API contract
 
 ## design — หน้าตาและประสบการณ์
 
@@ -27,6 +28,10 @@
 - [release-workflow.md](guides/release-workflow.md) — branch, version และขั้นตอน release
 
 ## archive — ประวัติ
+
+- [Release notes 1.2.0](archive/releases/1.2.0.md) — ชุดของขวัญ ซองตาม tier เลือก/สุ่มหลายใบ ชุดวันเกิด และแก้ตัวกรองคลังคูปอง
+
+- [Gift packs verification](archive/gift-packs/verification.md) — ผลตรวจชุดของขวัญ ซองสีตาม tier และเลือก/สุ่มหลายใบ พร้อมภาพหน้าจอ
 
 - [Release notes 1.1.1](archive/releases/1.1.1.md) — ลดเนื้อหาและปุ่มสมัครที่ซ้ำในหน้าแรก
 - [Release notes 1.1.0](archive/releases/1.1.0.md) — MYTHIC, หมวด GIFT/POWER, คูปองพลังพิเศษ และ romantic stationery

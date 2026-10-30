@@ -4,6 +4,8 @@ const destinations = new Set([
   "/dashboard",
   "/catalog",
   "/sets",
+  "/packs",
+  "/packs/new",
   "/my-coupons",
   "/gifts/new",
   "/requests",
