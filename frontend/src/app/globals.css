@@ -196,12 +196,12 @@
   .scrapbook-entry:has(.rubber-stamp) { padding-right: 8rem; }
   .scrapbook-entry .rubber-stamp { position: absolute; right: 1.25rem; top: 50%; margin: -44px 0 0; }
 }
-/* Landing: a playable ticket and the three states of a real one. */
+/* Landing: a playable ticket. */
 .ticket-demo { display: grid; gap: 14px; }
 .ticket-demo-label { color: var(--color-muted); }
 .demo-steps { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--color-muted); }
 .demo-steps li { display: inline-flex; align-items: center; gap: 6px; }
-.demo-steps li > span, .landing-showcase-caption > span {
+.demo-steps li > span {
   display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid var(--color-line); border-radius: 50%;
   background: var(--color-surface); font: 600 11px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
@@ -209,17 +209,6 @@
 .demo-steps li[aria-current="step"] > span { border-color: var(--color-love); background: var(--color-love); color: var(--color-on-action); }
 .demo-steps li[data-done] > span { border-color: transparent; background: var(--color-success-paper); color: var(--color-success-ink); }
 .demo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-.landing-showcase { display: grid; gap: 6px; }
-.landing-showcase-list { display: grid; gap: 28px; margin-top: 18px; }
-.landing-showcase-caption { display: flex; align-items: center; gap: 8px; margin-bottom: 22px; color: var(--color-muted); font-size: 14px; }
-@media (min-width: 960px) {
-  .landing-showcase-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story { grid-template-columns: minmax(0, 1fr) 76px; }
-  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-story h2 { font-size: 22px; }
-  .landing-showcase-list .pocket-ticket:not([data-open]) .rubber-stamp { --stamp-size: 92px; }
-  .landing-showcase-list .pocket-ticket:not([data-open]) .pocket-stub-serial { display: none; }
-  .landing-showcase-list > li:has(> .pocket-ticket[data-open]) { grid-column: 1 / -1; justify-self: center; width: min(100%, 46rem); }
-}
 /* Landing: a static picture of the signed-in home ("บ้านของเรา"). */
 .landing-home { display: grid; align-items: center; gap: 32px; }
 .landing-home-copy { display: grid; justify-items: start; gap: 14px; }

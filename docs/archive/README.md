@@ -4,6 +4,7 @@
 
 ## Releases
 
+- [1.1.1](releases/1.1.1.md) — ลดเนื้อหาและปุ่มสมัครที่ซ้ำในหน้าแรก (30 ตุลาคม 2026)
 - [1.1.0](releases/1.1.0.md) — MYTHIC, หมวด GIFT/POWER, คูปองพลังพิเศษ และ romantic stationery (30 ตุลาคม 2026)
 
 ## UI/UX Audit + Implementation (30 ตุลาคม 2026)
