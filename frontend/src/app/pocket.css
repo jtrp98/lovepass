@@ -495,12 +495,30 @@
    Analog stationery souvenir for received gifts. Features die-cut corners,
    printed double rule, postmark cancellation, and attached mini tickets. */
 .gift-keepsake-dialog {
-  padding: 0 !important;
+  padding: 0.5rem 0.25rem 1.5rem !important;
   border: none !important;
   background: transparent !important;
   max-width: min(34rem, calc(100vw - 1.5rem)) !important;
+  max-height: min(88dvh, 920px) !important;
   box-shadow: none !important;
-  overflow: visible !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.gift-keepsake-dialog > h2 {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.gift-keepsake-dialog > div {
+  margin: 0 !important;
 }
 .gift-keepsake-sheet {
   position: relative;
