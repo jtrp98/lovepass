@@ -12,9 +12,12 @@ import { useResource } from "@/lib/use-resource";
 import { api } from "@/lib/api";
 import { SentGiftCard } from "@/components/sent-gift-card";
 import { ReceivedGiftCard } from "@/components/received-gift-card";
+import { ReceivedGiftDialog } from "@/components/received-gift-dialog";
+import type { ReceivedGift } from "@/types";
 
 export default function SentGiftsPage() {
   const [isSentTab, setIsSentTab] = useState(false);
+  const [activeGift, setActiveGift] = useState<ReceivedGift | null>(null);
   const sentResource = useResource(api.gifts.sent);
   const receivedResource = useResource(api.gifts.received);
 
@@ -95,10 +98,25 @@ export default function SentGiftsPage() {
         ) : (
           <div className="sent-gift-book space-y-6">
             {receivedGifts.map((gift) => (
-              <ReceivedGiftCard key={gift.id} gift={gift} />
+              <ReceivedGiftCard
+                key={gift.id}
+                gift={gift}
+                onOpenDetail={(g) => setActiveGift(g)}
+              />
             ))}
           </div>
         )
+      )}
+
+      {activeGift && (
+        <ReceivedGiftDialog
+          gift={activeGift}
+          onClose={() => setActiveGift(null)}
+          onOpened={(updated) => {
+            setActiveGift(updated);
+            void receivedResource.retry();
+          }}
+        />
       )}
     </div>
   );
