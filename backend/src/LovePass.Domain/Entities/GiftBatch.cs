@@ -10,7 +10,9 @@ public class GiftBatch : BaseEntity
     public ApplicationUser? Receiver { get; set; }
     public int CoupleId { get; set; }
     public Couple? Couple { get; set; }
+    public string? Title { get; set; }
     public string? Message { get; set; }
+    public DateTime? OpenedAt { get; set; }
     public Guid? PackKey { get; set; }
     public string? PackPlan { get; set; }
     public uint RowVersion { get; set; }

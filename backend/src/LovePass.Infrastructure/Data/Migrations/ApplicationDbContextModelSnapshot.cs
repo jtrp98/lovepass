@@ -343,6 +343,9 @@ namespace LovePass.Infrastructure.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<DateTime?>("OpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("PackKey")
                         .HasColumnType("uuid");
 
@@ -360,6 +363,10 @@ namespace LovePass.Infrastructure.Data.Migrations
 
                     b.Property<int>("SenderId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 

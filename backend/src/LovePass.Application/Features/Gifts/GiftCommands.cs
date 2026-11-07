@@ -18,12 +18,13 @@ public sealed record GiftItemInput(int CouponTemplateId, int Quantity);
 
 public sealed record GiftItemDto(int CouponTemplateId, string Name, string? Emoji, string Rarity, int Quantity);
 
-public sealed record GiftDto(int GiftBatchId, int TotalCoupons, DateTime ExpiresAt, List<GiftItemDto> Items);
+public sealed record GiftDto(int GiftBatchId, string? Title, string? Message, int TotalCoupons, DateTime ExpiresAt, List<GiftItemDto> Items);
 
 public sealed record CreateGiftCommand(
     int ReceiverId,
     DateTime ExpiresAt,
-    string? Message,
+    string? Title = null,
+    string? Message = null,
     List<GiftItemInput>? Items = null,
     int? CouponSetId = null) : ICommand<GiftDto>;
 
@@ -35,12 +36,13 @@ public sealed class CreateGiftCommandValidator : AbstractValidator<CreateGiftCom
         RuleFor(x => x.ExpiresAt)
             .Must(expiresAt => expiresAt > DateTime.UtcNow)
             .WithMessage("วันหมดอายุต้องอยู่ในอนาคต");
+        RuleFor(x => x.Title).MaximumLength(100);
         RuleFor(x => x.Message).MaximumLength(500);
 
         RuleFor(x => x.Items).NotEmpty()
             .When(x => x.CouponSetId is null)
             .WithMessage("ต้องเลือกคูปองอย่างน้อย 1 รายการ");
-        RuleFor(x => x.Items.Count).LessThanOrEqualTo(50)
+        RuleFor(x => x.Items!.Count).LessThanOrEqualTo(50)
             .When(x => x.Items is not null)
             .WithMessage("เลือกคูปองได้ไม่เกิน 50 รายการต่อครั้ง");
         RuleForEach(x => x.Items).ChildRules(item =>
@@ -98,7 +100,8 @@ public sealed class CreateGiftCommandHandler(
             SenderId = userId,
             ReceiverId = request.ReceiverId,
             CoupleId = coupleId,
-            Message = request.Message
+            Title = request.Title?.Trim(),
+            Message = request.Message?.Trim()
         };
 
         foreach (var (templateId, quantity) in items)
@@ -124,6 +127,8 @@ public sealed class CreateGiftCommandHandler(
 
         return new GiftDto(
             batch.Id,
+            batch.Title,
+            batch.Message,
             batch.Coupons.Sum(c => c.Quantity),
             request.ExpiresAt,
             [.. batch.Coupons.Select(c =>
@@ -153,8 +158,12 @@ public sealed class CreateGiftCommandHandler(
         {
             var senderName = (await identity.GetUserAsync(currentUser.RequiredUserId(), cancellationToken)).DisplayName;
             var receiver = await identity.GetUserAsync(request.ReceiverId, cancellationToken);
-            var names = batch.Coupons.Select(c => $"{c.ReadSnapshot().Name} ×{c.Quantity}").ToList();
-            var (subject, html) = EmailTemplates.CouponReceived(receiver.DisplayName, senderName, names, request.ExpiresAt, appOptions.Value);
+            var couponItems = batch.Coupons.Select(c =>
+            {
+                var s = c.ReadSnapshot();
+                return new CouponEmailItem(s.Name, s.Description, c.Quantity, s.Rarity, s.Emoji);
+            }).ToList();
+            var (subject, html) = EmailTemplates.CouponReceived(receiver.DisplayName, senderName, batch.Title, batch.Message, couponItems, request.ExpiresAt, appOptions.Value);
             await emailSender.SendEmailAsync(receiver.Email, subject, html, cancellationToken);
         }
         catch (Exception ex)
@@ -164,9 +173,9 @@ public sealed class CreateGiftCommandHandler(
     }
 }
 
-public sealed record SentGiftCouponDto(string Name, string? Emoji, string Rarity, int Quantity, int Remaining, DateTime ExpiresAt, string Category = "OTHER");
+public sealed record SentGiftCouponDto(string Name, string Description, string? Emoji, string Rarity, int Quantity, int Remaining, DateTime ExpiresAt, string Category = "OTHER");
 
-public sealed record SentGiftDto(int Id, string? Message, DateTime CreatedAt, List<SentGiftCouponDto> Coupons);
+public sealed record SentGiftDto(int Id, string? Title, string? Message, DateTime CreatedAt, List<SentGiftCouponDto> Coupons);
 
 public sealed record GetSentGiftsQuery() : IQuery<List<SentGiftDto>>;
 
@@ -187,12 +196,95 @@ public sealed class GetSentGiftsQueryHandler(IApplicationDbContext db, ICurrentU
 
         return batches.Select(b => new SentGiftDto(
             b.Id,
+            b.Title,
             b.Message,
             b.CreatedAt,
             [.. b.Coupons.OrderBy(c => c.ExpiresAt).Select(c =>
             {
                 var s = c.ReadSnapshot();
-                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
+                return new SentGiftCouponDto(s.Name, s.Description, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
             })])).ToList();
+    }
+}
+
+public sealed record ReceivedGiftCouponDto(string Name, string Description, string? Emoji, string Rarity, int Quantity, int Remaining, DateTime ExpiresAt, string Category = "OTHER");
+
+public sealed record ReceivedGiftDto(int Id, string SenderName, string? Title, string? Message, DateTime CreatedAt, DateTime? OpenedAt, List<ReceivedGiftCouponDto> Coupons);
+
+public sealed record GetReceivedGiftsQuery() : IQuery<List<ReceivedGiftDto>>;
+
+public sealed class GetReceivedGiftsQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser, IIdentityService identity)
+    : IRequestHandler<GetReceivedGiftsQuery, List<ReceivedGiftDto>>
+{
+    public async Task<List<ReceivedGiftDto>> Handle(GetReceivedGiftsQuery request, CancellationToken cancellationToken)
+    {
+        var userId = currentUser.RequiredUserId();
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
+        var batches = await db.GiftBatches.AsNoTracking()
+            .Include(b => b.Coupons)
+            .Where(b => b.ReceiverId == userId && b.PackPlan == null && partnerIds.Contains(b.SenderId))
+            .OrderByDescending(b => b.CreatedAt)
+            .Take(200)
+            .ToListAsync(cancellationToken);
+
+        var senderIds = batches.Select(b => b.SenderId).Distinct().ToList();
+        var senderNames = new Dictionary<int, string>();
+        foreach (var senderId in senderIds)
+        {
+            var user = await identity.GetUserAsync(senderId, cancellationToken);
+            senderNames[senderId] = user.DisplayName;
+        }
+
+        return batches.Select(b => new ReceivedGiftDto(
+            b.Id,
+            senderNames.GetValueOrDefault(b.SenderId, "แฟนของคุณ"),
+            b.Title,
+            b.Message,
+            b.CreatedAt,
+            b.OpenedAt,
+            [.. b.Coupons.OrderBy(c => c.ExpiresAt).Select(c =>
+            {
+                var s = c.ReadSnapshot();
+                return new ReceivedGiftCouponDto(s.Name, s.Description, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
+            })])).ToList();
+    }
+}
+
+public sealed record OpenGiftBatchCommand(int Id) : ICommand<ReceivedGiftDto>;
+
+public sealed class OpenGiftBatchCommandHandler(IApplicationDbContext db, ICurrentUserService currentUser, IIdentityService identity)
+    : IRequestHandler<OpenGiftBatchCommand, ReceivedGiftDto>
+{
+    public async Task<ReceivedGiftDto> Handle(OpenGiftBatchCommand request, CancellationToken cancellationToken)
+    {
+        var userId = currentUser.RequiredUserId();
+        var batch = await db.GiftBatches
+            .Include(b => b.Coupons)
+            .FirstOrDefaultAsync(b => b.Id == request.Id && b.ReceiverId == userId && b.PackPlan == null, cancellationToken)
+            ?? throw new NotFoundException("GiftBatch", request.Id);
+
+        var partnerIds = await Coupons.GetMyCouponsQueryHandler.ActivePartnerIds(db, userId, cancellationToken);
+        if (!partnerIds.Contains(batch.SenderId))
+            throw new ConflictException("คุณสองคนไม่ได้จับคู่กันแล้ว ไม่สามารถเปิดของขวัญนี้ได้");
+
+        if (batch.OpenedAt is null)
+        {
+            batch.OpenedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        var sender = await identity.GetUserAsync(batch.SenderId, cancellationToken);
+        return new ReceivedGiftDto(
+            batch.Id,
+            sender.DisplayName,
+            batch.Title,
+            batch.Message,
+            batch.CreatedAt,
+            batch.OpenedAt,
+            [.. batch.Coupons.OrderBy(c => c.ExpiresAt).Select(c =>
+            {
+                var s = c.ReadSnapshot();
+                return new ReceivedGiftCouponDto(s.Name, s.Description, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
+            })]);
     }
 }

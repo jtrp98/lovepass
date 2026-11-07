@@ -98,7 +98,19 @@ export function LoveTicket({ ticket, onOpen, catalog = false, open = false, onCl
         </div>
         {open && <TicketFinePrint ticket={ticket} catalog={catalog} />}
         <div className="pocket-validity">
-          {ticket.expiresAt ? <time dateTime={ticket.expiresAt}>{ticket.state === "expired" ? "หมดอายุ" : "ใช้ได้ถึง"} {formatDate(ticket.expiresAt)}</time> : <span>คำสัญญาเล็ก ๆ สำหรับเราสองคน</span>}
+          {ticket.state === "used" ? (
+            ticket.redeemedAt ? (
+              <time dateTime={ticket.redeemedAt}>ใช้เมื่อ {formatDate(ticket.redeemedAt)}</time>
+            ) : (
+              <span>ใช้สิทธิ์แล้ว เป็นความทรงจำ</span>
+            )
+          ) : ticket.expiresAt ? (
+            <time dateTime={ticket.expiresAt}>
+              {ticket.state === "expired" ? "หมดอายุ" : "ใช้ได้ถึง"} {formatDate(ticket.expiresAt)}
+            </time>
+          ) : (
+            <span>คำสัญญาเล็ก ๆ สำหรับเราสองคน</span>
+          )}
           <span className="pocket-status"><StatusMark state={ticket.state} /> {catalog ? "แด่คนพิเศษ" : statuses[ticket.state]}</span>
         </div>
       </div>
@@ -144,7 +156,13 @@ export function TicketFinePrint({ ticket, catalog = false }: { ticket: LoveTicke
         {ticket.to && <div><dt>ถึง</dt><dd>{ticket.to}</dd></div>}
         {!catalog && <div><dt>สถานะ</dt><dd>{statuses[ticket.state]}</dd></div>}
         {ticket.quantity !== undefined && <div><dt>จำนวนคูปอง</dt><dd>{ticket.quantity} ใบพร้อมใช้{ticket.reserved ? ` · ${ticket.reserved} ใบรอยืนยัน` : ""}</dd></div>}
-        {ticket.expiresAt && <div><dt>วันหมดอายุ</dt><dd><time dateTime={ticket.expiresAt}>{formatDate(ticket.expiresAt)}</time></dd></div>}
+        {ticket.state === "used" ? (
+          ticket.redeemedAt ? (
+            <div><dt>วันที่ใช้</dt><dd><time dateTime={ticket.redeemedAt}>{formatDate(ticket.redeemedAt)}</time></dd></div>
+          ) : null
+        ) : ticket.expiresAt ? (
+          <div><dt>วันหมดอายุ</dt><dd><time dateTime={ticket.expiresAt}>{formatDate(ticket.expiresAt)}</time></dd></div>
+        ) : null}
       </dl>
       {ticket.terms && <p className="pocket-terms">เงื่อนไข: {ticket.terms}</p>}
       {/กอด/.test(ticket.name) && <p className="pocket-clarification">จำนวนใบคือจำนวนคูปองที่ได้รับ ส่วนกอดได้แค่ไหน ให้ยึดตามคำสัญญาและเงื่อนไขบนใบนี้นะ</p>}

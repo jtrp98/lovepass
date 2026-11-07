@@ -83,6 +83,7 @@ public class GiftBatchConfiguration : IEntityTypeConfiguration<GiftBatch>
 {
     public void Configure(EntityTypeBuilder<GiftBatch> builder)
     {
+        builder.Property(b => b.Title).HasMaxLength(100);
         builder.Property(b => b.Message).HasMaxLength(500);
         builder.Property(b => b.PackPlan).HasColumnType("jsonb");
         builder.Property(b => b.RowVersion).IsRowVersion();

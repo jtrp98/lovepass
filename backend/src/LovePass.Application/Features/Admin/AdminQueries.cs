@@ -74,12 +74,13 @@ public sealed class GetAdminGiftsQueryHandler(IApplicationDbContext db)
 
         return batches.Select(b => new SentGiftDto(
             b.Id,
+            b.Title,
             $"จาก {b.Sender?.DisplayName ?? "?"} → ถึง {b.Receiver?.DisplayName ?? "?"}{(string.IsNullOrWhiteSpace(b.Message) ? "" : $" — \"{b.Message}\"")}",
             b.CreatedAt,
             [.. b.Coupons.Select(c =>
             {
                 var s = c.ReadSnapshot();
-                return new SentGiftCouponDto(s.Name, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
+                return new SentGiftCouponDto(s.Name, s.Description, s.Emoji, s.Rarity, c.Quantity, c.RemainingQuantity, c.ExpiresAt, s.Category);
             })])).ToList();
     }
 }

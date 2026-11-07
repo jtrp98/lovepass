@@ -34,6 +34,7 @@ function NewGiftForm() {
   const [selectedSetId, setSelectedSetId] = useState<number | null>(setFromQuery);
   const [cart, setCart] = useState(giftCart.read());
   const [expiresAt, setExpiresAt] = useState(defaultExpiry());
+  const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -123,13 +124,15 @@ function NewGiftForm() {
         ? await api.gifts.createFromSet({
             receiverId: couple.partnerUserId,
             expiresAt: expiresAtUtc,
-            message: message || undefined,
+            title: title.trim() || undefined,
+            message: message.trim() || undefined,
             couponSetId: selectedSetId,
           })
         : await api.gifts.createCustom({
             receiverId: couple.partnerUserId,
             expiresAt: expiresAtUtc,
-            message: message || undefined,
+            title: title.trim() || undefined,
+            message: message.trim() || undefined,
             items: cart.map(({ couponTemplateId, quantity }) => ({ couponTemplateId, quantity })),
           });
 
@@ -156,6 +159,12 @@ function NewGiftForm() {
         </Envelope>
         <Notice>ของขวัญส่งถึงแฟนแล้ว</Notice>
         <h1 className="text-xl font-semibold">มอบคูปองสำเร็จ!</h1>
+        {result.title && <h2 className="text-lg font-medium text-love">“{result.title}”</h2>}
+        {result.message && (
+          <p className="mx-auto max-w-sm rounded-lg bg-love-soft p-3 font-display text-sm italic text-muted">
+            “{result.message}”
+          </p>
+        )}
         <p className="text-muted">
           มอบให้ {couple?.partnerDisplayName} รวม {result.totalCoupons} ใบ หมดอายุ{" "}
           {formatDate(result.expiresAt)}
@@ -305,22 +314,33 @@ function NewGiftForm() {
       </fieldset>
 
       <fieldset disabled={submitting}>
-        <Card variant="letter" className="grid gap-4 sm:grid-cols-2">
-          <Field label="วันหมดอายุ">
-            <Input
-              type="date"
-              value={expiresAt}
-              min={localDate()}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="ข้อความถึงแฟน (ไม่บังคับ)">
+        <Card variant="letter" className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="ชื่อของขวัญ / โอกาสพิเศษ (ไม่บังคับ)">
+              <Input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
+                placeholder="เช่น สุขสันต์วันครบรอบนะ 💕, ให้คนเก่งของเค้า"
+              />
+            </Field>
+            <Field label="วันหมดอายุ">
+              <Input
+                type="date"
+                value={expiresAt}
+                min={localDate()}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                required
+              />
+            </Field>
+          </div>
+          <Field label="ข้อความในการ์ดถึงแฟน / คำอวยพร (ไม่บังคับ)">
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={500}
-              placeholder="สุขสันต์วันครบรอบนะ 💕"
+              placeholder="เขียนข้อความหวาน ๆ หรือคำสัญญาจากใจแนบไปกับการ์ดของขวัญใบนี้…"
             />
           </Field>
         </Card>

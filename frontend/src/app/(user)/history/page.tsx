@@ -15,11 +15,11 @@ import { RubberStamp } from "@/components/rubber-stamp";
 import { StationeryIcon, type StationeryIconName } from "@/components/stationery";
 
 const typeMeta: Record<string, { icon: StationeryIconName; label: string; className: string }> = {
-  GIFT: { icon: "gift", label: "มอบคูปอง", className: "bg-love-soft text-love" },
+  GIFT: { icon: "gift", label: "มอบของขวัญ", className: "bg-love-soft text-love" },
+  RECEIVED: { icon: "hearts", label: "ได้รับของขวัญ", className: "bg-lavender-soft text-lavender-ink" },
   USED: { icon: "check", label: "ใช้คูปอง", className: "bg-mint-soft text-mint-ink" },
-  EXPIRED: { icon: "hourglass", label: "หมดอายุ", className: "bg-canvas text-muted" },
   REDEEMED_OUT: { icon: "hearts", label: "คูปองที่มอบถูกใช้", className: "bg-sky-soft text-sky-ink" },
-  RECEIVED: { icon: "letter", label: "ได้รับคูปอง", className: "bg-lavender-soft text-lavender-ink" },
+  EXPIRED: { icon: "hourglass", label: "หมดอายุ", className: "bg-canvas text-muted" },
 };
 
 export default function HistoryPage() {
@@ -28,7 +28,7 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle title="สมุดความทรงจำ" subtitle="การมอบ การใช้ และคูปองที่หมดอายุทั้งหมด" />
+      <PageTitle title="สมุดความทรงจำ" subtitle="การมอบ การรับ การใช้ และคำสัญญาของเราทั้งหมด" />
 
       {resource.error ? (
         <ErrorState message={resource.error} retry={resource.retry} />

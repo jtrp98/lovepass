@@ -4,11 +4,15 @@ using FluentValidation;
 using LovePass.Application.Common.Abstractions;
 using LovePass.Application.Common.Exceptions;
 using LovePass.Application.Common.Interfaces;
+using LovePass.Application.Common.Models;
+using LovePass.Application.Common.Services;
 using LovePass.Domain.Entities;
 using LovePass.Domain.Enums;
 using LovePass.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LovePass.Application.Features.Gifts;
 
@@ -48,7 +52,13 @@ public sealed class CreateGiftPackCommandValidator : AbstractValidator<CreateGif
     }
 }
 
-public sealed class CreateGiftPackCommandHandler(IApplicationDbContext db, ICurrentUserService currentUser)
+public sealed class CreateGiftPackCommandHandler(
+    IApplicationDbContext db,
+    ICurrentUserService currentUser,
+    IIdentityService identity,
+    IEmailSender emailSender,
+    IOptions<AppOptions> appOptions,
+    ILogger<CreateGiftPackCommandHandler> logger)
     : IRequestHandler<CreateGiftPackCommand, GiftPackDto>
 {
     public async Task<GiftPackDto> Handle(CreateGiftPackCommand request, CancellationToken ct)
@@ -68,26 +78,61 @@ public sealed class CreateGiftPackCommandHandler(IApplicationDbContext db, ICurr
             .Select(m => m.CoupleId).FirstOrDefaultAsync(ct);
         if (coupleId == 0) throw new ForbiddenAccessException();
 
-        var options = request.Options;
-        var ids = options.Select(o => o.CouponTemplateId).ToList();
-        var automaticPool = request.Mode == "CHOICE" && options.Count == 0;
-        var tiers = request.Quotas.Select(q => Enum.Parse<Rarity>(q.Rarity, true)).ToList();
-        var templates = await db.CouponTemplates.Where(t => t.IsActive && (automaticPool ? tiers.Contains(t.Rarity) : ids.Contains(t.Id)))
-            .OrderBy(t => t.Id).ToDictionaryAsync(t => t.Id, ct);
-        if (automaticPool)
+        var explicitIds = request.Options.Select(o => o.CouponTemplateId).Distinct().ToList();
+        var tiers = request.Quotas.Select(q => Enum.Parse<Rarity>(q.Rarity, true)).Distinct().ToList();
+
+        // โหลด active templates สำหรับทุก tier ที่เกี่ยวข้อง และ ID ที่ระบุเจาะจง
+        var allTemplates = await db.CouponTemplates
+            .Where(t => t.IsActive && (tiers.Contains(t.Rarity) || explicitIds.Contains(t.Id)))
+            .OrderBy(t => t.Id)
+            .ToDictionaryAsync(t => t.Id, ct);
+
+        List<PackOptionInput> resolvedOptions = [];
+
+        if (request.Mode == "CHOICE")
         {
-            options = templates.Values.Select(t => new PackOptionInput(t.Id,
-                request.Quotas.Single(q => q.Rarity == t.Rarity.ToString().ToUpperInvariant()).Quantity)).ToList();
-            if (request.Quotas.Any(q => !templates.Values.Any(t => t.Rarity.ToString().ToUpperInvariant() == q.Rarity)))
-                throw new ConflictException("บางระดับยังไม่มีคูปองให้รับ กรุณาเลือกระดับอื่นก่อนนะ");
+            foreach (var quota in request.Quotas)
+            {
+                var rarityEnum = Enum.Parse<Rarity>(quota.Rarity, true);
+                var tierExplicit = request.Options
+                    .Where(o => allTemplates.TryGetValue(o.CouponTemplateId, out var t) && t.Rarity == rarityEnum)
+                    .ToList();
+
+                if (tierExplicit.Count > 0)
+                {
+                    // ผู้ส่งเลือก Candidate Cards เฉพาะในระดับนี้
+                    if (tierExplicit.Sum(o => o.Limit) < quota.Quantity)
+                        throw new ConflictException($"ตัวเลือกในระดับ {quota.Rarity} มีไม่พอให้เลือกครบสิทธิ์ กรุณาเพิ่มตัวเลือกหรือลดจำนวนใบ");
+                    resolvedOptions.AddRange(tierExplicit);
+                }
+                else
+                {
+                    // ผู้ส่งไม่ได้เลือก Candidate Cards เฉพาะ (Automatic Pool: ให้สิทธิ์เลือกได้จากคูปองทั้งหมดในระดับนี้)
+                    var poolTemplates = allTemplates.Values.Where(t => t.Rarity == rarityEnum).ToList();
+                    if (poolTemplates.Count == 0)
+                        throw new ConflictException($"ระดับ {quota.Rarity} ยังไม่มีคูปองให้รับ กรุณาเลือกระดับอื่นก่อนนะ");
+
+                    resolvedOptions.AddRange(poolTemplates.Select(t => new PackOptionInput(t.Id, quota.Quantity)));
+                }
+            }
         }
-        else if (templates.Count != ids.Count) throw new ConflictException("มีคูปองที่ไม่พร้อมมอบแล้ว กรุณาเลือกรายการใหม่");
+        else // FIXED
+        {
+            if (explicitIds.Count != request.Options.Count || explicitIds.Any(id => !allTemplates.ContainsKey(id)))
+                throw new ConflictException("มีคูปองที่ไม่พร้อมมอบแล้ว กรุณาเลือกรายการใหม่");
+            resolvedOptions = request.Options;
+        }
+
         var plan = new GiftPackPlan
         {
-            SourceHash = hash, Name = request.Name.Trim(), Mode = request.Mode, ExpiresAt = request.ExpiresAt,
-            Options = options.Select(o => new PackOption(o.CouponTemplateId, o.Limit, CouponTemplateSnapshot.Of(templates[o.CouponTemplateId]))).ToList(),
+            SourceHash = hash,
+            Name = request.Name.Trim(),
+            Mode = request.Mode,
+            ExpiresAt = request.ExpiresAt,
+            Options = resolvedOptions.Select(o => new PackOption(o.CouponTemplateId, o.Limit, CouponTemplateSnapshot.Of(allTemplates[o.CouponTemplateId]))).ToList(),
             Quotas = request.Quotas.ToDictionary(q => q.Rarity, q => q.Quantity)
         };
+
         if (plan.Total is < 1 or > 100 || (plan.Mode == "FIXED" && plan.Quotas.Count != 0))
             throw new ConflictException("หนึ่งซองมอบได้ 1–100 ใบ กรุณาตรวจจำนวนอีกครั้ง");
         if (plan.Mode == "CHOICE" && plan.Quotas.Any(q => plan.Options.Where(o => o.Coupon.Rarity == q.Key).Sum(o => o.Limit) < q.Value))
@@ -95,11 +140,40 @@ public sealed class CreateGiftPackCommandHandler(IApplicationDbContext db, ICurr
         if (plan.Mode == "CHOICE" && plan.Options.Any(o => !plan.Quotas.ContainsKey(o.Coupon.Rarity)))
             throw new ConflictException("กำหนดจำนวนสิทธิ์ให้ครบทุกระดับที่เลือกไว้ก่อนนะ");
 
-        var batch = new GiftBatch { SenderId = userId, ReceiverId = request.ReceiverId, CoupleId = coupleId,
-            Message = request.Message, PackKey = request.RequestId, PackPlan = plan.ToJson() };
+        var batch = new GiftBatch
+        {
+            SenderId = userId,
+            ReceiverId = request.ReceiverId,
+            CoupleId = coupleId,
+            Title = request.Name.Trim(),
+            Message = request.Message,
+            PackKey = request.RequestId,
+            PackPlan = plan.ToJson()
+        };
         db.GiftBatches.Add(batch);
         await db.SaveChangesAsync(ct);
+
+        await TryNotifyPackReceiverAsync(userId, request, plan, batch, ct);
+
         return GiftPackMapping.Map(batch, userId);
+    }
+
+    private async Task TryNotifyPackReceiverAsync(int senderId, CreateGiftPackCommand request, GiftPackPlan plan, GiftBatch batch, CancellationToken ct)
+    {
+        try
+        {
+            var senderName = (await identity.GetUserAsync(senderId, ct)).DisplayName;
+            var receiver = await identity.GetUserAsync(request.ReceiverId, ct);
+            var details = plan.Mode == "FIXED"
+                ? plan.Options.Select(o => $"{o.Coupon.Name} ×{o.Limit}").ToList()
+                : plan.Quotas.Select(q => $"{q.Key}: ให้สิทธิ์ {q.Value} ใบ").ToList();
+            var (subject, html) = EmailTemplates.GiftPackReceived(receiver.DisplayName, senderName, plan.Name, batch.Message, details, plan.ExpiresAt, appOptions.Value);
+            await emailSender.SendEmailAsync(receiver.Email, subject, html, ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send gift pack notification email for batch {GiftBatchId}", batch.Id);
+        }
     }
 }
 
