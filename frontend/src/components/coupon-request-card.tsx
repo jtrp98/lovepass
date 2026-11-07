@@ -52,7 +52,17 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
       <div className="pocket-stub request-stub">
         <div className="pocket-stub-copy">
           <span className="pocket-from">{item.status === "PENDING" ? `คำขอนี้กันคูปองไว้ ${item.effect && holdsTarget.has(item.effect) ? 2 : 1} ใบ` : item.status === "APPROVED" ? "อีกหนึ่งความทรงจำของเรา" : "คืนสิทธิ์คูปองแล้ว"}</span>
-          <span className="pocket-quantity-note">ใช้ได้ถึง <time dateTime={item.couponExpiresAt}>{formatDate(item.couponExpiresAt)}</time></span>
+          <span className="pocket-quantity-note">
+            {item.status === "APPROVED" ? (
+              item.resolvedAt ? (
+                <>ใช้สำเร็จเมื่อ <time dateTime={item.resolvedAt}>{formatDate(item.resolvedAt)}</time></>
+              ) : (
+                "ใช้สำเร็จแล้ว เป็นความทรงจำ"
+              )
+            ) : (
+              <>ใช้ได้ถึง <time dateTime={item.couponExpiresAt}>{formatDate(item.couponExpiresAt)}</time></>
+            )}
+          </span>
         </div>
         {children && <div className="request-actions">{children}</div>}
       </div>

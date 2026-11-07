@@ -21,4 +21,14 @@ public sealed class GiftsController(ISender mediator) : ControllerBase
     [HttpGet("sent")]
     public async Task<IActionResult> Sent(CancellationToken cancellationToken)
         => Ok(await mediator.Send(new GetSentGiftsQuery(), cancellationToken));
+
+    /// <summary>รายการของขวัญที่ได้รับจากแฟน</summary>
+    [HttpGet("received")]
+    public async Task<IActionResult> Received(CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new GetReceivedGiftsQuery(), cancellationToken));
+
+    /// <summary>เปิดดูของขวัญที่ได้รับจากแฟน (บันทึกเวลาเปิดซอง)</summary>
+    [HttpPost("{id:int}/open")]
+    public async Task<IActionResult> Open(int id, CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new OpenGiftBatchCommand(id), cancellationToken));
 }

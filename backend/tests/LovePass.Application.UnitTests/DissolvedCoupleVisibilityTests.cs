@@ -78,7 +78,7 @@ public class DissolvedCoupleVisibilityTests
         }
 
         var before = await Snapshotted();
-        Assert.Equal((1, 1, 1, 1, 3, 3), before);
+        Assert.Equal((1, 1, 1, 1, 4, 3), before);
 
         await new DissolveCoupleCommandHandler(db).Handle(new DissolveCoupleCommand(couple.Id), default);
         Assert.Equal((0, 0, 0, 0, 0, 0), await Snapshotted());

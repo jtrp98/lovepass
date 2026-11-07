@@ -130,6 +130,8 @@ export interface GiftItem {
 
 export interface GiftResult {
   giftBatchId: number;
+  title?: string | null;
+  message?: string | null;
   totalCoupons: number;
   expiresAt: string;
   items: GiftItem[];
@@ -156,6 +158,7 @@ export interface MyCoupon {
 export interface SentGiftCoupon {
   category?: CouponCategory;
   name: string;
+  description: string;
   emoji: string | null;
   rarity: Rarity;
   quantity: number;
@@ -165,9 +168,31 @@ export interface SentGiftCoupon {
 
 export interface SentGift {
   id: number;
+  title?: string | null;
   message: string | null;
   createdAt: string;
   coupons: SentGiftCoupon[];
+}
+
+export interface ReceivedGiftCoupon {
+  category?: CouponCategory;
+  name: string;
+  description: string;
+  emoji: string | null;
+  rarity: Rarity;
+  quantity: number;
+  remaining: number;
+  expiresAt: string;
+}
+
+export interface ReceivedGift {
+  id: number;
+  senderName: string;
+  title?: string | null;
+  message: string | null;
+  createdAt: string;
+  openedAt?: string | null;
+  coupons: ReceivedGiftCoupon[];
 }
 
 export interface Dashboard {

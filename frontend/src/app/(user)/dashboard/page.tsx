@@ -1,13 +1,36 @@
 "use client";
-import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton } from "@/components/ui";
+
+import { useEffect, useRef, useState } from "react";
+import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton, formatDate } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
 import Link from "next/link";
 import { LoveDoodle } from "@/components/love-doodle";
+import { StationeryIcon } from "@/components/stationery";
+import { ReceivedGiftDialog } from "@/components/received-gift-dialog";
+import type { ReceivedGift } from "@/types";
+
 export default function DashboardPage() {
   const stats = useResource(api.coupons.dashboard),
-    couple = useResource(api.couples.me);
+    couple = useResource(api.couples.me),
+    receivedGifts = useResource(api.gifts.received);
+
+  const [activeGift, setActiveGift] = useState<ReceivedGift | null>(null);
+  const autoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    if (!autoOpenedRef.current && receivedGifts.data && receivedGifts.data.length > 0) {
+      const unopened = receivedGifts.data.find((g) => !g.openedAt);
+      if (unopened) {
+        autoOpenedRef.current = true;
+        setActiveGift(unopened);
+      }
+    }
+  }, [receivedGifts.data]);
+
   const data = stats.data;
+  const latestGift = receivedGifts.data?.[0];
+
   return (
     <div className="space-y-6">
       <PageTitle
@@ -61,6 +84,39 @@ export default function DashboardPage() {
           </LinkButton>
         </Card>
       )}
+
+      {latestGift && (
+        <Card variant="letter" className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="pocket-mono text-xs text-muted">ของขวัญล่าสุดจาก {latestGift.senderName}</p>
+              <h2 className="text-lg font-semibold">{latestGift.title || "ของขวัญจากใจ"}</h2>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setActiveGift(latestGift)}
+            >
+              <StationeryIcon name="letter" className="h-4 w-4 shrink-0" />
+              {!latestGift.openedAt ? "เปิดซองของขวัญ" : "เปิดดูการ์ดของขวัญ"}
+            </Button>
+          </div>
+          {latestGift.message && (
+            <p className="font-display text-sm italic text-muted line-clamp-2">
+              “{latestGift.message}”
+            </p>
+          )}
+          <div className="flex flex-wrap items-center justify-between text-xs text-muted">
+            <span>
+              ได้รับเมื่อ {formatDate(latestGift.createdAt)} · รวม {latestGift.coupons.reduce((sum, c) => sum + c.quantity, 0)} ใบ
+            </span>
+            <Link href="/sent-gifts" className="text-love hover:underline">
+              ดูประวัติของขวัญทั้งหมด →
+            </Link>
+          </div>
+        </Card>
+      )}
+
       <section className="space-y-3" aria-label="ข้อมูลคูปองล่าสุด">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2>ตั๋วของเรา</h2>
@@ -99,6 +155,7 @@ export default function DashboardPage() {
           )
         )}
       </section>
+
       <Card variant="letter" className="space-y-2">
         <h2>ความใส่ใจไม่ต้องรอวันพิเศษ</h2>
         <p>เลือกคูปองเอง หรือเลือกชุดที่เตรียมไว้ แล้วตรวจของขวัญก่อนส่ง</p>
@@ -106,6 +163,18 @@ export default function DashboardPage() {
           เลือกของขวัญให้แฟน
         </LinkButton>
       </Card>
+
+      {activeGift && (
+        <ReceivedGiftDialog
+          gift={activeGift}
+          onClose={() => setActiveGift(null)}
+          onOpened={(updated) => {
+            setActiveGift(updated);
+            receivedGifts.retry();
+            stats.retry();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -15,7 +15,8 @@ export function SentGiftCard({ gift }: { gift: SentGift }) {
           <span className="pocket-mono">AIRMAIL · PAR AVION / GF-{String(gift.id).padStart(4, "0")}</span>
           <span className="sent-gift-sent"><span aria-hidden="true">♡</span> มอบให้แล้ว</span>
         </div>
-        <h2 id={heading}>ส่งความรักไป {total} ใบ</h2>
+        <h2 id={heading}>{gift.title || `ส่งความรักไป ${total} ใบ`}</h2>
+        {gift.title && <p className="text-sm font-medium text-love">ส่งความรักไป {total} ใบ</p>}
         <p className="sent-gift-date">มอบเมื่อ <time dateTime={gift.createdAt}>{formatDateTime(gift.createdAt)}</time></p>
         {gift.message && <blockquote className="sent-gift-note"><p>{gift.message}</p></blockquote>}
       </header>
@@ -27,8 +28,14 @@ export function SentGiftCard({ gift }: { gift: SentGift }) {
             <div className="sent-gift-coupon-copy">
               <p className="pocket-category">{couponCategories[resolveCategory(coupon.category)].label} · {rarityStyles[coupon.rarity].label.split(" · ")[0]}</p>
               <h3>{coupon.name}</h3>
-              <p className="sent-gift-count">มอบ {coupon.quantity} ใบ <span aria-hidden="true">·</span> คงเหลือ {coupon.remaining} ใบ</p>
-              <p className="sent-gift-expiry">หมดอายุ <time dateTime={coupon.expiresAt}>{formatDate(coupon.expiresAt)}</time></p>
+              {coupon.description && <p className="text-sm text-muted">{coupon.description}</p>}
+              <p className="sent-gift-count">
+                มอบ {coupon.quantity} ใบ <span aria-hidden="true">·</span>{" "}
+                {coupon.remaining === 0 ? "ใช้หมดแล้ว ♥" : `คงเหลือ ${coupon.remaining} ใบ`}
+              </p>
+              {coupon.remaining > 0 && (
+                <p className="sent-gift-expiry">หมดอายุ <time dateTime={coupon.expiresAt}>{formatDate(coupon.expiresAt)}</time></p>
+              )}
             </div>
           </li>
         ))}

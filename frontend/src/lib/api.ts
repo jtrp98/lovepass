@@ -18,6 +18,7 @@ import type {
   InvitationResult,
   MetaTarget,
   MyCoupon,
+  ReceivedGift,
   Redemption,
   SentGift,
   TokenPair,
@@ -222,16 +223,20 @@ export const api = {
     createCustom: (input: {
       receiverId: number;
       expiresAt: string;
+      title?: string;
       message?: string;
       items: GiftItemInput[];
     }) => post<GiftResult>("/api/v1/gifts", { ...input, couponSetId: null }),
     createFromSet: (input: {
       receiverId: number;
       expiresAt: string;
+      title?: string;
       message?: string;
       couponSetId: number;
     }) => post<GiftResult>("/api/v1/gifts", { ...input, items: [] }),
     sent: () => get<SentGift[]>("/api/v1/gifts/sent"),
+    received: () => get<ReceivedGift[]>("/api/v1/gifts/received"),
+    open: (id: number) => post<ReceivedGift>(`/api/v1/gifts/${id}/open`),
   },
 
   coupons: {

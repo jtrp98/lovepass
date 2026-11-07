@@ -39,9 +39,36 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
             var pack = gift.PackPlan is null ? null : GiftPackPlan.FromJson(gift.PackPlan);
             var detail = pack is null ? string.Join(", ", gift.Coupons.Select(c => $"{c.ReadSnapshot().Name} ×{c.Quantity}"))
                 : $"{pack.Name} · รับเข้ากระเป๋าแล้ว {pack.Draws.Count}/{pack.Total} ใบ";
+            var title = string.IsNullOrWhiteSpace(gift.Title)
+                ? $"มอบ{(pack is null ? "คูปอง" : "ซองคูปอง")}ให้ {gift.Receiver?.DisplayName ?? "แฟน"}"
+                : $"มอบของขวัญ \"{gift.Title}\" ให้ {gift.Receiver?.DisplayName ?? "แฟน"}";
             entries.Add(new HistoryEntryDto(
                 "GIFT",
-                $"มอบ{(pack is null ? "คูปอง" : "ซองคูปอง")}ให้ {gift.Receiver?.DisplayName ?? "แฟน"}",
+                title,
+                string.IsNullOrWhiteSpace(gift.Message) ? detail : $"{detail} — \"{gift.Message}\"",
+                gift.CreatedAt));
+        }
+
+        // ประวัติการได้รับของขวัญ (ฉันเป็นผู้รับ)
+        var receivedGifts = await db.GiftBatches.AsNoTracking()
+            .Include(b => b.Coupons)
+            .Include(b => b.Sender)
+            .Where(b => b.ReceiverId == userId && partnerIds.Contains(b.SenderId))
+            .OrderByDescending(b => b.CreatedAt)
+            .Take(100)
+            .ToListAsync(cancellationToken);
+
+        foreach (var gift in receivedGifts)
+        {
+            var pack = gift.PackPlan is null ? null : GiftPackPlan.FromJson(gift.PackPlan);
+            var detail = pack is null ? string.Join(", ", gift.Coupons.Select(c => $"{c.ReadSnapshot().Name} ×{c.Quantity}"))
+                : $"{pack.Name} · รับเข้ากระเป๋าแล้ว {pack.Draws.Count}/{pack.Total} ใบ";
+            var title = string.IsNullOrWhiteSpace(gift.Title)
+                ? $"ได้รับ{(pack is null ? "ของขวัญ" : "ซองของขวัญ")}จาก {gift.Sender?.DisplayName ?? "แฟน"}"
+                : $"ได้รับของขวัญ \"{gift.Title}\" จาก {gift.Sender?.DisplayName ?? "แฟน"}";
+            entries.Add(new HistoryEntryDto(
+                "RECEIVED",
+                title,
                 string.IsNullOrWhiteSpace(gift.Message) ? detail : $"{detail} — \"{gift.Message}\"",
                 gift.CreatedAt));
         }
@@ -65,9 +92,9 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
                 redemption.ResolvedAt ?? redemption.RequestedAt));
         }
 
-        // คูปองที่หมดอายุ (ฉันเป็นผู้รับ)
+        // คูปองที่หมดอายุ (ฉันเป็นผู้รับ และยังมีจำนวนคงเหลือที่ไม่ได้ใช้)
         var expired = await db.IssuedCoupons.AsNoTracking()
-            .Where(c => c.ReceiverId == userId && partnerIds.Contains(c.SenderId) && c.ExpiresAt <= now)
+            .Where(c => c.ReceiverId == userId && partnerIds.Contains(c.SenderId) && c.ExpiresAt <= now && c.RemainingQuantity > 0)
             .OrderByDescending(c => c.ExpiresAt)
             .Take(100)
             .ToListAsync(cancellationToken);
@@ -77,7 +104,7 @@ public sealed class GetHistoryQueryHandler(IApplicationDbContext db, ICurrentUse
             entries.Add(new HistoryEntryDto(
                 "EXPIRED",
                 $"คูปอง {coupon.ReadSnapshot().Name} หมดอายุ",
-                coupon.RemainingQuantity > 0 ? $"เหลือใช้ไม่ได้ {coupon.RemainingQuantity} ใบ" : null,
+                $"เหลือใช้ไม่ได้ {coupon.RemainingQuantity} ใบ",
                 coupon.ExpiresAt));
         }
 
