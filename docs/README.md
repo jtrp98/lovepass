@@ -29,6 +29,7 @@
 
 ## archive — ประวัติ
 
+- [Release notes 1.4.4](archive/releases/1.4.4.md) — แก้ไขปัญหาการแสดงผลของขวัญแอนะล็อกบนมือถือ, จัดระเบียบข้อความไทยเต็มความกว้าง และ closing vignette
 - [Release notes 1.4.3](archive/releases/1.4.3.md) — ประสบการณ์ของขวัญทำมือ A Little Love Made by Hand, โหมดแคปหน้าจอ และแชร์สตอรี่ 1080×1920
 
 - [Release notes 1.2.1](archive/releases/1.2.1.md) — คำขอที่รอยืนยันแสดงข้อมูลที่ส่งจริง และผู้ส่งซองกำหนดเฉพาะจำนวนสิทธิ์แต่ละระดับ

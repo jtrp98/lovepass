@@ -284,3 +284,13 @@ test("newly authored analog SVG materials exist and are safe", () => {
   }
 });
 
+test("keepsake sheet layout safeguards against mobile squashing", () => {
+  const css = readFileSync(new URL("../src/app/pocket.css", import.meta.url), "utf8");
+  assert.ok(css.includes(".gift-closing-doodle"), "closing doodle class must exist");
+  assert.ok(css.includes(".gift-salutation") && css.includes("overflow-wrap: break-word"), "salutation must have word break");
+  assert.ok(css.includes(".gift-headline") && css.includes("overflow-wrap: break-word"), "headline must have word break");
+  assert.ok(css.includes("-webkit-mask"), "webkit mask prefix must exist for mobile support");
+  assert.ok(css.includes(".is-screenshot-mode .gift-close-btn"), "screenshot mode hides close button");
+});
+
+
