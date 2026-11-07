@@ -110,6 +110,59 @@ export default function LovePassDesign() {
             </a>)}
           </div>
         </section>
+        <section className="pocket-exploration" id="keepsake" aria-labelledby="keepsake-title">
+          <p className="pocket-mono">A LITTLE LOVE, MADE BY HAND ♡</p>
+          <h2 id="keepsake-title">การ์ดของขวัญแอนะล็อกฉบับสมบูรณ์</h2>
+          <p>จัดวางด้วยกระดาษคอตตอน Warm Ivory, โน้ตฉีกขอบ, เทปวาชิ และตั๋วคูปองแบบงานฝีมือ ออกแบบให้อ่านง่ายบนทุกหน้าจอ</p>
+          <div className="mx-auto mt-6 max-w-lg">
+            <article className="gift-keepsake-sheet">
+              <span className="gift-corner-tape gift-corner-tape-left" aria-hidden="true" />
+              <span className="gift-corner-tape gift-corner-tape-right" aria-hidden="true" />
+              <img src="/materials/illustrations/ribbon-bow.svg" alt="" className="gift-center-bow" aria-hidden="true" />
+              <div className="gift-keepsake-frame space-y-4">
+                <header className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="gift-whisper">made a little something for you ♡</span>
+                    <span className="gift-date-stamp pocket-mono">03.11.2026</span>
+                  </div>
+                  <div className="pt-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="gift-salutation">ถึง เธอคนโปรด ♡</p>
+                      <img src="/materials/illustrations/pencil-hearts.svg" alt="" className="h-5 w-auto opacity-70 shrink-0" aria-hidden="true" />
+                    </div>
+                    <h2 className="gift-headline mt-1">ของขวัญชิ้นเล็ก ๆ ให้เธอ ♡</h2>
+                    <p className="gift-correction mt-1">
+                      <span className="gift-correction-strike">ให้แค่ปีนี้</span>
+                      <span>ตั้งใจทำให้เธอคนเดียว ♡</span>
+                    </p>
+                  </div>
+                </header>
+                <div className="gift-torn-note">
+                  <span className="gift-torn-note-tape" aria-hidden="true" />
+                  <p className="gift-note-short">“เหนื่อยเมื่อไหร่ก็หยิบมาใช้นะ อยู่ข้าง ๆ เธอเสมอ”</p>
+                  <p className="gift-note-sign">— ด้วยรักเสมอ, เจ ♡</p>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="gift-section-title">HANDMADE PROMISES · คำสัญญาจากใจ</span>
+                    <span className="pocket-mono text-xs text-muted">1 ใบสำหรับเธอ</span>
+                  </div>
+                  <ul className="gift-handmade-tickets">
+                    <li className="gift-handmade-ticket" data-rarity="COMMON">
+                      <div className="gift-ticket-icon"><TicketIllustration category="AFFECTION" /></div>
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs"><span className="font-semibold">ความรักและกอด</span></div>
+                        <h4 className="font-semibold text-ink leading-snug">ตั๋วกอดไม่อั้น</h4>
+                        <p className="gift-ticket-desc">เหนื่อยเมื่อไหร่ก็มากอดกันนะ ไม่มีวันหมดอายุ</p>
+                      </div>
+                      <div className="gift-ticket-stub"><span className="gift-ticket-stamp-qty">×1</span><span className="text-[11px] text-muted">ใบสำหรับเธอ</span></div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
         <section className="pocket-exploration" id="directions" aria-labelledby="directions-title">
           <p className="pocket-mono">THREE WAYS TO SAY “I LOVE YOU”</p>
           <h2 id="directions-title">ความรู้สึกเดียวกัน เล่าได้สามแบบ</h2>

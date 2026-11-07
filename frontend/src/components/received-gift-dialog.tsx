@@ -186,31 +186,42 @@ export function ReceivedGiftDialog({
 
             <div className="gift-keepsake-frame space-y-4">
               {/* Header: Whisper & Date Stamp */}
-              <header className="space-y-3">
+              <header className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="gift-whisper">{copy.whisper}</span>
-                  <span className="gift-date-stamp pocket-mono">
-                    {copy.dateStamp}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="gift-date-stamp pocket-mono">
+                      {copy.dateStamp}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={onClose}
+                      aria-label="ปิดการ์ดของขวัญ"
+                      className="gift-close-btn h-7 w-7 min-h-0 min-w-0 p-0 rounded-full text-muted hover:text-ink"
+                    >
+                      ✕
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex items-start justify-between gap-3 pt-1">
-                  <div className="space-y-1">
+                <div className="pt-0.5">
+                  <div className="flex items-center justify-between gap-2">
                     <p className="gift-salutation">{copy.salutation}</p>
-                    <h2 className="gift-headline">{copy.headline}</h2>
-                    <p className="gift-correction">
-                      <span className="gift-correction-strike">
-                        {copy.crossedOut}
-                      </span>
-                      <span>{copy.correction}</span>
-                    </p>
+                    <img
+                      src="/materials/illustrations/pencil-hearts.svg"
+                      alt=""
+                      className="h-5 w-auto opacity-70 shrink-0"
+                      aria-hidden="true"
+                    />
                   </div>
-                  <div
-                    className="gift-header-doodle shrink-0"
-                    aria-hidden="true"
-                  >
-                    <LoveDoodle />
-                  </div>
+                  <h2 className="gift-headline mt-1">{copy.headline}</h2>
+                  <p className="gift-correction mt-1">
+                    <span className="gift-correction-strike">
+                      {copy.crossedOut}
+                    </span>
+                    <span>{copy.correction}</span>
+                  </p>
                 </div>
               </header>
 
@@ -294,6 +305,14 @@ export function ReceivedGiftDialog({
                     );
                   })}
                 </ul>
+              </div>
+
+              {/* Closing Couple Vignette */}
+              <div
+                className="gift-closing-doodle mx-auto w-24 pt-3 pb-1"
+                aria-hidden="true"
+              >
+                <LoveDoodle />
               </div>
 
               {/* Footnote on Keepsake Sheet */}
