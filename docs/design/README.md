@@ -48,6 +48,8 @@
 | `tickets/guilloche.svg`, `tickets/corner-*.svg` | [`scripts/materials.mjs`](../../frontend/scripts/materials.mjs) | ลายพิมพ์กันปลอมบน stub, มุมกรอบตั๋ว |
 | `stamps/postage-heart.svg`, `stamps/postmark-waves.svg` | `scripts/materials.mjs` | โปสการ์ดของขวัญที่ส่ง |
 | `tickets/flourish-heart.svg`, `stamps/keepsake-seal.svg`, `tickets/lace-edge.svg` | `scripts/materials.mjs` | ลายพิมพ์คั่นดอกไม้หัวใจ, ตราประทับของขวัญ, และลายขอบกิโยเช่บนแผ่นการ์ดของขวัญที่ระลึก |
+| `paper/torn-note-edge.svg`, `stamps/handmade-date-stamp.svg` | `scripts/materials.mjs` | ขอบกระดาษโน้ตฉีก และตราประทับวันที่บนแผ่นของขวัญทำมือและการ์ดแชร์ IG Story |
+| `illustrations/ribbon-bow.svg`, `illustrations/pencil-hearts.svg` | เขียนเอง | โบว์ริบบิ้นและหัวใจดินสอไม้ประดับแผ่นของขวัญและการ์ดแชร์ IG Story |
 | `illustrations/coupons/*.svg` | เขียนเอง | ภาพประจำหมวดคูปอง (`TicketIllustration`) รวม `gift.svg` กล่องผูกโบ และ `power.svg` ตั๋วรอยปรุกับลูกศรเล่นซ้ำ ที่เพิ่มพร้อมหมวด GIFT / POWER |
 
 Filter ที่ใช้ร่วมกันอยู่ใน [`material-defs.tsx`](../../frontend/src/components/material-defs.tsx) (render ครั้งเดียวที่ root layout): `lp-stamp-ink` หมึกตรายาง, `lp-print` หมึกพิมพ์, `lp-torn` ขอบกระดาษฉีก

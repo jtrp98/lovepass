@@ -1,5 +1,6 @@
 import { ApiError, api, tokenStore } from "../src/lib/api.ts";
 import { couponCategories, resolveCategory } from "../src/lib/coupon-categories.ts";
+import { buildKeepsakeCopy, defaultCouponDescription } from "../src/lib/gift-share.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -223,3 +224,63 @@ test("rejected login never refreshes or expires an existing session; protected r
     else Reflect.deleteProperty(globalThis, "window");
   }
 });
+
+test("buildKeepsakeCopy crafts personalized analog keepsake text without invented facts", () => {
+  const gift = {
+    id: 12,
+    senderName: "เจ",
+    title: "สุขสันต์วันครบรอบนะ 💕",
+    message: "ขอบคุณที่อยู่ข้างกันเสมอ รักเธอที่สุดเลย",
+    createdAt: "2026-11-08T10:00:00Z",
+    openedAt: null,
+    coupons: [
+      { name: "กอดไม่อั้น", description: "", emoji: null, rarity: "COMMON" as const, quantity: 2, remaining: 2, expiresAt: "2027-11-08T00:00:00Z" },
+    ],
+  };
+
+  const copy = buildKeepsakeCopy(gift, "มิ้นท์");
+  assert.equal(copy.salutation, "ถึง มิ้นท์ คนโปรด ♡");
+  assert.equal(copy.headline, "สุขสันต์วันครบรอบนะ 💕");
+  assert.equal(copy.crossedOut, "ให้แค่ปีนี้");
+  assert.equal(copy.correction, "ตั้งใจทำให้เธอคนเดียวเลยนะ ♡");
+  assert.equal(copy.signature, "— จาก เจ, รักเสมอ ♡");
+  assert.equal(copy.isLongNote, false);
+  assert.match(copy.footnote, /ไม่มีวันนั้นหรอก/);
+  assert.equal(copy.dateStamp, "08.11.2026");
+
+  // Fallbacks when optional fields are empty
+  const minimalGift = {
+    id: 13,
+    senderName: "",
+    title: null,
+    message: null,
+    createdAt: "invalid-date",
+    coupons: [
+      { name: "ตั๋ว", description: "", emoji: null, rarity: "COMMON" as const, quantity: 1, remaining: 1, expiresAt: "2027-11-08T00:00:00Z" },
+    ],
+  };
+  const minimalCopy = buildKeepsakeCopy(minimalGift, null);
+  assert.equal(minimalCopy.salutation, "ถึง เธอ คนโปรด ♡");
+  assert.equal(minimalCopy.headline, "ของขวัญชิ้นเล็ก ๆ ให้เธอ ♡");
+  assert.equal(minimalCopy.crossedOut, "ให้แค่วันนี้");
+  assert.equal(minimalCopy.dateStamp, "TODAY");
+
+  // Default coupon promise descriptions
+  assert.match(defaultCouponDescription("AFFECTION", "กอด"), /กอดกันนะ/);
+  assert.match(defaultCouponDescription("FOOD", "มื้อพิเศษ"), /เราเลี้ยงเอง/);
+  assert.match(defaultCouponDescription("WISH", "ขอพร"), /ตั้งใจฟัง/);
+});
+
+test("newly authored analog SVG materials exist and are safe", () => {
+  const materials = [
+    "../public/materials/paper/torn-note-edge.svg",
+    "../public/materials/stamps/handmade-date-stamp.svg",
+    "../public/materials/illustrations/pencil-hearts.svg",
+  ];
+  for (const rel of materials) {
+    const content = readFileSync(new URL(rel, import.meta.url), "utf8");
+    assert.match(content, /<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    assert.doesNotMatch(content.replace("http://www.w3.org/2000/svg", ""), /<script|\bon\w+=|https?:\/\//i);
+  }
+});
+

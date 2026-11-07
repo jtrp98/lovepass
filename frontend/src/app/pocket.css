@@ -492,14 +492,15 @@
 }
 
 /* ── Keepsake Gift Sheet & Dialog ──────────────────────────────────────────
-   Analog stationery souvenir for received gifts. Features die-cut corners,
-   printed double rule, postmark cancellation, and attached mini tickets. */
+   A Little Love, Made by Hand ♡: Japanese Romantic Stationery & Analog Keepsake.
+   Features warm ivory cotton paper, deckled torn love note, corner washi tapes,
+   ribbon bow, handcrafted tickets with perforations, and clean screenshot dock. */
 .gift-keepsake-dialog {
   padding: 0.5rem 0.25rem 1.5rem !important;
   border: none !important;
   background: transparent !important;
-  max-width: min(34rem, calc(100vw - 1.5rem)) !important;
-  max-height: min(88dvh, 920px) !important;
+  max-width: min(35rem, calc(100vw - 1.25rem)) !important;
+  max-height: min(90dvh, 940px) !important;
   box-shadow: none !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
@@ -520,149 +521,201 @@
 .gift-keepsake-dialog > div {
   margin: 0 !important;
 }
+
+/* Main Keepsake Sheet (The Artifact) */
 .gift-keepsake-sheet {
   position: relative;
-  border-radius: 6px;
-  background: var(--paper-grain), var(--color-surface);
+  border-radius: 12px;
+  border: 1.5px solid var(--color-line);
+  background:
+    radial-gradient(circle 1px, color-mix(in srgb, var(--color-line) 60%, transparent) 1px, transparent 1.2px) 0 0 / 22px 22px,
+    var(--paper-grain),
+    var(--color-surface);
   color: var(--pocket-ink);
-  filter: var(--shadow-ticket-lifted);
-  padding: 1.5rem 1.25rem;
-  overflow: hidden;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 8%, transparent), 0 14px 32px -10px color-mix(in srgb, var(--color-ink) 18%, transparent);
+  padding: 1.75rem 1.25rem 1.25rem;
 }
-.gift-keepsake-sheet::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 8px;
-  background: repeating-linear-gradient(-45deg, var(--color-love) 0 10px, transparent 10px 15px, var(--color-sky-ink) 15px 25px, transparent 25px 30px), var(--color-surface);
-  opacity: .85;
-}
-.gift-keepsake-frame {
-  position: relative;
-  border: 1px solid color-mix(in srgb, var(--color-love) 32%, transparent);
-  border-radius: 4px;
-  padding: 1.25rem 1rem 1rem;
-}
-.gift-keepsake-frame::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 1px dashed color-mix(in srgb, var(--color-love) 18%, transparent);
-  border-radius: 2px;
-  pointer-events: none;
-}
-.gift-frame-corner {
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  pointer-events: none;
-  opacity: .5;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-.gift-corner-tl { top: -2px; left: -2px; background-image: url("/materials/tickets/corner-tl.svg"); }
-.gift-corner-tr { top: -2px; right: -2px; background-image: url("/materials/tickets/corner-tr.svg"); }
-.gift-corner-bl { bottom: -2px; left: -2px; background-image: url("/materials/tickets/corner-bl.svg"); }
-.gift-corner-br { bottom: -2px; right: -2px; background-image: url("/materials/tickets/corner-br.svg"); }
 
-.gift-keepsake-header {
-  position: relative;
-  padding-right: 4.5rem;
-  margin-bottom: 1rem;
-}
-.gift-postage-mark {
+/* Corner washi tape strips & center bow */
+.gift-corner-tape {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 48px;
-  height: 58px;
+  top: -10px;
+  width: 6.2rem;
+  height: 1.65rem;
+  background: url("/materials/paper/washi-tape.svg") center / 100% 100% no-repeat;
   pointer-events: none;
-  background: url("/materials/stamps/postage-heart.svg") center / contain no-repeat;
-  transform: rotate(3deg);
-  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--color-ink) 20%, transparent));
+  z-index: 2;
 }
-.gift-postage-mark::after {
-  content: "";
+.gift-corner-tape-left {
+  left: 1.25rem;
+  transform: rotate(-7deg);
+}
+.gift-corner-tape-right {
+  right: 1.25rem;
+  transform: rotate(6deg);
+}
+.gift-center-bow {
   position: absolute;
-  left: -48px;
-  top: 18px;
-  width: 72px;
-  height: 22px;
-  background: var(--color-stamp);
-  mask: url("/materials/stamps/postmark-waves.svg") 0 0 / 72px 22px no-repeat;
-  filter: url(#lp-stamp-ink);
-  mix-blend-mode: multiply;
-  opacity: .65;
-}
-.gift-flourish {
-  display: block;
-  width: min(100%, 15rem);
-  height: 1.25rem;
-  margin: .5rem auto;
-  color: var(--color-love);
-  opacity: .75;
-}
-.gift-keepsake-note {
-  position: relative;
-  margin-top: .75rem;
-  padding: .75rem 1rem 1.75rem;
-  border-radius: 4px;
-  background: repeating-linear-gradient(transparent 0 1.75rem, color-mix(in srgb, var(--color-love) 12%, transparent) 1.75rem calc(1.75rem + 1px)) 0 .5rem, var(--paper-grain), var(--color-love-soft);
-  font-family: var(--font-mali), sans-serif;
-  line-height: 1.75rem;
-  color: var(--color-ink);
-}
-.gift-note-tape {
-  position: absolute;
-  top: -8px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 5rem;
-  height: 1rem;
-  background: color-mix(in srgb, var(--color-tape) 80%, white);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
-  border-radius: 1px;
-}
-.gift-note-seal {
-  position: absolute;
-  right: .5rem;
-  bottom: -.5rem;
-  width: 2rem;
-  height: 2rem;
+  width: 3.2rem;
+  height: 1.9rem;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 3;
 }
 
-/* Attached mini tickets */
-.gift-attached-tickets {
-  display: grid;
-  gap: .75rem;
-  margin-block: 1rem;
+.gift-keepsake-frame {
+  position: relative;
+  border: 1px dashed color-mix(in srgb, var(--color-love) 26%, transparent);
+  border-radius: 8px;
+  padding: 1.25rem 1rem 1rem;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
 }
-.gift-attached-ticket {
+
+.gift-whisper {
+  font-family: var(--font-mali), sans-serif;
+  font-size: 0.92rem;
+  color: var(--color-muted);
+}
+
+.gift-date-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1.2px solid color-mix(in srgb, var(--color-love) 40%, transparent);
+  background: var(--color-sky-soft);
+  color: var(--color-ink);
+  font-size: 11px;
+  filter: url(#lp-stamp-ink);
+}
+
+.gift-salutation {
+  font-family: var(--font-mali), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-love);
+}
+
+.gift-headline {
+  font-family: var(--font-mali), sans-serif;
+  font-size: clamp(1.35rem, 3.8vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-ink);
+}
+
+.gift-correction {
+  font-family: var(--font-mali), sans-serif;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+.gift-correction-strike {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-love);
+  text-decoration-thickness: 1.8px;
+  opacity: 0.75;
+  margin-right: 0.25rem;
+}
+
+/* Pinned torn-paper note */
+.gift-torn-note {
+  position: relative;
+  margin-top: 0.85rem;
+  padding: 1.25rem 1.15rem 1.5rem;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(transparent 0 calc(2rem - 1px), color-mix(in srgb, var(--color-sky-ink) 12%, transparent) calc(2rem - 1px) 2rem) 0 0.5rem,
+    color-mix(in srgb, var(--color-surface) 86%, var(--color-butter-soft));
+  border: 1px solid color-mix(in srgb, var(--color-line) 85%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-ink) 7%, transparent);
+  transform: rotate(-0.7deg);
+  mask:
+    radial-gradient(circle at 50% 100%, #000 98%, #0000) 0 0 / 100% calc(100% - 10px) no-repeat,
+    url("/materials/paper/torn-note-edge.svg") 0 100% / 100% 16px no-repeat;
+  mask-composite: add;
+}
+.gift-torn-note-tape {
+  position: absolute;
+  top: -8px;
+  left: 1.25rem;
+  width: 4.2rem;
+  height: 1.2rem;
+  background: url("/materials/paper/washi-tape.svg") center / 100% 100% no-repeat;
+  transform: rotate(-6deg);
+}
+.gift-note-short {
+  font-family: var(--font-mali), sans-serif;
+  font-size: 1.05rem;
+  line-height: 2rem;
+  color: var(--color-ink);
+  white-space: pre-wrap;
+}
+.gift-note-long {
+  font-family: var(--font-sarabun), sans-serif;
+  font-size: 0.95rem;
+  line-height: 2rem;
+  color: var(--color-ink);
+  white-space: pre-wrap;
+}
+.gift-note-sign {
+  margin-top: 0.5rem;
+  text-align: right;
+  font-family: var(--font-mali), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-love);
+}
+
+.gift-section-title {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+/* Hand-cut tickets list */
+.gift-handmade-tickets {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 0.75rem;
+}
+.gift-handmade-ticket {
   --ticket-paper: var(--color-rarity-common-paper);
   --ticket-ink: var(--color-rarity-common-ink);
   position: relative;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
-  gap: .75rem;
-  padding: .75rem .9rem;
-  border-radius: 4px;
-  border: 1px solid color-mix(in srgb, var(--ticket-ink) 35%, transparent);
+  gap: 0.85rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--ticket-ink) 28%, transparent);
   background: var(--paper-grain), var(--ticket-paper);
   color: var(--ticket-ink);
   mask:
     radial-gradient(circle 6px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
     radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
   mask-composite: add;
+  transition: transform var(--motion-soft) var(--ease-paper);
 }
-.gift-attached-ticket[data-rarity="RARE"] { --ticket-paper: var(--color-rarity-rare-paper); --ticket-ink: var(--color-rarity-rare-ink); }
-.gift-attached-ticket[data-rarity="EPIC"] { --ticket-paper: var(--color-rarity-epic-paper); --ticket-ink: var(--color-rarity-epic-ink); }
-.gift-attached-ticket[data-rarity="LEGENDARY"] { --ticket-paper: var(--color-rarity-legendary-paper); --ticket-ink: var(--color-rarity-legendary-ink); }
-.gift-attached-ticket[data-rarity="MYTHIC"] { --ticket-paper: var(--color-rarity-mythic-paper); --ticket-ink: var(--color-rarity-mythic-ink); }
+.gift-handmade-ticket[data-rarity="RARE"] { --ticket-paper: var(--color-rarity-rare-paper); --ticket-ink: var(--color-rarity-rare-ink); }
+.gift-handmade-ticket[data-rarity="EPIC"] { --ticket-paper: var(--color-rarity-epic-paper); --ticket-ink: var(--color-rarity-epic-ink); }
+.gift-handmade-ticket[data-rarity="LEGENDARY"] { --ticket-paper: var(--color-rarity-legendary-paper); --ticket-ink: var(--color-rarity-legendary-ink); }
+.gift-handmade-ticket[data-rarity="MYTHIC"] { --ticket-paper: var(--color-rarity-mythic-paper); --ticket-ink: var(--color-rarity-mythic-ink); background-image: var(--paper-grain), var(--rarity-mythic-foil); }
+
+@media (min-width: 480px) {
+  .gift-handmade-ticket:nth-child(odd) { transform: rotate(-0.35deg); }
+  .gift-handmade-ticket:nth-child(even) { transform: rotate(0.35deg); }
+}
 
 .gift-ticket-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -672,22 +725,68 @@
 .gift-ticket-icon .pocket-drawing {
   width: 32px;
 }
-.gift-ticket-stamp-qty {
+.gift-ticket-desc {
   font-family: var(--font-mali), sans-serif;
-  font-size: .875rem;
-  font-weight: 600;
-  padding: .2rem .5rem;
-  border: 1px dashed currentColor;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+.gift-ticket-stub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0.75rem;
+  border-left: 1.5px dashed color-mix(in srgb, var(--ticket-ink) 28%, transparent);
+  text-align: center;
   white-space: nowrap;
 }
-.gift-action-bar {
+.gift-ticket-stamp-qty {
+  font-family: var(--font-mali), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-stamp);
+  filter: url(#lp-stamp-ink);
+}
+
+.gift-sheet-footnote {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* External Floating Action Dock (Separated from sheet) */
+.gift-keepsake-dock {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--color-ink) 10%, transparent);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: .5rem;
-  padding-top: .75rem;
-  border-top: 1px dashed var(--color-line);
+  gap: 0.6rem;
+}
+
+/* Clean Screenshot Mode */
+.is-screenshot-mode .gift-keepsake-dock {
+  display: none !important;
+}
+.gift-screenshot-exit-bar {
+  position: sticky;
+  bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  z-index: 40;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gift-handmade-ticket { transform: none !important; }
 }

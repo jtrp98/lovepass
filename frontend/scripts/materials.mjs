@@ -133,3 +133,34 @@ const wave = (width, y, amplitude, period, phase, step = 1) => {
   </g>
 </svg>`);
 }
+
+// Torn note edge mask: fibrous deckled edge with organic tearing frequencies.
+{
+  const width = 320, height = 24;
+  const points = ["M0 0", "L320 0", "L320 12"];
+  for (let x = 320; x >= 0; x -= 2) {
+    const y = 14 + 3.2 * Math.sin(x * 0.08) + 1.8 * Math.sin(x * 0.22 + 1.2) + 0.9 * Math.sin(x * 0.51 + 2.4);
+    points.push(`L${n(x)} ${n(y)}`);
+  }
+  points.push("Z");
+  write("paper/torn-note-edge.svg", `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <path d="${points.join(" ")}" fill="#fff"/>
+</svg>`);
+}
+
+// Vintage double-frame box stamp for keepsake creation date.
+{
+  const width = 112, height = 34;
+  write("stamps/handmade-date-stamp.svg", `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="2" width="108" height="30" rx="6" stroke-width="1.4"/>
+    <rect x="4.5" y="4.5" width="103" height="25" rx="4" stroke-width=".7" stroke-dasharray="2 1.5"/>
+    <circle cx="8" cy="8" r=".8" fill="currentColor"/>
+    <circle cx="104" cy="8" r=".8" fill="currentColor"/>
+    <circle cx="8" cy="26" r=".8" fill="currentColor"/>
+    <circle cx="104" cy="26" r=".8" fill="currentColor"/>
+  </g>
+</svg>`);
+}

@@ -41,6 +41,8 @@ const icons = {
   hearts: <><path d="M12 25S3 19.5 3 13.6C3 9.3 9 8 12 12.4 15 8 21 9.3 21 13.6 21 19.5 12 25 12 25Z" /><path d="M22.5 15.5S29 11.6 29 7.6c0-2.9-4-3.8-6.5-.9-2.5-2.9-6.5-2-6.5.9" /></>,
   letter: <><rect x="3" y="7" width="26" height="19" rx="2" /><path d="m3.5 8 12.5 9.5L28.5 8" /><path d="M16 23s-3.4-2.1-3.4-4.3c0-1.7 2.4-2.2 3.4-.6 1-1.6 3.4-1.1 3.4.6 0 2.2-3.4 4.3-3.4 4.3Z" fill="currentColor" stroke="none" /></>,
   ticket: <><path d="M3 9a2 2 0 0 1 2-2h22a2 2 0 0 1 2 2v3.5a3.5 3.5 0 0 0 0 7V23a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3.5a3.5 3.5 0 0 0 0-7Z" /><path d="M21 8v16" strokeDasharray="1.6 2" /><path d="M12 20s-3.4-2.1-3.4-4.3c0-1.7 2.4-2.2 3.4-.6 1-1.6 3.4-1.1 3.4.6 0 2.2-3.4 4.3-3.4 4.3Z" fill="currentColor" stroke="none" /></>,
+  story: <><rect x="5" y="4" width="22" height="24" rx="2.5" /><rect x="7.5" y="6.5" width="17" height="15" rx="1.2" strokeWidth="1.3" /><path d="M16 15.5s-3-2-3-3.7c0-1.3 1.8-1.7 3-.5 1.2-1.2 3-.8 3 .5 0 1.7-3 3.7-3 3.7Z" fill="currentColor" stroke="none" /><circle cx="21" cy="9.5" r=".7" fill="currentColor" stroke="none" /><line x1="9" y1="24.5" x2="15" y2="24.5" strokeWidth="1.4" /></>,
+  camera: <><path d="M9 10.5 11 7h10l2 3.5H27a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h4Z" /><circle cx="16" cy="17" r="5" strokeWidth="1.6" /><circle cx="23.5" cy="13.5" r=".8" fill="currentColor" stroke="none" /></>,
 } as const;
 export type StationeryIconName = keyof typeof icons;
 
