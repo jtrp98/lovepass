@@ -96,9 +96,19 @@ export function ReceivedGiftDialog({
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-between text-xs text-muted">
                 <span className="pocket-mono">LOVE PASS ✦ FOR MY FAVORITE PERSON</span>
-                <span className="pocket-mono font-bold text-stamp">
-                  No. GF-{String(gift.id).padStart(4, "0")}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="pocket-mono font-bold text-stamp">
+                    No. GF-{String(gift.id).padStart(4, "0")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="ปิดของขวัญ"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-line bg-surface text-xs font-semibold text-muted hover:border-love hover:text-love"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               <div className="pack-cover my-2">
@@ -143,9 +153,19 @@ export function ReceivedGiftDialog({
                 <span className="gift-postage-mark" aria-hidden="true" />
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
                   <span className="pocket-mono">AIRMAIL ✦ PAR AVION</span>
-                  <span className="pocket-mono font-bold text-stamp">
-                    No. GF-{String(gift.id).padStart(4, "0")}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="pocket-mono font-bold text-stamp">
+                      No. GF-{String(gift.id).padStart(4, "0")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      aria-label="ปิดของขวัญ"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-line bg-surface text-xs font-semibold text-muted hover:border-love hover:text-love"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-2 space-y-1">
