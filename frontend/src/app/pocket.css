@@ -490,3 +490,186 @@
 @media (prefers-reduced-motion: reduce) {
   .pack-card-stack > span, .pack-result-ticket, .pack-receiver .envelope-flap, .pack-receiver .envelope-letter { animation: none !important; }
 }
+
+/* ── Keepsake Gift Sheet & Dialog ──────────────────────────────────────────
+   Analog stationery souvenir for received gifts. Features die-cut corners,
+   printed double rule, postmark cancellation, and attached mini tickets. */
+.gift-keepsake-dialog {
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  max-width: min(34rem, calc(100vw - 1.5rem)) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.gift-keepsake-sheet {
+  position: relative;
+  border-radius: 6px;
+  background: var(--paper-grain), var(--color-surface);
+  color: var(--pocket-ink);
+  filter: var(--shadow-ticket-lifted);
+  padding: 1.5rem 1.25rem;
+  overflow: hidden;
+}
+.gift-keepsake-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: repeating-linear-gradient(-45deg, var(--color-love) 0 10px, transparent 10px 15px, var(--color-sky-ink) 15px 25px, transparent 25px 30px), var(--color-surface);
+  opacity: .85;
+}
+.gift-keepsake-frame {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--color-love) 32%, transparent);
+  border-radius: 4px;
+  padding: 1.25rem 1rem 1rem;
+}
+.gift-keepsake-frame::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed color-mix(in srgb, var(--color-love) 18%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.gift-frame-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  opacity: .5;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.gift-corner-tl { top: -2px; left: -2px; background-image: url("/materials/tickets/corner-tl.svg"); }
+.gift-corner-tr { top: -2px; right: -2px; background-image: url("/materials/tickets/corner-tr.svg"); }
+.gift-corner-bl { bottom: -2px; left: -2px; background-image: url("/materials/tickets/corner-bl.svg"); }
+.gift-corner-br { bottom: -2px; right: -2px; background-image: url("/materials/tickets/corner-br.svg"); }
+
+.gift-keepsake-header {
+  position: relative;
+  padding-right: 4.5rem;
+  margin-bottom: 1rem;
+}
+.gift-postage-mark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 48px;
+  height: 58px;
+  pointer-events: none;
+  background: url("/materials/stamps/postage-heart.svg") center / contain no-repeat;
+  transform: rotate(3deg);
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--color-ink) 20%, transparent));
+}
+.gift-postage-mark::after {
+  content: "";
+  position: absolute;
+  left: -48px;
+  top: 18px;
+  width: 72px;
+  height: 22px;
+  background: var(--color-stamp);
+  mask: url("/materials/stamps/postmark-waves.svg") 0 0 / 72px 22px no-repeat;
+  filter: url(#lp-stamp-ink);
+  mix-blend-mode: multiply;
+  opacity: .65;
+}
+.gift-flourish {
+  display: block;
+  width: min(100%, 15rem);
+  height: 1.25rem;
+  margin: .5rem auto;
+  color: var(--color-love);
+  opacity: .75;
+}
+.gift-keepsake-note {
+  position: relative;
+  margin-top: .75rem;
+  padding: .75rem 1rem 1.75rem;
+  border-radius: 4px;
+  background: repeating-linear-gradient(transparent 0 1.75rem, color-mix(in srgb, var(--color-love) 12%, transparent) 1.75rem calc(1.75rem + 1px)) 0 .5rem, var(--paper-grain), var(--color-love-soft);
+  font-family: var(--font-mali), sans-serif;
+  line-height: 1.75rem;
+  color: var(--color-ink);
+}
+.gift-note-tape {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5rem;
+  height: 1rem;
+  background: color-mix(in srgb, var(--color-tape) 80%, white);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
+  border-radius: 1px;
+}
+.gift-note-seal {
+  position: absolute;
+  right: .5rem;
+  bottom: -.5rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Attached mini tickets */
+.gift-attached-tickets {
+  display: grid;
+  gap: .75rem;
+  margin-block: 1rem;
+}
+.gift-attached-ticket {
+  --ticket-paper: var(--color-rarity-common-paper);
+  --ticket-ink: var(--color-rarity-common-ink);
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  padding: .75rem .9rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--ticket-ink) 35%, transparent);
+  background: var(--paper-grain), var(--ticket-paper);
+  color: var(--ticket-ink);
+  mask:
+    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask-composite: add;
+}
+.gift-attached-ticket[data-rarity="RARE"] { --ticket-paper: var(--color-rarity-rare-paper); --ticket-ink: var(--color-rarity-rare-ink); }
+.gift-attached-ticket[data-rarity="EPIC"] { --ticket-paper: var(--color-rarity-epic-paper); --ticket-ink: var(--color-rarity-epic-ink); }
+.gift-attached-ticket[data-rarity="LEGENDARY"] { --ticket-paper: var(--color-rarity-legendary-paper); --ticket-ink: var(--color-rarity-legendary-ink); }
+.gift-attached-ticket[data-rarity="MYTHIC"] { --ticket-paper: var(--color-rarity-mythic-paper); --ticket-ink: var(--color-rarity-mythic-ink); }
+
+.gift-ticket-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ticket-ink) 12%, transparent);
+}
+.gift-ticket-icon .pocket-drawing {
+  width: 32px;
+}
+.gift-ticket-stamp-qty {
+  font-family: var(--font-mali), sans-serif;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .2rem .5rem;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  white-space: nowrap;
+}
+.gift-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding-top: .75rem;
+  border-top: 1px dashed var(--color-line);
+}

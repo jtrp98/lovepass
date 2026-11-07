@@ -80,3 +80,56 @@ const wave = (width, y, amplitude, period, phase, step = 1) => {
   <text x="${width / 2}" y="${height - 11.5}" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" font-size="4.2" letter-spacing=".8" fill="#59424c">FOR TWO · ALWAYS</text>
 </svg>`);
 }
+
+// Typographic flourish: center heart with botanical vines and seed dots.
+{
+  const width = 240, height = 24;
+  write("tickets/flourish-heart.svg", `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M120 17s-6.5-4.2-6.5-8.2c0-3 3.6-4.3 6.5-1.2 2.9-3.1 6.5-1.8 6.5 1.2 0 4-6.5 8.2-6.5 8.2Z" fill="currentColor" stroke="none"/>
+    <path d="M109 11c-14-1-26-5-44-5-22 0-38 6-53 6" stroke-width="1"/>
+    <path d="M131 11c14-1 26-5 44-5 22 0 38 6 53 6" stroke-width="1"/>
+    <path d="M82 8.5c-4-4.5-9-5.5-14-3.5 3 4 8 5.5 14 3.5Z" fill="currentColor" opacity=".5"/>
+    <path d="M158 8.5c4-4.5 9-5.5 14-3.5-3 4-8 5.5-14 3.5Z" fill="currentColor" opacity=".5"/>
+    <path d="M96 9.8c-3-3-7-3.8-11-2.2 2.2 3 5.8 4 11 2.2Z" fill="currentColor" opacity=".4"/>
+    <path d="M144 9.8c3-3 7-3.8 11-2.2-2.2 3-5.8 4-11 2.2Z" fill="currentColor" opacity=".4"/>
+    <circle cx="8" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+    <circle cx="232" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+    <circle cx="20" cy="12" r="1" fill="currentColor" stroke="none"/>
+    <circle cx="220" cy="12" r="1" fill="currentColor" stroke="none"/>
+  </g>
+</svg>`);
+}
+
+// Vintage double-oval postal cancellation seal for keepsake gifts.
+{
+  const width = 130, height = 82;
+  write("stamps/keepsake-seal.svg", `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="65" cy="41" rx="63" ry="39" stroke-width="1.8"/>
+    <ellipse cx="65" cy="41" rx="58" ry="34" stroke-width=".8" stroke-dasharray="2.5 2"/>
+    <path d="M22 41h86M26 35h78M26 47h78" stroke-width=".6" opacity=".5"/>
+    <text x="65" y="27" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" font-size="7.5" font-weight="700" letter-spacing="1.8" fill="currentColor">★ LOVE PASS ★</text>
+    <text x="65" y="44.5" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-style="italic" font-weight="600" letter-spacing=".6" fill="currentColor">Gift of Love</text>
+    <text x="65" y="61" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" font-size="6.5" font-weight="600" letter-spacing="1.2" fill="currentColor">SPECIAL FOR TWO</text>
+  </g>
+</svg>`);
+}
+
+// Scalloped lace security filigree edge for keepsake card heads.
+{
+  const width = 160, height = 12, arcs = [];
+  for (let x = 0; x < width; x += 16) {
+    arcs.push(`M${x} 2 Q${x + 8} 11 ${x + 16} 2`);
+  }
+  write("tickets/lace-edge.svg", `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <g fill="none" stroke="currentColor" stroke-width=".8" stroke-linecap="round">
+    <path d="${arcs.join(" ")}"/>
+    <line x1="0" y1="1.5" x2="${width}" y2="1.5" stroke-width="1"/>
+    ${Array.from({ length: 10 }, (_, i) => `<circle cx="${8 + i * 16}" cy="6" r=".8" fill="currentColor" stroke="none"/>`).join("")}
+  </g>
+</svg>`);
+}
