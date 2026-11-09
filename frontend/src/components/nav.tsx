@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui";
+
 const links = [
   { href: "/dashboard", label: "หน้าแรก", icon: "M3 10 12 3l9 7v11h-6v-7H9v7H3Z" },
   {
@@ -15,11 +16,13 @@ const links = [
   { href: "/requests", label: "คำขอ", icon: "M3 5h18v14H3Z m0 0 9 8 9-8" },
   { href: "/more", label: "เพิ่มเติม", icon: "M4 6h16 M4 12h16 M4 18h16" },
 ];
+
 export function Navbar() {
   const { user, logout } = useAuth(),
     pathname = usePathname(),
     router = useRouter();
   const navRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     const nav = navRef.current!;
     const measure = () =>
@@ -35,6 +38,7 @@ export function Navbar() {
       document.documentElement.style.removeProperty("--nav-height");
     };
   }, []);
+
   return (
     <>
       <header className="app-header border-b border-love-soft bg-surface">
@@ -69,9 +73,9 @@ export function Navbar() {
         {links.map((link) => {
           const active =
             link.href === "/catalog"
-              ? ["/catalog", "/sets", "/gifts/new", "/packs", "/packs/new"].includes(pathname)
+              ? ["/catalog", "/sets", "/gifts/new", "/packs/new"].includes(pathname)
               : link.href === "/more"
-                ? ["/more", "/history", "/couple", "/couple/accept", "/sent-gifts"].includes(pathname)
+                ? ["/more", "/history", "/couple", "/couple/accept", "/gifts", "/sent-gifts"].includes(pathname)
                 : pathname === link.href;
           return (
             <Link
@@ -101,6 +105,7 @@ export function Navbar() {
     </>
   );
 }
+
 export function GiftViews() {
   const pathname = usePathname();
   return (
@@ -108,7 +113,7 @@ export function GiftViews() {
       {[
         { href: "/catalog", label: "เลือกเอง" },
         { href: "/sets", label: "เลือกเป็นชุด" },
-        { href: "/packs", label: "จัดเป็นชุดของขวัญ" },
+        { href: "/packs/new", label: "จัดเป็นชุดของขวัญ" },
       ].map((link) => (
         <Link
           key={link.href}
@@ -122,6 +127,7 @@ export function GiftViews() {
     </nav>
   );
 }
+
 export function AdminNav() {
   const pathname = usePathname();
   return (

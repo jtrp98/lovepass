@@ -126,7 +126,7 @@ export function PackComposer() {
   if (result) return <Card variant="letter" className="pack-sent space-y-4 text-center">
     <Envelope><span>ถึง {couple.partnerDisplayName}</span><strong>{result.total} ใบ</strong><span>จากคนที่รักเธอ</span></Envelope>
     <Notice>ส่งซองให้แฟนแล้ว</Notice><h2>{result.name}</h2><p>รอเธอมาแกะตราครั่ง แล้วเปิดรับคำสัญญาของเรา</p>
-    <LinkButton href="/packs">ดูซองของเรา</LinkButton>
+    <LinkButton href="/gifts?tab=sent">ดูของขวัญของเรา</LinkButton>
   </Card>;
 
   if (review) return <Card variant="letter" className="space-y-5">
@@ -169,7 +169,7 @@ export function PackComposer() {
         setMessage("ดีใจที่โลกนี้มีเธอ ปีนี้ขอให้มีเราอยู่ข้าง ๆ ในทุกวันนะ");
         const next = new Date(); next.setFullYear(next.getFullYear() + 1); setExpiry(localDate(next));
       }}><StationeryIcon name="gift" className="h-5 w-5 shrink-0" />เริ่มจากชุดวันเกิด 22 ใบ</Button>}
-      <div className="grid gap-4 sm:grid-cols-2"><Field label="ชื่อชุดของขวัญ"><Input maxLength={100} value={name} onChange={e => setName(e.target.value)} /></Field><Field label="เลือกและใช้คูปองได้ถึง"><Input type="date" min={localDate()} value={expiry} onChange={e => setExpiry(e.target.value)} /></Field></div>
+      <div className="grid gap-4 sm:grid-cols-2"><Field label="ชื่อชุดของขวัญ"><Input maxLength={100} value={name} onChange={e => setName(e.target.value)} /></Field><Field label="วันสุดท้ายที่เลือกและใช้คูปองได้ (วันหมดอายุ)" hint="คูปองทุกใบในซองนี้จะหมดอายุในวันเดียวกันทั้งหมด แม้จะเปิดซองวันไหนก็ตาม (ไม่เริ่มนับใหม่หลังเปิด)"><Input type="date" min={localDate()} value={expiry} onChange={e => setExpiry(e.target.value)} /></Field></div>
       <Field label="ข้อความในการ์ดถึงเธอ"><Textarea maxLength={500} value={message} onChange={e => setMessage(e.target.value)} placeholder="การ์ดใบนี้ส่งไปพร้อมชุดของขวัญ เขียนอะไรให้เธออ่านหน่อยนะ…" /></Field>
     </Card>
 

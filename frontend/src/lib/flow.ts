@@ -7,6 +7,7 @@ const destinations = new Set([
   "/packs",
   "/packs/new",
   "/my-coupons",
+  "/gifts",
   "/gifts/new",
   "/requests",
   "/history",
