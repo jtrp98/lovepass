@@ -106,4 +106,48 @@ public class GiftPackTests
         Assert.False(validator.Validate(command with { Options = null! }).IsValid);
         Assert.False(validator.Validate(command with { Quotas = null! }).IsValid);
     }
+
+    [Fact]
+    public void GiftPackDtoMappingIncludesCreatedAtAndSenderName()
+    {
+        var plan = Plan();
+        var batch = new LovePass.Domain.Entities.GiftBatch
+        {
+            Id = 42,
+            SenderId = 1,
+            ReceiverId = 2,
+            CreatedAt = new DateTime(2026, 11, 8, 12, 0, 0, DateTimeKind.Utc),
+            PackPlan = plan.ToJson()
+        };
+
+        var dto = GiftPackMapping.Map(batch, userId: 2, senderName: "แฟนจ๋า");
+
+        Assert.Equal(42, dto.Id);
+        Assert.Equal(new DateTime(2026, 11, 8, 12, 0, 0, DateTimeKind.Utc), dto.CreatedAt);
+        Assert.Equal("แฟนจ๋า", dto.SenderName);
+        Assert.False(dto.IsSender);
+    }
+
+    [Fact]
+    public void GiftPackIssuePreservesExactExpiryDateFromPlan()
+    {
+        var expiry = new DateTime(2027, 2, 14, 16, 59, 59, DateTimeKind.Utc);
+        var plan = Plan();
+        plan.ExpiresAt = expiry;
+        var batch = new LovePass.Domain.Entities.GiftBatch
+        {
+            Id = 7,
+            SenderId = 1,
+            ReceiverId = 2,
+            PackPlan = plan.ToJson()
+        };
+
+        var option = plan.Options[0];
+        var issued = GiftPackMapping.Issue(batch, plan, option, quantity: 2);
+
+        // Coupon has identical expiry to the pack's set expiry (same day, never recalculated upon drawing)
+        Assert.Equal(expiry, issued.ExpiresAt);
+        Assert.Equal(2, issued.Quantity);
+        Assert.Equal(2, issued.RemainingQuantity);
+    }
 }

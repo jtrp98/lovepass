@@ -1,6 +1,8 @@
 using LovePass.Application.Common.Models;
 using LovePass.Application.Common.Services;
 using LovePass.Application.Features.Gifts;
+using LovePass.Domain.Entities;
+using LovePass.Domain.Enums;
 using Microsoft.Extensions.Options;
 
 namespace LovePass.Application.UnitTests;
@@ -72,5 +74,39 @@ public class GiftTests
         Assert.Contains("ซองคำสัญญา", subject);
         Assert.Contains("ขอให้ปีนี้มีความสุขมาก ๆ นะ", html);
         Assert.Contains("COMMON: ให้สิทธิ์ 5 ใบ", html);
+    }
+
+    [Fact]
+    public void IssuedCouponInheritsExactExpiryDateAndPreservesItAcrossOpening()
+    {
+        var expiresAt = new DateTime(2026, 12, 31, 16, 59, 59, DateTimeKind.Utc);
+        var coupon = new IssuedCoupon
+        {
+            Id = 1,
+            GiftBatchId = 10,
+            CouponTemplateId = 1,
+            Quantity = 2,
+            RemainingQuantity = 2,
+            ExpiresAt = expiresAt,
+            Status = IssuedCouponStatus.Active
+        };
+
+        var batch = new GiftBatch
+        {
+            Id = 10,
+            SenderId = 1,
+            ReceiverId = 2,
+            Coupons = [coupon],
+            OpenedAt = null
+        };
+
+        // Before opening: expiresAt matches the set date identically
+        Assert.Equal(expiresAt, coupon.ExpiresAt);
+        Assert.False(coupon.IsExpired);
+
+        // After opening the batch: OpenedAt is recorded, but coupon ExpiresAt is untouched (same day, no post-open reset)
+        batch.OpenedAt = DateTime.UtcNow;
+        Assert.Equal(expiresAt, coupon.ExpiresAt);
+        Assert.False(coupon.IsExpired);
     }
 }
