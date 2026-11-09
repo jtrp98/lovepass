@@ -34,3 +34,7 @@ Thumbs.db
 
 # local Claude Code preview config
 .claude/launch.json
+
+# Local scripts & SQL
+scripts/sql/
+*.sql
