@@ -1,19 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton, formatDate } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
 import Link from "next/link";
 import { LoveDoodle } from "@/components/love-doodle";
-import { StationeryIcon } from "@/components/stationery";
+import { StationeryIcon, type StationeryIconName } from "@/components/stationery";
 import { ReceivedGiftDialog } from "@/components/received-gift-dialog";
-import type { ReceivedGift } from "@/types";
+import type { GiftPack, ReceivedGift } from "@/types";
+
+const loadMyCoupons = () => api.coupons.my();
+
+type LatestGiftItem =
+  | { type: "coupon"; createdAt: string; gift: ReceivedGift }
+  | { type: "pack"; createdAt: string; pack: GiftPack };
 
 export default function DashboardPage() {
   const stats = useResource(api.coupons.dashboard),
     couple = useResource(api.couples.me),
-    receivedGifts = useResource(api.gifts.received);
+    receivedGifts = useResource(api.gifts.received),
+    packs = useResource(api.packs.list),
+    coupons = useResource(loadMyCoupons);
 
   const [activeGift, setActiveGift] = useState<ReceivedGift | null>(null);
   const autoOpenedRef = useRef(false);
@@ -29,7 +37,54 @@ export default function DashboardPage() {
   }, [receivedGifts.data]);
 
   const data = stats.data;
-  const latestGift = receivedGifts.data?.[0];
+
+  // Find the truly latest received gift across coupon gifts and tier packs
+  const latestItem: LatestGiftItem | null = useMemo(() => {
+    const list: LatestGiftItem[] = [];
+    if (receivedGifts.data?.[0]) {
+      list.push({
+        type: "coupon",
+        createdAt: receivedGifts.data[0].createdAt,
+        gift: receivedGifts.data[0],
+      });
+    }
+    const receivedPacks = (packs.data || []).filter((p) => !p.isSender);
+    if (receivedPacks[0]) {
+      list.push({
+        type: "pack",
+        createdAt: receivedPacks[0].createdAt || receivedPacks[0].expiresAt || new Date().toISOString(),
+        pack: receivedPacks[0],
+      });
+    }
+    if (list.length === 0) return null;
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list[0];
+  }, [receivedGifts.data, packs.data]);
+
+  const refreshAll = () => {
+    void stats.retry();
+    void couple.retry();
+    void receivedGifts.retry();
+    void packs.retry();
+    void coupons.retry();
+  };
+
+  const activeCoupons = (coupons.data || [])
+    .filter((c) => c.available > 0)
+    .slice(0, 3);
+
+  const statItems: {
+    label: string;
+    value: number;
+    href: string;
+    icon: StationeryIconName;
+    unit: string;
+  }[] = [
+    { label: "ได้รับแล้ว", value: data?.receivedCoupons ?? 0, href: "/my-coupons", icon: "ticket", unit: "ใบ" },
+    { label: "ใช้ไปแล้ว", value: data?.usedCoupons ?? 0, href: "/history", icon: "check", unit: "ใบ" },
+    { label: "ใกล้หมดอายุ", value: data?.expiringSoon ?? 0, href: "/my-coupons", icon: "hourglass", unit: "ใบ" },
+    { label: "คำขอรอพิจารณา", value: data?.pendingRequests ?? 0, href: "/requests", icon: "letter", unit: "คำขอ" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -40,7 +95,21 @@ export default function DashboardPage() {
             ? `สมุดตั๋วของคุณกับ ${couple.data.partnerDisplayName}`
             : "ความสุขเล็ก ๆ ที่ให้กันได้ทุกวัน"
         }
+        action={
+          couple.data ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={stats.loading || coupons.loading || receivedGifts.loading || packs.loading}
+              onClick={refreshAll}
+              aria-label="รีเฟรชข้อมูล"
+            >
+              รีเฟรช
+            </Button>
+          ) : undefined
+        }
       />
+
       {couple.error ? (
         <ErrorState message={couple.error} retry={couple.retry} />
       ) : couple.loading ? (
@@ -57,112 +126,189 @@ export default function DashboardPage() {
       ) : stats.loading ? (
         <Skeleton />
       ) : (
-        <Card variant="journal" className="journal-welcome space-y-3">
-          <LoveDoodle />
-          <h2 className="text-xl">
-            {data?.pendingRequests
-              ? "มีคำขอที่รอคุณยืนยัน"
-              : data?.expiringSoon
-                ? "อย่าลืมใช้ความสุขก่อนหมดอายุ"
-                : data?.receivedCoupons
-                  ? "วันนี้อยากใช้คูปองใบไหนดี?"
-                  : "ส่งความสุขใบแรกให้แฟน"}
-          </h2>
-          <p>
-            {data?.pendingRequests
-              ? `มี ${data.pendingRequests} คำขอ เปิดดูรายละเอียดก่อนให้ใช้สิทธิ์`
-              : "เลือกเวลาที่ใช่ แล้วทำตามคำสัญญาของสองเรา"}
-          </p>
-          <LinkButton
-            href={data?.pendingRequests ? "/requests" : data?.receivedCoupons ? "/my-coupons" : "/catalog"}
-          >
-            {data?.pendingRequests
-              ? "พิจารณาคำขอ"
-              : data?.receivedCoupons
-                ? "ดูคูปองของฉัน"
-                : "เลือกของขวัญให้แฟน"}
-          </LinkButton>
-        </Card>
-      )}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* คอลัมน์หลัก (ซ้าย): บันทึกต้อนรับและตั๋วพร้อมใช้ */}
+          <div className="space-y-6 lg:col-span-7">
+            <Card variant="journal" className="journal-welcome space-y-3">
+              <LoveDoodle />
+              <h2 className="text-xl">
+                {data?.pendingRequests
+                  ? "มีคำขอที่รอคุณยืนยัน"
+                  : data?.expiringSoon
+                    ? "อย่าลืมใช้ความสุขก่อนหมดอายุ"
+                    : data?.receivedCoupons
+                      ? "วันนี้อยากใช้คูปองใบไหนดี?"
+                      : "ส่งความสุขใบแรกให้แฟน"}
+              </h2>
+              <p>
+                {data?.pendingRequests
+                  ? `มี ${data.pendingRequests} คำขอ เปิดดูรายละเอียดก่อนให้ใช้สิทธิ์`
+                  : "เลือกเวลาที่ใช่ แล้วทำตามคำสัญญาของสองเรา"}
+              </p>
+              <LinkButton
+                href={data?.pendingRequests ? "/requests" : data?.receivedCoupons ? "/my-coupons" : "/catalog"}
+              >
+                {data?.pendingRequests
+                  ? "พิจารณาคำขอ"
+                  : data?.receivedCoupons
+                    ? "ดูคูปองของฉัน"
+                    : "เลือกของขวัญให้แฟน"}
+              </LinkButton>
+            </Card>
 
-      {latestGift && (
-        <Card variant="letter" className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="pocket-mono text-xs text-muted">ของขวัญล่าสุดจาก {latestGift.senderName}</p>
-              <h2 className="text-lg font-semibold">{latestGift.title || "ของขวัญจากใจ"}</h2>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveGift(latestGift)}
-            >
-              <StationeryIcon name="letter" className="h-4 w-4 shrink-0" />
-              {!latestGift.openedAt ? "เปิดซองของขวัญ" : "เปิดดูการ์ดของขวัญ"}
-            </Button>
-          </div>
-          {latestGift.message && (
-            <p className="font-display text-sm italic text-muted line-clamp-2">
-              “{latestGift.message}”
-            </p>
-          )}
-          <div className="flex flex-wrap items-center justify-between text-xs text-muted">
-            <span>
-              ได้รับเมื่อ {formatDate(latestGift.createdAt)} · รวม {latestGift.coupons.reduce((sum, c) => sum + c.quantity, 0)} ใบ
-            </span>
-            <Link href="/sent-gifts" className="text-love hover:underline">
-              ดูประวัติของขวัญทั้งหมด →
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      <section className="space-y-3" aria-label="ข้อมูลคูปองล่าสุด">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2>ตั๋วของเรา</h2>
-          <Button variant="ghost" disabled={stats.loading} onClick={stats.retry}>
-            รีเฟรชข้อมูล
-          </Button>
-        </div>
-        {stats.error ? (
-          couple.data ? null : (
-            <ErrorState message={stats.error} retry={stats.retry} />
-          )
-        ) : stats.loading ? (
-          <Skeleton />
-        ) : (
-          data && (
-            <dl className="journal-stats grid grid-cols-2 gap-3 border border-line p-4 sm:grid-cols-4">
-              {[
-                { label: "ได้รับแล้ว", value: data.receivedCoupons, href: "/my-coupons" },
-                { label: "ใช้ไปแล้ว", value: data.usedCoupons, href: "/history" },
-                { label: "ใกล้หมดอายุ", value: data.expiringSoon, href: "/my-coupons" },
-                { label: "คำขอรอพิจารณา", value: data.pendingRequests, href: "/requests" },
-              ].map((item) => (
-                <div key={item.label}>
-                  <dt className="text-sm text-muted">{item.label}</dt>
-                  <dd>
-                    <Link
-                      className="inline-flex min-h-12 items-center text-xl font-semibold text-love"
-                      href={item.href}
-                    >
-                      {item.value}
-                    </Link>
-                  </dd>
+            {/* ตั๋วพร้อมใช้ในสมุด */}
+            <section className="space-y-3" aria-label="ตั๋วพร้อมใช้ในสมุด">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">ตั๋วพร้อมใช้ในสมุด</h2>
+                {(data?.receivedCoupons ?? 0) > 0 && (
+                  <Link href="/my-coupons" className="text-sm text-love hover:underline">
+                    ดูทั้งหมด ({data?.receivedCoupons}) →
+                  </Link>
+                )}
+              </div>
+              {coupons.loading ? (
+                <div className="space-y-2">
+                  <div className="h-12 rounded bg-love-soft/60 motion-safe:animate-pulse" />
+                  <div className="h-12 rounded bg-love-soft/60 motion-safe:animate-pulse" />
                 </div>
-              ))}
-            </dl>
-          )
-        )}
-      </section>
+              ) : activeCoupons.length > 0 ? (
+                <ul className="dashboard-preview-tickets" aria-label="รายการตั๋วพร้อมใช้">
+                  {activeCoupons.map((coupon) => (
+                    <li key={coupon.id}>
+                      <Link
+                        href="/my-coupons"
+                        className="mini-ticket flex min-h-12 w-full items-center justify-between rounded transition-all hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-love"
+                        data-rarity={coupon.rarity}
+                      >
+                        <span className="mini-ticket-name truncate">{coupon.name}</span>
+                        <span className="mini-ticket-status shrink-0">
+                          {coupon.expiringSoon ? "ใกล้หมดอายุ · " : ""}พร้อมใช้ {coupon.available} ใบ
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (data?.receivedCoupons ?? 0) > 0 ? (
+                <Card variant="paper" className="p-4 text-center text-sm text-muted">
+                  <p>ใช้คูปองที่มีครบหมดแล้ว รอแฟนส่งของขวัญใหม่มาให้นะ ♡</p>
+                </Card>
+              ) : (
+                <Card variant="paper" className="space-y-2 p-4 text-center">
+                  <p className="text-sm text-muted">ยังไม่มีตั๋วในสมุด เริ่มส่งความสุขให้กันใบแรกเลยไหม?</p>
+                  <LinkButton href="/catalog" variant="secondary">
+                    เลือกของขวัญให้แฟน
+                  </LinkButton>
+                </Card>
+              )}
+            </section>
+          </div>
 
-      <Card variant="letter" className="space-y-2">
-        <h2>ความใส่ใจไม่ต้องรอวันพิเศษ</h2>
-        <p>เลือกคูปองเอง หรือเลือกชุดที่เตรียมไว้ แล้วตรวจของขวัญก่อนส่ง</p>
-        <LinkButton href="/catalog" variant="secondary">
-          เลือกของขวัญให้แฟน
-        </LinkButton>
-      </Card>
+          {/* คอลัมน์รอง (ขวา): ของขวัญล่าสุดและสรุปตั๋วในสมุด */}
+          <div className="space-y-6 lg:col-span-5">
+            {latestItem && (
+              <Card variant="letter" className="space-y-3">
+                {latestItem.type === "coupon" ? (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="pocket-mono text-xs text-muted">
+                          ของขวัญล่าสุดจาก {latestItem.gift.senderName}
+                        </p>
+                        <h2 className="text-lg font-semibold">
+                          {latestItem.gift.title || "ของขวัญจากใจ"}
+                        </h2>
+                      </div>
+                      <Button
+                        variant={!latestItem.gift.openedAt ? "primary" : "secondary"}
+                        size="sm"
+                        onClick={() => setActiveGift(latestItem.gift)}
+                      >
+                        <StationeryIcon name="letter" className="h-4 w-4 shrink-0" />
+                        {!latestItem.gift.openedAt ? "เปิดซองของขวัญ" : "เปิดดูการ์ดของขวัญ"}
+                      </Button>
+                    </div>
+                    {latestItem.gift.message && (
+                      <p className="font-display text-sm italic text-muted line-clamp-2">
+                        “{latestItem.gift.message}”
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-between text-xs text-muted">
+                      <span>
+                        ได้รับเมื่อ {formatDate(latestItem.gift.createdAt)} · รวม{" "}
+                        {latestItem.gift.coupons.reduce((sum, c) => sum + c.quantity, 0)} ใบ
+                      </span>
+                      <Link href="/gifts" className="text-love hover:underline">
+                        ดูของขวัญทั้งหมด →
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="pocket-mono text-xs text-muted">
+                          ซองของขวัญตามระดับจาก {latestItem.pack.senderName || couple.data?.partnerDisplayName || "แฟน"}
+                        </p>
+                        <h2 className="text-lg font-semibold">{latestItem.pack.name}</h2>
+                      </div>
+                      <LinkButton
+                        href="/gifts"
+                        variant={!latestItem.pack.openedAt ? "primary" : "secondary"}
+                        className="text-sm"
+                      >
+                        <StationeryIcon name="letter" className="h-4 w-4 shrink-0" />
+                        {!latestItem.pack.openedAt ? "เปิดซองของขวัญ" : "เปิดดูของขวัญ"}
+                      </LinkButton>
+                    </div>
+                    {latestItem.pack.message && (
+                      <p className="font-display text-sm italic text-muted line-clamp-2">
+                        “{latestItem.pack.message}”
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-between text-xs text-muted">
+                      <span>
+                        รวม {latestItem.pack.total} สิทธิ์ ({latestItem.pack.draws.length}/{latestItem.pack.total} ใบที่เลือกแล้ว)
+                      </span>
+                      <Link href="/gifts" className="text-love hover:underline">
+                        ดูของขวัญทั้งหมด →
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </Card>
+            )}
+
+            {/* แผงสรุปตั๋วในสมุด (Stats) */}
+            <section className="space-y-3" aria-label="สรุปตั๋วในสมุด">
+              <h2 className="text-lg font-semibold">สรุปตั๋วในสมุด</h2>
+              {data && (
+                <dl className="journal-stats grid grid-cols-2 gap-2 border border-line p-3 sm:grid-cols-4 lg:grid-cols-2">
+                  {statItems.map((item) => (
+                    <div key={item.label}>
+                      <Link
+                        href={item.href}
+                        className="group flex min-h-[76px] flex-col justify-between rounded p-2.5 transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-love"
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <dt className="text-xs text-muted sm:text-sm">{item.label}</dt>
+                          <StationeryIcon
+                            name={item.icon}
+                            className="h-4 w-4 shrink-0 text-muted/60 transition-colors group-hover:text-love"
+                          />
+                        </div>
+                        <dd className="mt-1 flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-love sm:text-2xl">{item.value}</span>
+                          <span className="text-xs text-muted">{item.unit}</span>
+                        </dd>
+                      </Link>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
 
       {activeGift && (
         <ReceivedGiftDialog
@@ -170,8 +316,9 @@ export default function DashboardPage() {
           onClose={() => setActiveGift(null)}
           onOpened={(updated) => {
             setActiveGift(updated);
-            receivedGifts.retry();
-            stats.retry();
+            void receivedGifts.retry();
+            void stats.retry();
+            void coupons.retry();
           }}
         />
       )}
