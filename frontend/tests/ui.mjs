@@ -433,8 +433,15 @@ async function run() {
   await page.locator(".pocket-ticket[data-open]").getByRole("button", { name: /^พับเก็บ/ }).click();
   assert.equal(await page.evaluate(() => localStorage.getItem("lovepass.giftCart")), cartBeforeViewing);
   pass("ticket faces show notes; full details open without requesting or adding to cart");
-  await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
-  await page.getByRole("button", { name: "พิเศษ · RARE", exact: true }).click();
+  if (await page.getByRole("button", { name: "เลือกระดับความพิเศษ" }).isVisible()) {
+    await page.getByRole("button", { name: "เลือกระดับความพิเศษ" }).click();
+    await page.getByRole("option", { name: "อบอุ่น · COMMON" }).click();
+    await page.getByRole("button", { name: "เลือกระดับความพิเศษ" }).click();
+    await page.getByRole("option", { name: "พิเศษ · RARE" }).click();
+  } else {
+    await page.getByRole("button", { name: "อบอุ่น · COMMON" }).click();
+    await page.getByRole("button", { name: "พิเศษ · RARE", exact: true }).click();
+  }
   assert.equal(await page.locator("article:visible").count(), 1);
   await page.getByText("มื้อพิเศษสำหรับสองเรา", { exact: true }).waitFor();
   pass("catalog tier switches immediately to the latest selection");
@@ -455,15 +462,29 @@ async function run() {
   const catalogCart = await page.evaluate(() => localStorage.getItem("lovepass.giftCart"));
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
-    const filters = page.getByRole("group", { name: "ประเภทคูปอง", exact: true });
-    await filters.getByRole("button", { name: "ทุกประเภท", exact: true }).click();
-    assert.equal(await page.locator(".pocket-collection article").count(), 5);
-    for (const rarity of ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"]) {
-      const filter = filters.getByRole("button", { name: new RegExp(` · ${rarity}$`) });
-      await filter.click();
-      await page.getByRole("heading", { name: `คูปองทดสอบ ${rarity}`, exact: true }).waitFor();
-      assert.equal(await page.locator(".pocket-collection article").count(), 1, `${width}px ${rarity} must hide all other tiers`);
-      assert.equal(await filter.getAttribute("aria-pressed"), "true");
+    if (width < 768) {
+      const trigger = page.getByRole("button", { name: "เลือกระดับความพิเศษ" });
+      await trigger.click();
+      await page.getByRole("option", { name: "✨ ทุกระดับ" }).click();
+      assert.equal(await page.locator(".pocket-collection article").count(), 5);
+      for (const rarity of ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"]) {
+        await trigger.click();
+        const filter = page.getByRole("option", { name: new RegExp(` · ${rarity}$`) });
+        await filter.click();
+        await page.getByRole("heading", { name: `คูปองทดสอบ ${rarity}`, exact: true }).waitFor();
+        assert.equal(await page.locator(".pocket-collection article").count(), 1, `${width}px ${rarity} must hide all other tiers`);
+      }
+    } else {
+      const filters = page.getByRole("group", { name: "ประเภทคูปอง", exact: true });
+      await filters.getByRole("button", { name: "ทุกประเภท", exact: true }).click();
+      assert.equal(await page.locator(".pocket-collection article").count(), 5);
+      for (const rarity of ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"]) {
+        const filter = filters.getByRole("button", { name: new RegExp(` · ${rarity}$`) });
+        await filter.click();
+        await page.getByRole("heading", { name: `คูปองทดสอบ ${rarity}`, exact: true }).waitFor();
+        assert.equal(await page.locator(".pocket-collection article").count(), 1, `${width}px ${rarity} must hide all other tiers`);
+        assert.equal(await filter.getAttribute("aria-pressed"), "true");
+      }
     }
     await screenshot(page, `catalog-mythic-filter-${width}`);
   }

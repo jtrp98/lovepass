@@ -121,27 +121,17 @@ export default function LovePassDesign() {
               <span className="gift-corner-tape gift-corner-tape-right" aria-hidden="true" />
               <img src="/materials/illustrations/ribbon-bow.svg" alt="" className="gift-center-bow" aria-hidden="true" />
               <div className="gift-keepsake-frame space-y-4">
-                <header className="space-y-2">
+                <header className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="gift-whisper">made a little something for you ♡</span>
+                    <p className="gift-salutation">ถึง เธอ</p>
                     <span className="gift-date-stamp pocket-mono">03.11.2026</span>
                   </div>
-                  <div className="pt-0.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="gift-salutation">ถึง เธอคนโปรด ♡</p>
-                      <img src="/materials/illustrations/pencil-hearts.svg" alt="" className="h-5 w-auto opacity-70 shrink-0" aria-hidden="true" />
-                    </div>
-                    <h2 className="gift-headline mt-1">ของขวัญชิ้นเล็ก ๆ ให้เธอ ♡</h2>
-                    <p className="gift-correction mt-1">
-                      <span className="gift-correction-strike">ให้แค่ปีนี้</span>
-                      <span>ตั้งใจทำให้เธอคนเดียว ♡</span>
-                    </p>
-                  </div>
+                  <h2 className="gift-headline">ของขวัญสำหรับเธอ</h2>
                 </header>
                 <div className="gift-torn-note">
                   <span className="gift-torn-note-tape" aria-hidden="true" />
                   <p className="gift-note-short">“เหนื่อยเมื่อไหร่ก็หยิบมาใช้นะ อยู่ข้าง ๆ เธอเสมอ”</p>
-                  <p className="gift-note-sign">— ด้วยรักเสมอ, เจ ♡</p>
+                  <p className="gift-note-sign">— จาก เจ</p>
                 </div>
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center justify-between">

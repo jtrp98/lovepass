@@ -240,16 +240,16 @@ test("buildKeepsakeCopy crafts personalized analog keepsake text without invente
   };
 
   const copy = buildKeepsakeCopy(gift, "มิ้นท์");
-  assert.equal(copy.salutation, "ถึง มิ้นท์ คนโปรด ♡");
+  assert.equal(copy.salutation, "ถึง มิ้นท์");
   assert.equal(copy.headline, "สุขสันต์วันครบรอบนะ 💕");
-  assert.equal(copy.crossedOut, "ให้แค่ปีนี้");
-  assert.equal(copy.correction, "ตั้งใจทำให้เธอคนเดียวเลยนะ ♡");
-  assert.equal(copy.signature, "— จาก เจ, รักเสมอ ♡");
+  assert.equal(copy.hasCustomMessage, true);
+  assert.equal(copy.noteBody, "ขอบคุณที่อยู่ข้างกันเสมอ รักเธอที่สุดเลย");
+  assert.equal(copy.signature, "— จาก เจ");
   assert.equal(copy.isLongNote, false);
-  assert.match(copy.footnote, /ไม่มีวันนั้นหรอก/);
+  assert.match(copy.footnote, /กระเป๋า/);
   assert.equal(copy.dateStamp, "08.11.2026");
 
-  // Fallbacks when optional fields are empty
+  // Fallbacks when optional fields are empty - zero invented sentiments
   const minimalGift = {
     id: 13,
     senderName: "",
@@ -261,9 +261,11 @@ test("buildKeepsakeCopy crafts personalized analog keepsake text without invente
     ],
   };
   const minimalCopy = buildKeepsakeCopy(minimalGift, null);
-  assert.equal(minimalCopy.salutation, "ถึง เธอ คนโปรด ♡");
-  assert.equal(minimalCopy.headline, "ของขวัญชิ้นเล็ก ๆ ให้เธอ ♡");
-  assert.equal(minimalCopy.crossedOut, "ให้แค่วันนี้");
+  assert.equal(minimalCopy.salutation, "ถึง เธอ");
+  assert.equal(minimalCopy.headline, "ของขวัญสำหรับเธอ");
+  assert.equal(minimalCopy.hasCustomMessage, false);
+  assert.equal(minimalCopy.noteBody, "");
+  assert.equal(minimalCopy.signature, "");
   assert.equal(minimalCopy.dateStamp, "TODAY");
 
   // Default coupon promise descriptions

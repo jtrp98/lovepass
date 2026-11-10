@@ -247,7 +247,7 @@ try {
   await page.getByText("ส่งซองให้แฟนแล้ว").waitFor();
   pass("birthday preset → review → sealed send creates a real 22-card envelope");
   await page.goto(BASE + "/packs/new");
-  await page.getByRole("button", { name: "เลือกซองตาม tier" }).waitFor();
+  await page.getByRole("button", { name: /เลือกซองตาม tier|เลือกตามระดับความพิเศษ/ }).waitFor();
   await page.getByLabel("COMMON", { exact: true }).fill("3");
   assert.equal(await page.getByLabel("หาคูปอง", { exact: true }).count(), 0);
   assert.equal(await page.locator(".pack-ticket-grid").count(), 0);
