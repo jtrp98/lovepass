@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
+import { LuArrowUpRight } from "react-icons/lu";
 import type { Redemption } from "@/types";
 import { CouponRequestCard } from "@/components/coupon-request-card";
 import { TicketIllustration } from "@/components/ticket-illustration";
@@ -133,8 +134,9 @@ export default function RequestsPage() {
                           setReview(item);
                         }}
                         disabled={busyId !== null}
+                        className="inline-flex items-center gap-1"
                       >
-                        อนุมัติ <span aria-hidden="true">↗</span>
+                        อนุมัติ <LuArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
                       </Button>
                       <Button
                         size="sm"

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LuCheck } from "react-icons/lu";
 import type { Rarity } from "@/types";
 import {
   cloneElement,
@@ -199,8 +200,9 @@ export function ErrorState({ message, retry }: { message: string; retry: () => v
 }
 export function Notice({ children }: { children: ReactNode }) {
   return (
-    <p role="status" className="love-notice rounded-xl bg-success-paper px-3 py-2 text-success-ink">
-      ✓ {children}
+    <p role="status" className="love-notice flex items-center gap-1.5 rounded-xl bg-success-paper px-3 py-2 text-success-ink">
+      <LuCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span>{children}</span>
     </p>
   );
 }

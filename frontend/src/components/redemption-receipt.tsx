@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { LuCheck, LuHeart } from "react-icons/lu";
 import type { LoveTicketData } from "./love-ticket";
 import { TicketIllustration } from "./ticket-illustration";
 import { formatDateTime } from "./ui";
@@ -12,7 +13,7 @@ export function RedemptionReceipt({ ticket }: { ticket: LoveTicketData }) {
         <p className="pocket-mono">LOVE PASS / FOR TWO</p>
         <TicketIllustration category={ticket.category} />
         <h3 id={heading}>ใบรับความทรงจำ</h3>
-        <p className="memory-receipt-status"><span aria-hidden="true">✓</span> แฟนยืนยันแล้ว</p>
+        <p className="memory-receipt-status inline-flex items-center gap-1"><LuCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> แฟนยืนยันแล้ว</p>
         <div className="memory-receipt-item">
           <p className="pocket-mono">ONE LITTLE PROMISE, KEPT.</p>
           <p className="memory-receipt-name">{ticket.name}</p>
@@ -22,7 +23,7 @@ export function RedemptionReceipt({ ticket }: { ticket: LoveTicketData }) {
           <div><dt>จาก</dt><dd>{ticket.from ?? "คนที่รักเธอ"}</dd></div>
           {ticket.to && <div><dt>ถึง</dt><dd>{ticket.to}</dd></div>}
           <div><dt>เลขที่ตั๋ว</dt><dd className="pocket-mono">{ticket.id}</dd></div>
-          <div><dt>สถานะ</dt><dd>ใช้สิทธิ์แล้ว ♡</dd></div>
+          <div><dt>สถานะ</dt><dd className="inline-flex items-center gap-1">ใช้สิทธิ์แล้ว <LuHeart className="h-3 w-3 text-love inline-block" aria-hidden="true" /></dd></div>
           {ticket.redeemedAt && <div><dt>ใช้เมื่อ</dt><dd><time dateTime={ticket.redeemedAt}>{formatDateTime(ticket.redeemedAt)}</time></dd></div>}
         </dl>
         <p className="memory-receipt-thanks">ขอบคุณเวลาที่เราได้ให้กัน<br />เก็บใบนี้ไว้ยิ้มด้วยกันอีกนะ</p>

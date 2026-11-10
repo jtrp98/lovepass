@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LuCheck } from "react-icons/lu";
 import { LoveTicket, type LoveTicketData } from "./love-ticket";
 import { TicketRequest } from "./ticket-request";
 import { Button, LinkButton } from "./ui";
@@ -46,7 +47,7 @@ export function TicketDemo() {
       <ol className="demo-steps">
         {steps.map((label, index) => (
           <li key={label} aria-current={index === step ? "step" : undefined} data-done={index < step || undefined}>
-            <span aria-hidden="true">{index < step ? "✓" : index + 1}</span>{label}
+            <span aria-hidden="true" className="inline-flex items-center justify-center">{index < step ? <LuCheck className="h-3.5 w-3.5" /> : index + 1}</span>{label}
           </li>
         ))}
       </ol>

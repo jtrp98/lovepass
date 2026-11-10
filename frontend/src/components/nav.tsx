@@ -2,19 +2,17 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { IconType } from "react-icons";
+import { LuHouse, LuGift, LuTicket, LuInbox, LuMenu, LuHeart } from "react-icons/lu";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui";
 
-const links = [
-  { href: "/dashboard", label: "หน้าแรก", icon: "M3 10 12 3l9 7v11h-6v-7H9v7H3Z" },
-  {
-    href: "/catalog",
-    label: "เลือกของขวัญ",
-    icon: "M3 8h18v4H3z M5 12v9h14v-9 M12 8v13 M12 8C2 8 5 0 9 4l3 4c10 0 7-8 3-4Z",
-  },
-  { href: "/my-coupons", label: "คูปองฉัน", icon: "M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4Z M15 5v14" },
-  { href: "/requests", label: "คำขอ", icon: "M3 5h18v14H3Z m0 0 9 8 9-8" },
-  { href: "/more", label: "เพิ่มเติม", icon: "M4 6h16 M4 12h16 M4 18h16" },
+const links: { href: string; label: string; icon: IconType }[] = [
+  { href: "/dashboard", label: "หน้าแรก", icon: LuHouse },
+  { href: "/catalog", label: "เลือกของขวัญ", icon: LuGift },
+  { href: "/my-coupons", label: "คูปองฉัน", icon: LuTicket },
+  { href: "/requests", label: "คำขอ", icon: LuInbox },
+  { href: "/more", label: "เพิ่มเติม", icon: LuMenu },
 ];
 
 export function Navbar() {
@@ -47,7 +45,10 @@ export function Navbar() {
             href="/dashboard"
             className="inline-flex min-h-12 items-center font-display text-lg font-semibold text-love sm:text-xl"
           >
-            <span aria-hidden="true" className="brand-heart">♡</span> LOVE PASS
+            <span aria-hidden="true" className="brand-heart">
+              <LuHeart className="h-4 w-4" />
+            </span>{" "}
+            LOVE PASS
           </Link>
           <div className="flex min-w-0 items-center gap-3">
             <span className="hidden max-w-32 truncate text-sm text-muted sm:inline">{user?.displayName}</span>
@@ -77,6 +78,7 @@ export function Navbar() {
               : link.href === "/more"
                 ? ["/more", "/history", "/couple", "/couple/accept", "/gifts", "/sent-gifts"].includes(pathname)
                 : pathname === link.href;
+          const Icon = link.icon;
           return (
             <Link
               key={link.href}
@@ -84,19 +86,7 @@ export function Navbar() {
               aria-current={active ? "page" : undefined}
               className={`nav-link flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-center text-xs md:min-h-16 md:flex-row md:gap-2 md:text-base ${active ? "font-semibold text-love" : "text-muted hover:bg-canvas"}`}
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d={link.icon} />
-              </svg>
+              <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
               <span>{link.label}</span>
             </Link>
           );

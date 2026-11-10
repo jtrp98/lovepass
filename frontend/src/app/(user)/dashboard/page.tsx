@@ -5,6 +5,7 @@ import { Button, Card, ErrorState, LinkButton, PageTitle, Skeleton, formatDate }
 import { api } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
 import Link from "next/link";
+import { LuArrowRight } from "react-icons/lu";
 import { LoveDoodle } from "@/components/love-doodle";
 import { StationeryIcon, type StationeryIconName } from "@/components/stationery";
 import { ReceivedGiftDialog } from "@/components/received-gift-dialog";
@@ -161,8 +162,8 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">ตั๋วพร้อมใช้ในสมุด</h2>
                 {(data?.receivedCoupons ?? 0) > 0 && (
-                  <Link href="/my-coupons" className="text-sm text-love hover:underline">
-                    ดูทั้งหมด ({data?.receivedCoupons}) →
+                  <Link href="/my-coupons" className="inline-flex items-center gap-1 text-sm text-love hover:underline">
+                    ดูทั้งหมด ({data?.receivedCoupons}) <LuArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
                 )}
               </div>
@@ -237,8 +238,8 @@ export default function DashboardPage() {
                         ได้รับเมื่อ {formatDate(latestItem.gift.createdAt)} · รวม{" "}
                         {latestItem.gift.coupons.reduce((sum, c) => sum + c.quantity, 0)} ใบ
                       </span>
-                      <Link href="/gifts" className="text-love hover:underline">
-                        ดูของขวัญทั้งหมด →
+                      <Link href="/gifts" className="inline-flex items-center gap-1 text-love hover:underline">
+                        ดูของขวัญทั้งหมด <LuArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                       </Link>
                     </div>
                   </>
@@ -269,8 +270,8 @@ export default function DashboardPage() {
                       <span>
                         รวม {latestItem.pack.total} สิทธิ์ ({latestItem.pack.draws.length}/{latestItem.pack.total} ใบที่เลือกแล้ว)
                       </span>
-                      <Link href="/gifts" className="text-love hover:underline">
-                        ดูของขวัญทั้งหมด →
+                      <Link href="/gifts" className="inline-flex items-center gap-1 text-love hover:underline">
+                        ดูของขวัญทั้งหมด <LuArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                       </Link>
                     </div>
                   </>

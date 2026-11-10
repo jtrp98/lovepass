@@ -1,11 +1,15 @@
 "use client";
-import { Button, Card, LinkButton, PageTitle } from "@/components/ui";
-import { useAuth } from "@/lib/auth";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button, Card, LinkButton, PageTitle } from "@/components/ui";
+import { UpdatesDialog } from "@/components/updates-dialog";
+import { useAuth } from "@/lib/auth";
+import { APP_VERSION } from "@/lib/version";
 
 export default function MorePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [showUpdates, setShowUpdates] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -26,15 +30,26 @@ export default function MorePage() {
           </LinkButton>
         )}
       </Card>
-      <Button
-        variant="ghost"
-        onClick={() => {
-          logout();
-          router.push("/login");
-        }}
-      >
-        ออกจากระบบ
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            logout();
+            router.push("/login");
+          }}
+        >
+          ออกจากระบบ
+        </Button>
+        <button
+          type="button"
+          onClick={() => setShowUpdates(true)}
+          className="pocket-mono text-xs text-muted hover:text-love focus-visible:outline-none"
+          title="ดูบันทึกการอัปเดต"
+        >
+          v{APP_VERSION}
+        </button>
+      </div>
+      {showUpdates && <UpdatesDialog onClose={() => setShowUpdates(false)} />}
     </div>
   );
 }
