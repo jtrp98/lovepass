@@ -281,6 +281,9 @@
 .pocket-dialog-actions > * { flex: 1 1 120px; }
 .pocket-book { color: var(--pocket-ink); }
 .pocket-intro { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 16px 24px; border-bottom: 1px solid var(--pocket-line); }
+.pocket-intro.gift-shared-header { padding-block: 14px 18px; }
+.gift-shared-title { font-family: var(--font-mali), sans-serif; color: var(--pocket-ink); font-size: clamp(22px, 3.5vw, 32px); font-weight: 600; line-height: 1.35; margin-top: 6px; }
+.gift-shared-subtitle { color: var(--pocket-muted); margin-top: 4px; font-size: 14px; line-height: 1.5; }
 .pocket-intro h1 { font-family: var(--font-mali), sans-serif; color: var(--pocket-ink); font-size: clamp(28px, 4vw, 40px); font-weight: 600; line-height: 1.55; margin-top: 12px; }
 .pocket-intro p:not(.pocket-mono) { color: var(--pocket-muted); margin-top: 8px; font-size: 16px; }
 .pocket-seal { display: grid; flex-shrink: 0; place-content: center; width: 100px; height: 100px; border: 1px solid var(--pocket-line); outline: 1px solid var(--pocket-line); outline-offset: -6px; border-radius: 50%; color: var(--pocket-rose); text-align: center; transform: rotate(10deg); }
@@ -423,6 +426,9 @@
   .pocket-edition { display: none; }
   .pocket-seal { width: 72px; height: 72px; }
   .pocket-intro { gap: 12px; align-items: start; }
+  .pocket-intro.gift-shared-header { padding-block: 10px 14px; gap: 8px; }
+  .pocket-intro.gift-shared-header .gift-shared-title { font-size: 22px; margin-top: 4px; }
+  .pocket-intro.gift-shared-header .gift-shared-subtitle { font-size: 13px; margin-top: 2px; }
   .pocket-intro .pocket-seal { display: none; }
   .pocket-intro h1 { font-size: 28px; }
   .pocket-studio .pocket-intro h1 { font-size: 32px; }
@@ -585,9 +591,7 @@
 }
 
 .gift-whisper {
-  font-family: var(--font-mali), sans-serif;
-  font-size: 0.92rem;
-  color: var(--color-muted);
+  display: none;
 }
 
 .gift-date-stamp {
@@ -604,37 +608,29 @@
 }
 
 .gift-salutation {
-  font-family: var(--font-mali), sans-serif;
-  font-size: 1.1rem;
+  font-family: var(--font-sarabun), sans-serif;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-love);
+  color: var(--color-muted);
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
 .gift-headline {
   font-family: var(--font-mali), sans-serif;
-  font-size: clamp(1.2rem, 4vw, 1.65rem);
+  font-size: clamp(1.2rem, 3.8vw, 1.55rem);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.45;
   color: var(--color-ink);
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
 .gift-correction {
-  font-family: var(--font-mali), sans-serif;
-  font-size: 0.88rem;
-  color: var(--color-muted);
-  line-height: 1.4;
-  overflow-wrap: break-word;
+  display: none;
 }
 .gift-correction-strike {
-  text-decoration: line-through;
-  text-decoration-color: var(--color-love);
-  text-decoration-thickness: 1.8px;
-  opacity: 0.75;
-  margin-right: 0.25rem;
+  display: none;
 }
 
 /* Pinned torn-paper note */

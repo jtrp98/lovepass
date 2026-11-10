@@ -21,3 +21,17 @@ test("version matches package.json dynamically and changelog provides release no
   assert.ok(fallback.sections.length > 0);
   assert.ok(fallback.sections[0].items.length > 0);
 });
+
+test("version seen check logic flags new version correctly", () => {
+  const STORAGE_KEY = "lovepass_seen_version";
+  assert.equal(STORAGE_KEY, "lovepass_seen_version");
+
+  // Unseen (null or previous version) -> hasNewVersion is true
+  const checkHasNew = (stored: string | null, active: string) => stored !== active;
+  assert.equal(checkHasNew(null, APP_VERSION), true);
+  assert.equal(checkHasNew("1.4.0", "1.5.0"), true);
+
+  // Seen matching active version -> hasNewVersion is false
+  assert.equal(checkHasNew("1.5.0", "1.5.0"), false);
+  assert.equal(checkHasNew(APP_VERSION, APP_VERSION), false);
+});

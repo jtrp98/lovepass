@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { IconType } from "react-icons";
 import { LuHouse, LuGift, LuTicket, LuInbox, LuMenu, LuHeart } from "react-icons/lu";
 import { useAuth } from "@/lib/auth";
-import { Button } from "@/components/ui";
+import { APP_VERSION } from "@/lib/version";
+import { UpdatesDialog } from "@/components/updates-dialog";
 
 const links: { href: string; label: string; icon: IconType }[] = [
   { href: "/dashboard", label: "หน้าแรก", icon: LuHouse },
@@ -16,10 +17,30 @@ const links: { href: string; label: string; icon: IconType }[] = [
 ];
 
 export function Navbar() {
-  const { user, logout } = useAuth(),
-    pathname = usePathname(),
-    router = useRouter();
+  const { user } = useAuth(),
+    pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
+  const [showUpdates, setShowUpdates] = useState(false);
+  const [hasNewVersion, setHasNewVersion] = useState(false);
+
+  useEffect(() => {
+    try {
+      const seen = window.localStorage.getItem("lovepass_seen_version");
+      if (seen !== APP_VERSION) {
+        setHasNewVersion(true);
+      }
+    } catch {
+      // Gracefully handle storage disabled/blocked
+    }
+  }, []);
+
+  const handleVersionClick = () => {
+    try {
+      window.localStorage.setItem("lovepass_seen_version", APP_VERSION);
+    } catch {}
+    setHasNewVersion(false);
+    setShowUpdates(true);
+  };
 
   useEffect(() => {
     const nav = navRef.current!;
@@ -41,28 +62,35 @@ export function Navbar() {
     <>
       <header className="app-header border-b border-love-soft bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex min-h-12 items-center font-display text-lg font-semibold text-love sm:text-xl"
-          >
-            <span aria-hidden="true" className="brand-heart">
-              <LuHeart className="h-4 w-4" />
-            </span>{" "}
-            LOVE PASS
-          </Link>
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="hidden max-w-32 truncate text-sm text-muted sm:inline">{user?.displayName}</span>
-            <Button
-              type="button"
-              variant="secondary"
-              className="text-sm"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-12 items-center font-display text-lg font-semibold text-love sm:text-xl"
             >
-              ออกจากระบบ
-            </Button>
+              <span aria-hidden="true" className="brand-heart">
+                <LuHeart className="h-4 w-4" />
+              </span>{" "}
+              LOVE PASS
+            </Link>
+            <button
+              type="button"
+              onClick={handleVersionClick}
+              className="group inline-flex min-h-11 items-center px-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-full"
+              title="ดูบันทึกการอัปเดต"
+              aria-label={`เวอร์ชัน ${APP_VERSION}${hasNewVersion ? " มีการอัปเดตใหม่" : ""}`}
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas/80 px-2.5 py-1 text-muted transition-colors group-hover:border-love-soft group-hover:bg-love-soft/40 group-hover:text-love">
+                <span className="pocket-mono font-medium">v{APP_VERSION}</span>
+                {hasNewVersion && (
+                  <span className="inline-flex items-center rounded-full bg-love px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider text-on-action shadow-xs">
+                    NEW
+                  </span>
+                )}
+              </span>
+            </button>
+          </div>
+          <div className="flex min-w-0 items-center">
+            <span className="max-w-40 truncate text-sm text-muted">{user?.displayName}</span>
           </div>
         </div>
       </header>
@@ -92,28 +120,36 @@ export function Navbar() {
           );
         })}
       </nav>
+      {showUpdates && <UpdatesDialog onClose={() => setShowUpdates(false)} />}
     </>
   );
 }
 
+export { GiftExperienceHeader } from "@/components/gift-experience-header";
+
 export function GiftViews() {
   const pathname = usePathname();
+  const modes = [
+    { href: "/catalog", label: "เลือกคูปอง" },
+    { href: "/sets", label: "ชุดสำเร็จ" },
+    { href: "/packs/new", label: "จัดชุดเอง" },
+  ];
+
   return (
-    <nav aria-label="วิธีเลือกของขวัญ" className="flex flex-wrap gap-2">
-      {[
-        { href: "/catalog", label: "เลือกเอง" },
-        { href: "/sets", label: "เลือกเป็นชุด" },
-        { href: "/packs/new", label: "จัดเป็นชุดของขวัญ" },
-      ].map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          aria-current={pathname === link.href ? "page" : undefined}
-          className={`inline-flex min-h-12 items-center rounded-full border border-control px-4 ${pathname === link.href ? "bg-love-soft font-semibold text-love" : "bg-surface text-muted"}`}
-        >
-          {link.label}
-        </Link>
-      ))}
+    <nav aria-label="วิธีเลือกของขวัญ" className="gift-mode-nav">
+      {modes.map((link) => {
+        const isActive = pathname === link.href;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={isActive ? "page" : undefined}
+            className="gift-mode-tab"
+          >
+            <span>{link.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

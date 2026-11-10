@@ -186,10 +186,10 @@ export function ReceivedGiftDialog({
             />
 
             <div className="gift-keepsake-frame space-y-4">
-              {/* Header: Whisper & Date Stamp */}
-              <header className="space-y-2">
+              {/* Header: Salutation, Date Stamp & Title */}
+              <header className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="gift-whisper">{copy.whisper}</span>
+                  <p className="gift-salutation">{copy.salutation}</p>
                   <div className="flex items-center gap-2">
                     <span className="gift-date-stamp pocket-mono">
                       {copy.dateStamp}
@@ -206,28 +206,11 @@ export function ReceivedGiftDialog({
                   </div>
                 </div>
 
-                <div className="pt-0.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="gift-salutation">{copy.salutation}</p>
-                    <img
-                      src="/materials/illustrations/pencil-hearts.svg"
-                      alt=""
-                      className="h-5 w-auto opacity-70 shrink-0"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <h2 className="gift-headline mt-1">{copy.headline}</h2>
-                  <p className="gift-correction mt-1">
-                    <span className="gift-correction-strike">
-                      {copy.crossedOut}
-                    </span>
-                    <span>{copy.correction}</span>
-                  </p>
-                </div>
+                <h2 className="gift-headline">{copy.headline}</h2>
               </header>
 
-              {/* Pinned Torn-Paper Love Note */}
-              {gift.message && (
+              {/* Pinned Torn-Paper Note (ONLY when sender provided a message) */}
+              {copy.hasCustomMessage && (
                 <div className="gift-torn-note">
                   <span className="gift-torn-note-tape" aria-hidden="true" />
                   <p
@@ -235,9 +218,11 @@ export function ReceivedGiftDialog({
                       copy.isLongNote ? "gift-note-long" : "gift-note-short"
                     }
                   >
-                    “{gift.message}”
+                    “{copy.noteBody}”
                   </p>
-                  <p className="gift-note-sign">{copy.signature}</p>
+                  {copy.signature && (
+                    <p className="gift-note-sign">{copy.signature}</p>
+                  )}
                 </div>
               )}
 

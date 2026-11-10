@@ -353,6 +353,56 @@
   background: var(--color-love);
   animation: indicator-arrive 220ms ease both;
 }
+
+/* Minimal Underline Navigation for Gift Modes */
+.gift-mode-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--color-line);
+  position: relative;
+}
+@media (min-width: 768px) {
+  .gift-mode-nav {
+    display: flex;
+    justify-content: flex-start;
+    gap: 2rem;
+  }
+}
+.gift-mode-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 200ms ease;
+}
+.gift-mode-tab[aria-current="page"] {
+  color: var(--color-love);
+  font-weight: 600;
+}
+.gift-mode-tab[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  background: var(--color-love);
+  animation: indicator-arrive 220ms ease both;
+}
+@media (min-width: 768px) {
+  .gift-mode-tab {
+    padding-inline: 0.25rem;
+  }
+  .gift-mode-tab[aria-current="page"]::after {
+    inset: auto 0 -1px;
+  }
+}
+
 .rarity-filter {
   min-height: 2.75rem;
   border: 1px solid transparent;
@@ -363,18 +413,21 @@
   transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 .rarity-filter[aria-pressed="true"] { border-color: var(--color-love); background: var(--color-surface); color: var(--color-love); }
+
+/* Category Filter: Soft Chips */
 .category-filter {
   min-height: 2.75rem;
-  border: 1px solid var(--color-control);
+  border: 1px solid var(--color-line);
   border-radius: 2rem;
   padding: .25rem .875rem;
   font-size: .875rem;
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-love-soft) 28%, var(--color-surface));
   color: var(--color-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 .category-filter[aria-pressed="true"] {
@@ -382,6 +435,77 @@
   background: var(--color-love-soft);
   color: var(--color-love);
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--color-love);
+}
+
+/* Horizontal scrollable row for filters on mobile */
+.filter-scroll-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  padding-right: 1.5rem;
+}
+.filter-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 768px) {
+  .filter-scroll-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-right: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Selection Cards for Method Choosing */
+.selection-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-paper);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion-soft), background-color var(--motion-soft), box-shadow var(--motion-soft), transform var(--motion-press);
+}
+.selection-card:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.selection-card[aria-pressed="true"],
+.selection-card[aria-checked="true"] {
+  border-color: var(--color-love);
+  background: var(--color-love-soft);
+  box-shadow: 0 0 0 1px var(--color-love);
+}
+.selection-card:active {
+  transform: translateY(1px);
+}
+.selection-card-indicator {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-control);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  transition: border-color var(--motion-soft), background-color var(--motion-soft);
+}
+.selection-card[aria-pressed="true"] .selection-card-indicator,
+.selection-card[aria-checked="true"] .selection-card-indicator {
+  border-color: var(--color-love);
+  background: var(--color-love);
+  color: var(--color-on-action);
 }
 .ui-button {
   border-radius: var(--radius-control);
@@ -420,6 +544,8 @@
   .app-header a:hover .brand-heart { transform: rotate(8deg) scale(1.08); }
   .rarity-filter:hover, .category-filter:hover { transform: translateY(-2px); }
   .status-tab:not(:disabled):hover { color: var(--color-love); background: var(--color-love-soft); }
+  .gift-mode-tab:hover { color: var(--color-love); }
+  .selection-card:hover { border-color: var(--color-love); background: color-mix(in srgb, var(--color-love-soft) 30%, var(--color-surface)); }
 }
 @keyframes content-arrive {
   from { opacity: 0; transform: translateY(18px) rotate(-1deg) scale(.97); }

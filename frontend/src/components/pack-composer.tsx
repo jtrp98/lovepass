@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useResource } from "@/lib/use-resource";
 import { defaultExpiry, expiryInstant, localDate } from "@/lib/flow";
@@ -37,6 +37,53 @@ export function PackComposer() {
   const [result, setResult] = useState<GiftPack | null>(null);
   const lock = useRef(false);
   const intent = useRef<{ body: string; id: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("lovepass.packComposerDraft");
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.mode) setMode(d.mode);
+        if (typeof d.name === "string") setName(d.name);
+        if (typeof d.message === "string") setMessage(d.message);
+        if (d.expiry) setExpiry(d.expiry);
+        if (d.limits) setLimits(d.limits);
+        if (d.quotas) setQuotas(d.quotas);
+        if (d.candidatePools) setCandidatePools(d.candidatePools);
+        if (d.categoryFilter) setCategoryFilter(d.categoryFilter);
+        if (d.filter) setFilter(d.filter);
+        if (typeof d.search === "string") setSearch(d.search);
+        if (typeof d.selectedOnly === "boolean") setSelectedOnly(d.selectedOnly);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (result) {
+      try {
+        sessionStorage.removeItem("lovepass.packComposerDraft");
+      } catch {}
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        "lovepass.packComposerDraft",
+        JSON.stringify({
+          mode,
+          name,
+          message,
+          expiry,
+          limits,
+          quotas,
+          candidatePools,
+          categoryFilter,
+          filter,
+          search,
+          selectedOnly,
+        })
+      );
+    } catch {}
+  }, [mode, name, message, expiry, limits, quotas, candidatePools, categoryFilter, filter, search, selectedOnly, result]);
 
   if (resource.error) return <ErrorState message={resource.error} retry={resource.retry} />;
   if (!resource.data) return <Skeleton />;
@@ -159,11 +206,52 @@ export function PackComposer() {
 
   return <div className="space-y-6">
     <Card variant="letter" className="space-y-4">
-      <h2>อยากจัดของขวัญเป็นชุดแบบไหน?</h2>
-      <div className="pack-mode-grid">{([
-        ["FIXED", "เลือกคูปองใส่ชุด", "เลือกคูปองพร้อมจำนวน แฟนได้รับตามที่เราจัดไว้"],
-        ["CHOICE", "เลือกซองตาม tier", "จัดซองสีตามระดับ แฟนเปิดเลือกหรือสุ่มครั้งละกี่ใบก็ได้"],
-      ] as const).map(([value, label, hint]) => <div key={value}><Button variant={mode === value ? "primary" : "secondary"} aria-pressed={mode === value} className="w-full" onClick={() => setMode(value)}>{label}</Button><p className="mt-2 text-sm text-muted">{hint}</p></div>)}</div>
+      <h2 className="text-lg font-semibold text-ink">อยากจัดของขวัญแบบไหน?</h2>
+      <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="วิธีจัดชุดของขวัญ">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={mode === "FIXED"}
+          onClick={() => setMode("FIXED")}
+          className="selection-card"
+        >
+          <div className="space-y-1 text-left min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <StationeryIcon name="hearts" className="h-5 w-5 text-love shrink-0" />
+              <span className="font-semibold text-ink text-base">เลือกคูปองเอง</span>
+              <span className="text-xs text-muted">· เลือกคูปองใส่ชุด</span>
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              เลือกคูปองทีละใบตามใจคุณ แฟนได้รับตามที่เราจัดไว้
+            </p>
+          </div>
+          <div className="selection-card-indicator" aria-hidden="true">
+            {mode === "FIXED" && <span className="h-2 w-2 rounded-full bg-white" />}
+          </div>
+        </button>
+
+        <button
+          type="button"
+          role="radio"
+          aria-checked={mode === "CHOICE"}
+          onClick={() => setMode("CHOICE")}
+          className="selection-card"
+        >
+          <div className="space-y-1 text-left min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <StationeryIcon name="gift" className="h-5 w-5 text-love shrink-0" />
+              <span className="font-semibold text-ink text-base">เลือกตามระดับความพิเศษ</span>
+              <span className="text-xs text-muted">· เลือกซองตาม tier</span>
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              ให้ระบบช่วยจัดตามระดับที่เลือก แฟนเปิดเลือกหรือสุ่มได้
+            </p>
+          </div>
+          <div className="selection-card-indicator" aria-hidden="true">
+            {mode === "CHOICE" && <span className="h-2 w-2 rounded-full bg-white" />}
+          </div>
+        </button>
+      </div>
       {birthday && <Button variant="ghost" onClick={() => {
         setMode("FIXED"); setName(birthday.name); setLimits(Object.fromEntries(birthday.items.map(i => [i.couponTemplateId, i.quantity])));
         setMessage("ดีใจที่โลกนี้มีเธอ ปีนี้ขอให้มีเราอยู่ข้าง ๆ ในทุกวันนะ");

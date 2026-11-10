@@ -2,16 +2,17 @@ import type { ReceivedGift } from "@/types";
 import { couponCategories, resolveCategory } from "./coupon-categories.ts";
 
 export interface KeepsakeCopy {
-  whisper: string;
   salutation: string;
   headline: string;
-  crossedOut: string;
-  correction: string;
   noteBody: string;
+  hasCustomMessage: boolean;
   isLongNote: boolean;
   signature: string;
   footnote: string;
   dateStamp: string;
+  whisper?: string;
+  crossedOut?: string;
+  correction?: string;
 }
 
 export function buildKeepsakeCopy(
@@ -19,18 +20,15 @@ export function buildKeepsakeCopy(
   recipientName?: string | null,
 ): KeepsakeCopy {
   const name = recipientName?.trim() || "เธอ";
-  const sender = gift.senderName?.trim() || "คนพิเศษ";
-  const total = gift.coupons.reduce((sum, c) => sum + c.quantity, 0);
+  const sender = gift.senderName?.trim() || "";
 
-  const whisper = "made a little something for you ♡";
-  const salutation = `ถึง ${name} คนโปรด ♡`;
-  const headline = gift.title?.trim() || "ของขวัญชิ้นเล็ก ๆ ให้เธอ ♡";
-  const crossedOut = total > 1 ? "ให้แค่ปีนี้" : "ให้แค่วันนี้";
-  const correction = "ตั้งใจทำให้เธอคนเดียวเลยนะ ♡";
-  const noteBody = gift.message?.trim() || "ตั้งใจมอบคำสัญญาเล็ก ๆ เหล่านี้ให้เธอ หวังว่าจะชอบนะ";
+  const salutation = `ถึง ${name}`;
+  const headline = gift.title?.trim() || "ของขวัญสำหรับเธอ";
+  const noteBody = gift.message?.trim() || "";
+  const hasCustomMessage = noteBody.length > 0;
   const isLongNote = noteBody.length > 110;
-  const signature = `— จาก ${sender}, รักเสมอ ♡`;
-  const footnote = "* ใช้ได้ตลอดไป ยกเว้นวันที่เราไม่รักเธอ (ไม่มีวันนั้นหรอก ♡)";
+  const signature = sender ? `— จาก ${sender}` : "";
+  const footnote = "* เปิดใช้คูปองได้ทุกเมื่อจากกระเป๋าของคุณ";
 
   let dateStamp = "TODAY";
   try {
@@ -46,12 +44,10 @@ export function buildKeepsakeCopy(
   }
 
   return {
-    whisper,
     salutation,
     headline,
-    crossedOut,
-    correction,
     noteBody,
+    hasCustomMessage,
     isLongNote,
     signature,
     footnote,
@@ -119,40 +115,6 @@ const RIBBON_BOW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 
     <path d="M49 28c4 7 10 15 18 20-4-2-7-6-9-7-2 2-3 5-4 8-2-6-5-14-6-20Z" fill="#fadbe5" />
     <ellipse cx="44" cy="24" rx="6" ry="5.5" fill="#f7c8d7" />
     <path d="M42 22q2 3 4 0" stroke="#59424c" stroke-width="1.3" />
-  </g>
-</svg>`;
-
-const LOVE_DOODLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none">
-  <ellipse cx="122" cy="158" rx="88" ry="9" fill="#a64062" opacity=".08" />
-  <g stroke="#59424c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M39 131C25 105 38 63 69 59c31-4 52 25 49 57-2 26-21 39-44 37-16-1-29-9-35-22Z" fill="#f6ebcf" />
-    <path d="m47 70-6-15m17 9-1-17M62 151l-5 9m35-10 5 9" />
-    <path d="M64 101v4m27-4v4m-18 8q5 6 10 0" />
-    <path d="M100 126q13 10 24-2" />
-    <ellipse cx="56" cy="114" rx="7" ry="4" fill="#a64062" stroke="none" opacity=".24" />
-    <ellipse cx="98" cy="114" rx="7" ry="4" fill="#a64062" stroke="none" opacity=".24" />
-  </g>
-  <g stroke="#59424c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M122 124c-8-30 8-62 36-64 32-3 56 32 47 63-7 23-24 33-47 30-18-2-31-12-36-29Z" fill="#fadbe5" />
-    <path d="m176 63 6-15m6 20 12-10M144 151l-4 9m37-9 6 9" />
-    <path d="M145 102v4m27-4v4m-19 8q5 6 10 0" />
-    <path d="M139 128q-12 9-20-1" />
-    <ellipse cx="137" cy="115" rx="7" ry="4" fill="#a64062" stroke="none" opacity=".24" />
-    <ellipse cx="180" cy="115" rx="7" ry="4" fill="#a64062" stroke="none" opacity=".24" />
-  </g>
-  <path d="M116 48s-19-12-19-23c0-12 14-15 19-5 6-10 20-7 20 5 0 11-20 23-20 23Z" fill="#a64062" />
-  <g stroke="#a64062" stroke-width="2" stroke-linecap="round">
-    <path d="M29 39v10m-5-5h10m171-14v10m-5-5h10M218 102v8m-4-4h8" />
-  </g>
-</svg>`;
-
-const PENCIL_HEARTS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 48" fill="none">
-  <g stroke="#a77787" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M24 38 C 10 26 6 15 14 9 C 21 4 25 11 26 14 C 27 11 31 4 38 9 C 45 14 41 24 24 38 Z" fill="#fadbe5" fill-opacity=".45" />
-    <path d="M23.5 37.5 C 10.5 25.5 7 15.5 14.5 9.5 C 20.5 5 24.5 11 25.5 13.5 C 26.5 11 30.5 5 37.5 9.5 C 44 14 40.5 23.5 24 37" opacity=".65" />
-    <path d="M48 28 C 40 21 38 14 42 10 C 46 7 49 11 50 13 C 51 11 54 7 58 10 C 62 13 60 19 48 28 Z" fill="#fadbe5" fill-opacity=".3" />
-    <path d="M47.5 27.5 C 40.5 20.5 38.5 14.5 42.2 10.5 C 45.8 7.5 48.5 11 49.5 12.5 C 50.5 11 53.5 7.5 57.5 10.5 C 61 13 59.5 18.5 48 27.5" opacity=".55" />
-    <path d="M12 6 L9 3 M56 4 L59 1 M64 16 L68 15" stroke-width="1.4" opacity=".7" />
   </g>
 </svg>`;
 
@@ -305,14 +267,10 @@ export async function exportGiftStoryImage(
   // Pre-load essential decorative SVGs (inlined Data URLs: 100% offline, zero CORS taint)
   let tapeImg: HTMLImageElement | null = null;
   let bowImg: HTMLImageElement | null = null;
-  let doodleImg: HTMLImageElement | null = null;
-  let pencilHeartsImg: HTMLImageElement | null = null;
   try {
-    [tapeImg, bowImg, doodleImg, pencilHeartsImg] = await Promise.all([
+    [tapeImg, bowImg] = await Promise.all([
       loadSvgDataUrl(WASHI_TAPE_SVG),
       loadSvgDataUrl(RIBBON_BOW_SVG),
-      loadSvgDataUrl(LOVE_DOODLE_SVG),
-      loadSvgDataUrl(PENCIL_HEARTS_SVG),
     ]);
   } catch {
     // Continue even if an asset fails to load
@@ -323,13 +281,13 @@ export async function exportGiftStoryImage(
   const cardX = (width - cardW) / 2; // 90px
 
   // Title wrapping
-  ctx.font = 'bold 46px "Mali", "Sarabun", sans-serif';
+  ctx.font = 'bold 44px "Mali", "Sarabun", sans-serif';
   const titleLines = wrapThaiText(ctx, copy.headline, cardW - 250);
 
-  // Note lines wrapping
+  // Note lines wrapping (only when sender provided a custom message)
   let noteLines: string[] = [];
   let noteH = 0;
-  if (copy.noteBody) {
+  if (copy.hasCustomMessage && copy.noteBody) {
     ctx.font = copy.isLongNote ? '600 26px "Sarabun", sans-serif' : '600 30px "Mali", sans-serif';
     noteLines = wrapThaiText(ctx, `“${copy.noteBody}”`, cardW - 140);
     if (noteLines.length > 5) {
@@ -337,7 +295,7 @@ export async function exportGiftStoryImage(
       noteLines[4] = noteLines[4].slice(0, -1) + "…";
     }
     const lineHeight = copy.isLongNote ? 40 : 46;
-    noteH = 40 + noteLines.length * lineHeight + 48; // padding-top + lines + signature
+    noteH = 40 + noteLines.length * lineHeight + (copy.signature ? 48 : 28);
   }
 
   const couponCount = gift.coupons.length;
@@ -347,8 +305,8 @@ export async function exportGiftStoryImage(
   const ticketsSectionH = 36 + maxCoupons * (ticketH + ticketGap) + (couponCount > maxCoupons ? 34 : 0);
 
   // Total height of the main card
-  const headerH = 46 + 28 + titleLines.length * 52 + 36;
-  let cardH = 50 + headerH + (copy.noteBody ? noteH + 28 : 16) + ticketsSectionH + 60;
+  const headerH = 44 + titleLines.length * 52 + 20;
+  let cardH = 50 + headerH + (copy.hasCustomMessage ? noteH + 28 : 16) + ticketsSectionH + 60;
   cardH = Math.min(cardH, 1440);
 
   // Center within Safe Zone (Y: 230 to 1675)
@@ -412,16 +370,16 @@ export async function exportGiftStoryImage(
   // 5. Header Section
   let currentY = cardY + 44;
 
-  // Top whisper line (left) & Vintage Date Stamp box (right)
-  ctx.font = '600 24px "Mali", sans-serif';
+  // Top salutation line (left) & Vintage Date Stamp box (right)
+  ctx.font = '600 24px "Sarabun", sans-serif';
   ctx.fillStyle = "#A77787";
-  ctx.fillText(copy.whisper, cardX + 44, currentY + 4);
+  ctx.fillText(copy.salutation, cardX + 44, currentY + 14);
 
   // Date stamp container on top right
   const stampBoxW = 140;
   const stampBoxH = 34;
   const stampBoxX = cardX + cardW - stampBoxW - 44;
-  const stampBoxY = currentY - 16;
+  const stampBoxY = currentY - 10;
   ctx.save();
   ctx.fillStyle = "#DCE9EF";
   roundRect(ctx, stampBoxX, stampBoxY, stampBoxW, stampBoxH, 6);
@@ -437,62 +395,20 @@ export async function exportGiftStoryImage(
   ctx.textAlign = "left";
   ctx.restore();
 
-  currentY += 44;
-
-  // Salutation to recipient
-  ctx.font = 'bold 28px "Mali", sans-serif';
-  ctx.fillStyle = "#A77787";
-  ctx.fillText(copy.salutation, cardX + 44, currentY);
-
-  currentY += 46;
+  currentY += 48;
 
   // Gift Title
-  ctx.font = 'bold 46px "Mali", "Sarabun", sans-serif';
+  ctx.font = 'bold 44px "Mali", "Sarabun", sans-serif';
   ctx.fillStyle = "#59424C";
   for (const line of titleLines) {
     ctx.fillText(line, cardX + 44, currentY);
     currentY += 52;
   }
 
-  // Playful pencil correction line: ~~ให้แค่วันนี้~~ ตั้งใจทำให้เธอคนเดียวเลยนะ ♡
-  ctx.save();
-  ctx.font = '600 22px "Mali", sans-serif';
-  const crossedW = ctx.measureText(copy.crossedOut).width;
-  ctx.fillStyle = "#B08594";
-  ctx.fillText(copy.crossedOut, cardX + 44, currentY);
+  currentY += 16;
 
-  // Strikethrough pencil line across crossedOut text
-  ctx.strokeStyle = "#A77787";
-  ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  ctx.moveTo(cardX + 40, currentY - 7);
-  ctx.lineTo(cardX + 46 + crossedW, currentY - 7);
-  ctx.stroke();
-
-  // Hand-written correction beside it
-  ctx.fillStyle = "#A77787";
-  ctx.fillText(` ${copy.correction}`, cardX + 48 + crossedW, currentY);
-  ctx.restore();
-
-  // Small doodle/hearts on top right of header
-  if (doodleImg) {
-    ctx.save();
-    const dw = 150;
-    const dh = 112;
-    ctx.drawImage(doodleImg, cardX + cardW - dw - 36, cardY + 54, dw, dh);
-    ctx.restore();
-  } else if (pencilHeartsImg) {
-    ctx.save();
-    const pw = 80;
-    const ph = 54;
-    ctx.drawImage(pencilHeartsImg, cardX + cardW - pw - 44, cardY + 70, pw, ph);
-    ctx.restore();
-  }
-
-  currentY += 34;
-
-  // 6. Pinned Torn-Paper Love Note (if message exists)
-  if (copy.noteBody && noteLines.length > 0) {
+  // 6. Pinned Torn-Paper Love Note (if custom message exists)
+  if (copy.hasCustomMessage && copy.noteBody && noteLines.length > 0) {
     const pX = cardX + 36;
     const pW = cardW - 72;
     const pH = noteH;
@@ -549,11 +465,13 @@ export async function exportGiftStoryImage(
     }
 
     // Sender signature
-    ctx.font = '600 24px "Mali", sans-serif';
-    ctx.fillStyle = "#A77787";
-    ctx.textAlign = "right";
-    ctx.fillText(copy.signature, pX + pW - 28, currentY + pH - 18);
-    ctx.textAlign = "left";
+    if (copy.signature) {
+      ctx.font = '600 24px "Mali", sans-serif';
+      ctx.fillStyle = "#A77787";
+      ctx.textAlign = "right";
+      ctx.fillText(copy.signature, pX + pW - 28, currentY + pH - 18);
+      ctx.textAlign = "left";
+    }
 
     ctx.restore();
 
