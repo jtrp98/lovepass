@@ -1,6 +1,6 @@
 # Release workflow
 
-Current version: **1.4.4**.
+Current version: **1.5.0**.
 
 | Branch | Purpose |
 | --- | --- |

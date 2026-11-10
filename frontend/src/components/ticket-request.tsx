@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
+import { LuScissors } from "react-icons/lu";
 import { ErrorText, Field, Textarea } from "./ui";
 
 /** How far along the perforation a drag must reach before letting go tears the stub. */
@@ -103,9 +104,7 @@ export function TicketRequest({ name, busy, error, onTear, onDone }: {
           onPointerCancel={onPointerUp}
           onClick={(event) => { if (event.detail === 0) void commit(); }}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle cx="6" cy="7" r="3" /><circle cx="6" cy="17" r="3" /><path d="M8.6 8.6 20 18M8.6 15.4 20 6" />
-          </svg>
+          <LuScissors aria-hidden="true" focusable="false" />
           <span>ฉีก</span>
         </button>
         <span className="tear-guide" id={guide} data-nudged={nudged || undefined}>

@@ -166,7 +166,7 @@ function NewGiftForm() {
           </p>
         )}
         <p className="text-muted">
-          มอบให้ {couple?.partnerDisplayName} รวม {result.totalCoupons} ใบ หมดอายุ{" "}
+          มอบให้ {couple?.partnerDisplayName} รวม {result.totalCoupons} ใบ ใช้ได้ถึง{" "}
           {formatDate(result.expiresAt)}
         </p>
         <ul className="mx-auto max-w-sm space-y-1 text-sm">
@@ -183,7 +183,7 @@ function NewGiftForm() {
           ))}
         </ul>
         <div className="flex flex-wrap justify-center gap-2">
-          <LinkButton href="/sent-gifts" variant="secondary">
+          <LinkButton href="/gifts?tab=sent" variant="secondary">
             ดูของขวัญที่ส่ง
           </LinkButton>
           <Button onClick={() => router.push("/dashboard")}>กลับบ้านของเรา</Button>
@@ -325,7 +325,10 @@ function NewGiftForm() {
                 placeholder="เช่น สุขสันต์วันครบรอบนะ 💕, ให้คนเก่งของเค้า"
               />
             </Field>
-            <Field label="วันหมดอายุ">
+            <Field
+              label="วันสุดท้ายที่ใช้คูปองได้ (วันหมดอายุ)"
+              hint="คูปองทุกใบในของขวัญชิ้นนี้จะใช้ได้ถึงสิ้นวันนี้ (เป็นวันเดียวกันทั้งก่อนและหลังเปิดซอง ไม่เริ่มนับใหม่หลังเปิด)"
+            >
               <Input
                 type="date"
                 value={expiresAt}

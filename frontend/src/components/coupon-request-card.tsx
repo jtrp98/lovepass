@@ -1,15 +1,17 @@
 import { useId, type ReactNode } from "react";
+import type { IconType } from "react-icons";
+import { LuClock, LuCheck, LuMinus } from "react-icons/lu";
 import type { Redemption } from "@/types";
 import { couponCategories, resolveCategory } from "@/lib/coupon-categories";
 import { TicketIllustration } from "./ticket-illustration";
 import { RubberStamp } from "./rubber-stamp";
 import { formatDate, formatDateTime, rarityStyles } from "./ui";
 
-const statuses = {
-  PENDING: { label: "รอยืนยัน", symbol: "◷" },
-  APPROVED: { label: "ใช้แล้ว", symbol: "✓" },
-  REJECTED: { label: "ปฏิเสธแล้ว", symbol: "—" },
-  CANCELLED: { label: "ยกเลิกแล้ว", symbol: "—" },
+const statuses: Record<string, { label: string; icon: IconType }> = {
+  PENDING: { label: "รอยืนยัน", icon: LuClock },
+  APPROVED: { label: "ใช้แล้ว", icon: LuCheck },
+  REJECTED: { label: "ปฏิเสธแล้ว", icon: LuMinus },
+  CANCELLED: { label: "ยกเลิกแล้ว", icon: LuMinus },
 };
 
 /** Powers that hold the target coupon too while the request waits (see MetaCouponRules.ReservesTarget). */
@@ -22,13 +24,17 @@ export function CouponRequestCard({ item, direction, children, animateStamp = fa
   animateStamp?: boolean;
 }) {
   const heading = useId();
-  const status = statuses[item.status];
+  const status = statuses[item.status] ?? { label: item.status, icon: LuClock };
+  const StatusIcon = status.icon;
   return (
     <article className="pocket-ticket request-ticket" data-rarity={item.rarity} data-state={item.status === "APPROVED" ? "used" : item.status === "PENDING" ? "pending" : undefined} data-status={item.status} aria-labelledby={heading}>
       <div className="pocket-face">
         <div className="pocket-topline">
           <span className="pocket-mono pocket-admit">REQUEST SLIP <span aria-hidden="true">✦</span> RQ-{String(item.id).padStart(4, "0")}</span>
-          <span className="request-status pocket-status"><span aria-hidden="true">{status.symbol}</span><span>{status.label}</span></span>
+          <span className="request-status pocket-status">
+            <StatusIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>{status.label}</span>
+          </span>
         </div>
         <div className="pocket-story request-story">
           <div>

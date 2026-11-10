@@ -10,6 +10,7 @@ import {
   RarityBadge,
 } from "@/components/ui";
 import { couponGroupKey } from "@/lib/flow";
+import { LuArrowUpRight } from "react-icons/lu";
 import { LoveTicket, type LoveTicketData } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
 import { CouponRequestCard } from "@/components/coupon-request-card";
@@ -179,7 +180,7 @@ export default function MyCouponsPage() {
         </div>
         <div className="pocket-seal" aria-hidden="true"><small>JUST FOR</small><span>you & me</span><small>WITH LOVE</small></div>
       </header>
-      <LinkButton href="/packs" variant="secondary">เปิดซองคูปองที่ได้รับ</LinkButton>
+      <LinkButton href="/gifts" variant="secondary">ดูของขวัญที่ได้รับ</LinkButton>
 
       <div className="status-tabs flex flex-wrap gap-2" role="group" aria-label="สถานะคูปอง">
         {[
@@ -250,7 +251,7 @@ export default function MyCouponsPage() {
         </div>
       )}
 
-      <footer className="pocket-book-footer"><span>แต่ละใบ คือเวลาที่อยากให้กัน</span><LinkButton href="/catalog" variant="ghost">เลือกตั๋วให้แฟนบ้าง <span aria-hidden="true">↗</span></LinkButton></footer>
+      <footer className="pocket-book-footer"><span>แต่ละใบ คือเวลาที่อยากให้กัน</span><LinkButton href="/catalog" variant="ghost" className="inline-flex items-center gap-1">เลือกตั๋วให้แฟนบ้าง <LuArrowUpRight className="h-4 w-4" aria-hidden="true" /></LinkButton></footer>
 
     </div>
   );

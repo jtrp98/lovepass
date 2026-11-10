@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import type { Rarity } from "@/types";
+import { LuHeart, LuClock, LuCheck, LuBan } from "react-icons/lu";
 import { formatDate, rarityStyles } from "./ui";
 import { TicketIllustration } from "./ticket-illustration";
 import { RubberStamp } from "./rubber-stamp";
@@ -34,23 +35,17 @@ export function RarityPips({ rarity }: { rarity: Rarity }) {
   return (
     <span className="rarity-pips" aria-hidden="true">
       {Array.from({ length: maxPips }, (_, index) => (
-        <svg key={index} viewBox="0 0 12 11" data-filled={index < pips[rarity] || undefined}>
-          <path d="M6 10S1 6.9 1 3.7C1 1.2 4.4.5 6 3c1.6-2.5 5-1.8 5 .7C11 6.9 6 10 6 10Z" />
-        </svg>
+        <LuHeart key={index} data-filled={index < pips[rarity] || undefined} focusable="false" />
       ))}
     </span>
   );
 }
 
 function StatusMark({ state }: { state: TicketState }) {
-  return (
-    <svg className="status-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      {state === "available" ? <path d="M8 13.4S2.6 10.2 2.6 6.6C2.6 4 6.2 3.2 8 5.8c1.8-2.6 5.4-1.8 5.4.8 0 3.6-5.4 6.8-5.4 6.8Z" fill="currentColor" />
-        : state === "pending" ? <><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></>
-        : state === "used" ? <path d="m3.4 8.4 3 3 6.2-6.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        : <><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="m4.2 11.8 7.6-7.6" stroke="currentColor" strokeWidth="1.4" /></>}
-    </svg>
-  );
+  if (state === "available") return <LuHeart className="status-mark" aria-hidden="true" focusable="false" />;
+  if (state === "pending") return <LuClock className="status-mark" aria-hidden="true" focusable="false" />;
+  if (state === "used") return <LuCheck className="status-mark" aria-hidden="true" focusable="false" />;
+  return <LuBan className="status-mark" aria-hidden="true" focusable="false" />;
 }
 
 export function LoveTicket({ ticket, onOpen, catalog = false, open = false, onClose, animateStamp = false, children }: {

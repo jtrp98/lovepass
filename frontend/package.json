@@ -1,22 +1,24 @@
 {
   "name": "frontend",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test tests/flow.test.ts",
+    "test": "node --experimental-strip-types --test tests/flow.test.ts tests/version.test.ts",
     "test:ui": "node tests/ui.mjs",
     "test:pocket": "node tests/pocket-ui.mjs",
     "test:categories": "node tests/category-ui.mjs",
-    "test:packs": "node tests/pack-ui.mjs"
+    "test:packs": "node tests/pack-ui.mjs",
+    "release": "node ../scripts/release.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",

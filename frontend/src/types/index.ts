@@ -100,6 +100,8 @@ export interface GiftPack {
   quotas: PackQuota[];
   options: PackOption[];
   draws: PackDraw[];
+  createdAt?: string;
+  senderName?: string;
 }
 export interface CreateGiftPackInput {
   requestId: string;

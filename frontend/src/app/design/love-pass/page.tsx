@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LuHeart, LuArrowUpRight, LuRotateCcw, LuArrowDown } from "react-icons/lu";
 import { LoveTicket, type LoveTicketData, type TicketState } from "@/components/love-ticket";
 import { TicketRequest } from "@/components/ticket-request";
 import { Button, Field, Select, rarityStyles } from "@/components/ui";
@@ -65,8 +66,8 @@ export default function LovePassDesign() {
     <div className="pocket-studio">
       <a href="#collection" className="sr-only focus:not-sr-only">ข้ามไปสมุดตั๋ว</a>
       <header className="pocket-studio-header">
-        <Link href="/design/love-pass" className="pocket-wordmark"><span aria-hidden="true">♡</span> LOVE PASS</Link>
-        <a href="#directions">เบื้องหลังตั๋วใบเล็ก <span aria-hidden="true">↗</span></a>
+        <Link href="/design/love-pass" className="pocket-wordmark inline-flex items-center gap-1.5"><span aria-hidden="true"><LuHeart className="h-4 w-4 inline-block text-love" /></span> LOVE PASS</Link>
+        <a href="#directions" className="inline-flex items-center gap-1">เบื้องหลังตั๋วใบเล็ก <LuArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></a>
       </header>
       <main className="pocket-studio-main pocket-book">
         <header className="pocket-intro">
@@ -98,7 +99,7 @@ export default function LovePassDesign() {
           {!visible.length && <p className="pocket-demo-note">ยังไม่มีตั๋วในหน้านี้ ลองเปิดใบที่พร้อมใช้ก่อนได้นะ</p>}
           <p className="sr-only" role="status">{announcement}</p>
         </section>
-        <footer className="pocket-book-footer"><span>ความรักเป็นสิ่งเล็ก ๆ ที่เราตั้งใจให้กัน</span><button type="button" className="status-tab" onClick={() => { setTickets(initial); setView("available"); setSelected(null); setJustUsed(null); setAnnouncement("เริ่มสมุดตัวอย่างใหม่แล้ว"); }}>เริ่มลองใหม่ <span aria-hidden="true">↺</span></button></footer>
+        <footer className="pocket-book-footer"><span>ความรักเป็นสิ่งเล็ก ๆ ที่เราตั้งใจให้กัน</span><button type="button" className="status-tab inline-flex items-center gap-1" onClick={() => { setTickets(initial); setView("available"); setSelected(null); setJustUsed(null); setAnnouncement("เริ่มสมุดตัวอย่างใหม่แล้ว"); }}>เริ่มลองใหม่ <LuRotateCcw className="h-3.5 w-3.5" aria-hidden="true" /></button></footer>
         <section className="pocket-exploration" id="categories" aria-labelledby="categories-title">
           <p className="pocket-mono">ONE CATEGORY, ONE LITTLE DRAWING</p>
           <h2 id="categories-title">รูปเล็ก ๆ แทนคำสัญญาแต่ละแบบ</h2>
@@ -106,7 +107,7 @@ export default function LovePassDesign() {
           <div className="category-tier-select"><Field label="ลองเปลี่ยนระดับความพิเศษ"><Select value={iconTier} onChange={(e) => setIconTier(e.target.value as Rarity)}>{Object.entries(rarityStyles).map(([value, style]) => <option value={value} key={value}>{style.label}</option>)}</Select></Field></div>
           <div className="category-icon-grid">
             {Object.entries(couponCategories).map(([category, info]) => <a key={category} href={info.icon} download className="category-icon-sample pocket-detail" data-rarity={iconTier}>
-              <TicketIllustration category={category} /><strong>{info.label}</strong><span>ดาวน์โหลด SVG <span aria-hidden="true">↓</span></span>
+              <TicketIllustration category={category} /><strong>{info.label}</strong><span className="inline-flex items-center gap-1">ดาวน์โหลด SVG <LuArrowDown className="h-3.5 w-3.5" aria-hidden="true" /></span>
             </a>)}
           </div>
         </section>

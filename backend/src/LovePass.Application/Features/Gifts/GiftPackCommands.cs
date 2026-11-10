@@ -20,7 +20,8 @@ public sealed record PackOptionInput(int CouponTemplateId, int Limit);
 public sealed record PackQuotaInput(string Rarity, int Quantity);
 public sealed record PackOptionDto(int CouponTemplateId, int Limit, int Selected, CouponTemplateSnapshot Coupon);
 public sealed record GiftPackDto(int Id, string Name, string Mode, string? Message, DateTime ExpiresAt,
-    DateTime? OpenedAt, bool IsSender, int Total, List<PackQuotaInput> Quotas, List<PackOptionDto> Options, List<PackDraw> Draws, List<string> OpenedTiers);
+    DateTime? OpenedAt, bool IsSender, int Total, List<PackQuotaInput> Quotas, List<PackOptionDto> Options, List<PackDraw> Draws, List<string> OpenedTiers,
+    DateTime CreatedAt = default, string? SenderName = null);
 
 public sealed record CreateGiftPackCommand(Guid RequestId, int ReceiverId, string Name, string Mode, DateTime ExpiresAt,
     string? Message, List<PackOptionInput> Options, List<PackQuotaInput> Quotas) : ICommand<GiftPackDto>;
@@ -178,7 +179,7 @@ public sealed class CreateGiftPackCommandHandler(
 }
 
 public sealed record GetGiftPacksQuery() : IQuery<List<GiftPackDto>>;
-public sealed class GetGiftPacksQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser)
+public sealed class GetGiftPacksQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser, IIdentityService identity)
     : IRequestHandler<GetGiftPacksQuery, List<GiftPackDto>>
 {
     public async Task<List<GiftPackDto>> Handle(GetGiftPacksQuery request, CancellationToken ct)
@@ -189,7 +190,16 @@ public sealed class GetGiftPacksQueryHandler(IApplicationDbContext db, ICurrentU
         var batches = await db.GiftBatches.AsNoTracking().Where(b => b.PackPlan != null
                 && ((b.ReceiverId == id && partnerIds.Contains(b.SenderId)) || (b.SenderId == id && partnerIds.Contains(b.ReceiverId))))
             .OrderByDescending(b => b.CreatedAt).Take(200).ToListAsync(ct);
-        return batches.Select(b => GiftPackMapping.Map(b, id)).ToList();
+
+        var senderIds = batches.Where(b => b.ReceiverId == id).Select(b => b.SenderId).Distinct().ToList();
+        var senderNames = new Dictionary<int, string>();
+        foreach (var senderId in senderIds)
+        {
+            var user = await identity.GetUserAsync(senderId, ct);
+            senderNames[senderId] = user.DisplayName;
+        }
+
+        return batches.Select(b => GiftPackMapping.Map(b, id, b.ReceiverId == id ? senderNames.GetValueOrDefault(b.SenderId) : null)).ToList();
     }
 }
 
@@ -204,6 +214,7 @@ public sealed class OpenGiftPackCommandHandler(IApplicationDbContext db, ICurren
         if (plan.OpenedAt is not null) return GiftPackMapping.Map(batch, batch.ReceiverId);
         if (plan.ExpiresAt <= DateTime.UtcNow) throw new ConflictException("ซองนี้หมดอายุแล้ว ลองขอให้แฟนส่งซองใหม่ให้นะ");
         plan.OpenedAt = DateTime.UtcNow;
+        batch.OpenedAt = plan.OpenedAt;
         if (plan.Mode == "FIXED")
             foreach (var option in plan.Options)
             {
@@ -301,9 +312,9 @@ public sealed class DrawGiftPackCommandHandler(IApplicationDbContext db, ICurren
     }
 }
 
-internal static class GiftPackMapping
+public static class GiftPackMapping
 {
-    public static GiftPackDto Map(GiftBatch batch, int userId)
+    public static GiftPackDto Map(GiftBatch batch, int userId, string? senderName = null)
     {
         var plan = GiftPackPlan.FromJson(batch.PackPlan!);
         var show = batch.SenderId == userId || plan.OpenedAt is not null;
@@ -311,7 +322,8 @@ internal static class GiftPackMapping
             batch.SenderId == userId, plan.Total, plan.Quotas.OrderBy(q => Enum.Parse<Rarity>(q.Key, true)).Select(q => new PackQuotaInput(q.Key, q.Value)).ToList(),
             show ? plan.Options.Where(o => batch.SenderId == userId || plan.Mode == "FIXED" || plan.OpenedTiers.Contains(o.Coupon.Rarity))
                 .Select(o => new PackOptionDto(o.CouponTemplateId, o.Limit,
-                plan.Draws.Count(d => d.CouponTemplateId == o.CouponTemplateId), o.Coupon)).ToList() : [], show ? plan.Draws : [], plan.OpenedTiers);
+                plan.Draws.Count(d => d.CouponTemplateId == o.CouponTemplateId), o.Coupon)).ToList() : [], show ? plan.Draws : [], plan.OpenedTiers,
+            batch.CreatedAt, senderName);
     }
 
     public static async Task<GiftBatch> ForReceiver(IApplicationDbContext db, int userId, int id, CancellationToken ct)

@@ -1,19 +1,24 @@
 "use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LinkButton } from "@/components/ui";
 import { TicketDemo } from "@/components/ticket-demo";
 import { DashboardPreview } from "@/components/dashboard-preview";
 import { StationeryIcon } from "@/components/stationery";
+import { UpdatesDialog } from "@/components/updates-dialog";
 import { useAuth } from "@/lib/auth";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { APP_VERSION } from "@/lib/version";
 
 export default function LandingPage() {
   const { user, ready } = useAuth(),
     router = useRouter();
+  const [showUpdates, setShowUpdates] = useState(false);
+
   useEffect(() => {
     if (ready && user) router.replace("/dashboard");
   }, [ready, user, router]);
+
   return (
     <main className="mx-auto grid w-full max-w-5xl items-start gap-10 px-5 py-12 md:grid-cols-2 md:py-20">
       <div className="space-y-6">
@@ -45,14 +50,27 @@ export default function LandingPage() {
         </div>
         <DashboardPreview />
       </section>
-      <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-control pt-4 text-sm text-muted md:col-span-2">
-        <Link href="/privacy" className="inline-flex min-h-12 items-center text-love underline underline-offset-4">
-          นโยบายความเป็นส่วนตัว
-        </Link>
-        <a href="mailto:jaturapat.code@gmail.com" className="inline-flex min-h-12 items-center underline underline-offset-4">
-          ติดต่อผู้ดูแล LOVE PASS
-        </a>
+      <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-control pt-4 text-sm text-muted md:col-span-2">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link href="/privacy" className="inline-flex min-h-12 items-center text-love underline underline-offset-4">
+            นโยบายความเป็นส่วนตัว
+          </Link>
+          <a href="mailto:jaturapat.code@gmail.com" className="inline-flex min-h-12 items-center underline underline-offset-4">
+            ติดต่อผู้ดูแล LOVE PASS
+          </a>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowUpdates(true)}
+          className="inline-flex min-h-12 items-center font-mono text-xs text-muted hover:text-love focus-visible:outline-none"
+          title="ดูบันทึกการอัปเดต"
+        >
+          <span className="pocket-mono rounded-md bg-love-soft px-2.5 py-1 font-semibold text-love">
+            v{APP_VERSION}
+          </span>
+        </button>
       </footer>
+      {showUpdates && <UpdatesDialog onClose={() => setShowUpdates(false)} />}
     </main>
   );
 }

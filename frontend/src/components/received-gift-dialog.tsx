@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LuX } from "react-icons/lu";
 import type { ReceivedGift } from "@/types";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -120,9 +121,9 @@ export function ReceivedGiftDialog({
                 variant="ghost"
                 onClick={onClose}
                 aria-label="ปิดของขวัญ"
-                className="h-8 w-8 min-h-0 min-w-0 p-0 rounded-full"
+                className="h-8 w-8 min-h-0 min-w-0 p-0 rounded-full flex items-center justify-center"
               >
-                ✕
+                <LuX className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
 
@@ -198,9 +199,9 @@ export function ReceivedGiftDialog({
                       variant="ghost"
                       onClick={onClose}
                       aria-label="ปิดการ์ดของขวัญ"
-                      className="gift-close-btn h-7 w-7 min-h-0 min-w-0 p-0 rounded-full text-muted hover:text-ink"
+                      className="gift-close-btn h-7 w-7 min-h-0 min-w-0 p-0 rounded-full flex items-center justify-center text-muted hover:text-ink"
                     >
-                      ✕
+                      <LuX className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>

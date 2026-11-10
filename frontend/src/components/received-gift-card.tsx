@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { LuHeart, LuMail } from "react-icons/lu";
 import type { ReceivedGift } from "@/types";
 import { couponCategories, resolveCategory } from "@/lib/coupon-categories";
 import { Button, formatDate, formatDateTime, rarityStyles } from "./ui";
@@ -21,8 +22,16 @@ export function ReceivedGiftCard({
     <article className="pocket-ticket sent-gift-sheet" aria-labelledby={heading}>
       <header className="pocket-face sent-gift-header">
         <div className="pocket-topline">
-          <span className="pocket-mono">
-            {gift.openedAt ? "OPENED WITH LOVE ♡" : "UNOPENED GIFT 💌"}
+          <span className="pocket-mono inline-flex items-center gap-1">
+            {gift.openedAt ? (
+              <>
+                OPENED WITH LOVE <LuHeart className="inline-block h-3 w-3 text-love" aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                UNOPENED GIFT <LuMail className="inline-block h-3 w-3 text-love" aria-hidden="true" />
+              </>
+            )}
           </span>
           <span className="sent-gift-sent">
             <span aria-hidden="true">♥</span> ได้รับจาก {gift.senderName}
